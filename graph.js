@@ -56,10 +56,11 @@ function drawGraph(data, tooltip) {
   let linkDist         = parseFloat(document.getElementById('s-link').value);
   const TITLE_OFFSET_PX = 14;
 
-  const tagR       = () => Math.max(8, nodeRadius * 0.55);
-  const DECO_COUNT = 500;
-  const decoColor  = '#dedede';
-  const EP_HOVER   = '#ffbba3';
+  const tagR        = () => Math.max(8, nodeRadius * 0.55);
+  const DECO_COUNT  = 500;
+  const DECO_MARGIN = 14; // アウトライン間の目標ギャップ（deco-deco / deco-ep 共通）
+  const decoColor   = '#dedede';
+  const EP_HOVER    = '#ffbba3';
 
   // デコ星を生成してシミュレーションに参加させる
   const decoNodes = d3.range(DECO_COUNT).map(i => ({
@@ -113,8 +114,8 @@ function drawGraph(data, tooltip) {
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
-      d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
-    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR))
+      d => Math.max(decoR, (decoR + DECO_MARGIN / 2) * (1 + (d.spreadFactor - 0.5) * decoSpread * 2))))
+    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
     .force('wander', () => {
       data.nodes.forEach(d => {
         if (d.type !== 'deco') return;
@@ -402,7 +403,7 @@ function drawGraph(data, tooltip) {
     setVal('v-deco-spread', decoSpread);
     simulation.force('collision-deco',
       makeSubsetCollide(d => d.type === 'deco',
-        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
+        d => Math.max(decoR, (decoR + DECO_MARGIN / 2) * (1 + (d.spreadFactor - 0.5) * decoSpread * 2)))
     ).alpha(0.3).restart();
   });
 
@@ -446,15 +447,16 @@ function drawGraph(data, tooltip) {
     decoCircle.attr('r', decoR);
     simulation.force('collision-deco',
       makeSubsetCollide(d => d.type === 'deco',
-        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
+        d => Math.max(decoR, (decoR + DECO_MARGIN / 2) * (1 + (d.spreadFactor - 0.5) * decoSpread * 2)))
     ).alpha(0.3).restart();
   });
 }
 
 // ------------------------------------------------------------
 // デコ→episode/tag 一方向反発フォース（decoだけ押しのける）
+// constraint projection方式：毎tick確実に重なりを解消、振動なし
 // ------------------------------------------------------------
-function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR) {
+function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR, decoMargin) {
   const epTagNodes = allNodes.filter(d => d.type !== 'deco');
   return function() {
     allNodes.forEach(d => {
@@ -467,11 +469,19 @@ function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR) {
           const a = Math.random() * Math.PI * 2;
           dx = Math.cos(a); dy = Math.sin(a); dist = 1;
         }
-        const minR = (ep.type === 'tag' ? tagR() : getNodeRadius()) + getDecoR() + 2;
+        const minR = (ep.type === 'tag' ? tagR() : getNodeRadius()) + getDecoR() + decoMargin;
         if (dist < minR) {
+          // 位置を直接 minR に投影（オーバーシュートなし）
           const scale = (minR - dist) / dist;
-          d.vx += dx * scale;
-          d.vy += dy * scale;
+          d.x += dx * scale;
+          d.y += dy * scale;
+          // ep方向への速度成分を除去
+          const ux = dx / dist, uy = dy / dist;
+          const vDot = d.vx * ux + d.vy * uy;
+          if (vDot < 0) {
+            d.vx -= vDot * ux;
+            d.vy -= vDot * uy;
+          }
         }
       });
     });
