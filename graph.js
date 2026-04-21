@@ -50,7 +50,8 @@ function drawGraph(data, tooltip) {
   let hideThreshold = 1.2;
   let rotSpeed         = parseFloat(document.getElementById('s-rotate').value);
   let rotAngle         = 0;
-  let decoGravStrength = parseFloat(document.getElementById('s-deco-gravity').value); // 0〜1
+  let decoGravStrength = parseFloat(document.getElementById('s-deco-gravity').value);
+  let decoSpread       = parseFloat(document.getElementById('s-deco-spread').value);
   const TITLE_OFFSET_PX = 14;
 
   const tagR       = () => Math.max(8, nodeRadius * 0.55);
@@ -61,10 +62,11 @@ function drawGraph(data, tooltip) {
 
   // デコ星を生成してシミュレーションに参加させる
   const decoNodes = d3.range(DECO_COUNT).map(i => ({
-    id:   `deco_${i}`,
-    type: 'deco',
-    x:    Math.random() * width,
-    y:    Math.random() * height,
+    id:          `deco_${i}`,
+    type:        'deco',
+    x:           Math.random() * width,
+    y:           Math.random() * height,
+    spreadFactor: Math.random(), // 0〜1の固定乱数（間隔ブレに使用）
   }));
   data.nodes.push(...decoNodes);
 
@@ -104,7 +106,8 @@ function drawGraph(data, tooltip) {
     .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
-    .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',  decoR + 20))
+    .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
+      d => (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread)))
     .force('wander', () => {
       // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
@@ -375,7 +378,15 @@ function drawGraph(data, tooltip) {
   document.getElementById('s-deco-gravity').addEventListener('input', () => {
     decoGravStrength = val('s-deco-gravity');
     setVal('v-deco-gravity', decoGravStrength);
-    // wander内で直接使用するので再起動不要
+  });
+
+  document.getElementById('s-deco-spread').addEventListener('input', () => {
+    decoSpread = val('s-deco-spread');
+    setVal('v-deco-spread', decoSpread);
+    simulation.force('collision-deco',
+      makeSubsetCollide(d => d.type === 'deco',
+        d => (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread))
+    ).alpha(0.1).restart();
   });
 
   document.getElementById('s-radius').addEventListener('input', () => {
