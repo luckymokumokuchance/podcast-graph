@@ -58,7 +58,7 @@ function drawGraph(data, tooltip) {
   // 装飾ノード定数
   const DECO_COUNT  = 200;
   const decoR       = 4;
-  const decoColor   = '#cccccc';
+  const decoColor   = '#ff0000';
   const EP_HOVER    = '#ffbba3'; // オレンジ味のある薄ピンク
 
   // 装飾ノードを生成してデータに追加
