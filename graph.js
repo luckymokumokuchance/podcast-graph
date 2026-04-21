@@ -175,7 +175,7 @@ function drawGraph(data, tooltip) {
     .join('g')
     .attr('class', d => `node ${d.type}`);
 
-  epNode.call(makeDrag(simulation, decoNodes));
+  epNode.call(makeDrag(simulation));
 
   epNode.append('circle')
     .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius)
@@ -495,20 +495,16 @@ function makeSubsetCollide(filterFn, radiusFn) {
 // ------------------------------------------------------------
 // ドラッグ処理（episode / tag 用）
 // ------------------------------------------------------------
-function makeDrag(simulation, decoNodes) {
+function makeDrag(simulation) {
   return d3.drag()
     .on('start', (event, d) => {
       if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x; d.fy = d.y;
-      // デコをfx/fyで凍結しalphaTarget上昇による吹き飛びを防ぐ
-      decoNodes.forEach(n => { n.fx = n.x; n.fy = n.y; });
     })
     .on('drag',  (event, d) => { d.fx = event.x; d.fy = event.y; })
     .on('end',   (event, d) => {
       if (!event.active) simulation.alphaTarget(0.005);
       d.fx = null; d.fy = null;
-      // デコを解放
-      decoNodes.forEach(n => { n.fx = null; n.fy = null; });
     });
 }
 
