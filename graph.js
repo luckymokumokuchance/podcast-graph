@@ -100,8 +100,8 @@ function drawGraph(data, tooltip) {
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(55))
     .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -80))
-    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0.02 : 0.08))
+    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0.02 : 0.08))
     .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 6 : nodeRadius + 20))
     .alphaDecay(0.02);
 
@@ -284,10 +284,11 @@ function drawGraph(data, tooltip) {
     const w = container.clientWidth;
     const h = container.clientHeight;
     svg.attr('viewBox', `0 0 ${w} ${h}`);
-    const s = val('s-gravity');
+    const s  = val('s-gravity');
+    const sd = val('s-deco-gravity');
     simulation
-      .force('x', d3.forceX(w / 2).strength(d => d.type === 'deco' ? 0 : s))
-      .force('y', d3.forceY(h / 2).strength(d => d.type === 'deco' ? 0 : s))
+      .force('x', d3.forceX(w / 2).strength(d => d.type === 'deco' ? sd : s))
+      .force('y', d3.forceY(h / 2).strength(d => d.type === 'deco' ? sd : s))
       .alpha(0.3).restart();
   });
 
@@ -338,11 +339,22 @@ function drawGraph(data, tooltip) {
   });
 
   document.getElementById('s-gravity').addEventListener('input', () => {
-    const s = val('s-gravity');
+    const s  = val('s-gravity');
+    const sd = val('s-deco-gravity');
     setVal('v-gravity', s);
     simulation
-      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : s))
-      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : s))
+      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? sd : s))
+      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? sd : s))
+      .alpha(0.3).restart();
+  });
+
+  document.getElementById('s-deco-gravity').addEventListener('input', () => {
+    const s  = val('s-gravity');
+    const sd = val('s-deco-gravity');
+    setVal('v-deco-gravity', sd);
+    simulation
+      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? sd : s))
+      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? sd : s))
       .alpha(0.3).restart();
   });
 
