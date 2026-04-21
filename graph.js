@@ -102,11 +102,11 @@ function drawGraph(data, tooltip) {
   // ---------- フォースシミュレーション ----------
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(55))
-    .force('charge',    d3.forceManyBody().strength(-80))
+    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -15 : -80))
     .force('x',         d3.forceX(width / 2).strength(0.08))
     .force('y',         d3.forceY(height / 2).strength(0.08))
     .force('collision', d3.forceCollide(d => {
-      if (d.type === 'deco') return decoR + 20;
+      if (d.type === 'deco') return decoR + 3;
       return (d.type === 'tag' ? tagR() : nodeRadius) + 20;
     }));
 
