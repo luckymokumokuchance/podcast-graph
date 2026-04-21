@@ -58,7 +58,7 @@ function drawGraph(data, tooltip) {
   // 装飾ノード定数
   const DECO_COUNT  = 200;
   const decoR       = 4;
-  const decoColor   = '#ff0000';
+  const decoColor   = '#dedede';
   const EP_HOVER    = '#ffbba3'; // オレンジ味のある薄ピンク
 
   // 装飾ノードを生成してデータに追加
@@ -105,10 +105,7 @@ function drawGraph(data, tooltip) {
     .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -15 : -80))
     .force('x',         d3.forceX(width / 2).strength(0.08))
     .force('y',         d3.forceY(height / 2).strength(0.08))
-    .force('collision', d3.forceCollide(d => {
-      if (d.type === 'deco') return decoR + 3;
-      return (d.type === 'tag' ? tagR() : nodeRadius) + 20;
-    }));
+    .force('collision', d3.forceCollide(nodeRadius + 20));
 
   // ---------- リンク ----------
   const link = rotG.append('g').attr('class', 'links')
@@ -148,9 +145,8 @@ function drawGraph(data, tooltip) {
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
-      if      (d.type === 'tag')     d3.select(this).style('fill', '#2d6b20');
-      else if (d.type === 'episode') d3.select(this).style('fill', EP_HOVER);
-      else if (d.type === 'deco')    d3.select(this).style('fill', '#aaaaaa');
+      if      (d.type === 'tag')  d3.select(this).style('fill', '#2d6b20');
+      else if (d.type === 'deco') d3.select(this).style('fill', '#aaaaaa');
     })
     .on('mouseleave', function(event, d) {
       if      (d.type === 'tag')  d3.select(this).style('fill', '#4a8c3a');
@@ -245,7 +241,10 @@ function drawGraph(data, tooltip) {
 
   } else {
     node.filter(d => d.type === 'episode')
-      .on('click',     (event, d) => { if (d.url) window.open(d.url, '_blank'); })
+      .on('click', (event, d) => {
+        d3.select(event.currentTarget).select('circle').style('fill', EP_HOVER);
+        if (d.url) window.open(d.url, '_blank');
+      })
       .on('mousemove', (event, d) => {
         const shownote = d.shownote ? `<br><br>${d.shownote}` : '';
         showTooltip(tooltip, event,

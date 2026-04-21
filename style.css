@@ -314,6 +314,17 @@ body {
   color: #666;
 }
 
+/* バージョン番号 */
+#version {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 200;
+}
+
 /* スマホ対応 */
 @media (max-width: 600px) {
   header h1 {
