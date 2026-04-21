@@ -103,7 +103,8 @@ function drawGraph(data, tooltip) {
     .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -80))
     .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 20 : nodeRadius + 20))
+    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
+    .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',  decoR + 20))
     .force('wander', () => {
       // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
@@ -383,8 +384,8 @@ function drawGraph(data, tooltip) {
     node.filter(d => d.type !== 'deco')
       .select('circle')
       .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius);
-    simulation.force('collision',
-      d3.forceCollide(d => d.type === 'deco' ? decoR + 20 : (d.type === 'tag' ? tagR() : nodeRadius) + 20)
+    simulation.force('collision-ep',
+      makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20)
     ).alpha(0.3).restart();
     applyTitleStyle();
   });
@@ -411,6 +412,18 @@ function drawGraph(data, tooltip) {
     rotSpeed = val('s-rotate');
     setVal('v-rotate', rotSpeed);
   });
+}
+
+// ------------------------------------------------------------
+// サブセット衝突フォース（指定ノード同士のみ衝突、他タイプに影響を与えない）
+// ------------------------------------------------------------
+function makeSubsetCollide(filterFn, radiusFn) {
+  const inner = d3.forceCollide(radiusFn).strength(1);
+  function force(alpha) { inner(alpha); }
+  force.initialize = function(nodes, random) {
+    inner.initialize(nodes.filter(filterFn), random);
+  };
+  return force;
 }
 
 // ------------------------------------------------------------
