@@ -114,13 +114,14 @@ function drawGraph(data, tooltip) {
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
-      d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
+      d => Math.max(decoR, (decoR + DECO_MARGIN / 2) * (1 + (d.spreadFactor - 0.5) * decoSpread * 2))))
     .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
     .force('wander', () => {
       data.nodes.forEach(d => {
         if (d.type !== 'deco') return;
-        d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.2;
-        d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.2;
+        // ランダムウォーク（小さめにして安定後の震えを抑える）
+        d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.04;
+        d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.04;
         // 中心引力
         d.vx += (width  / 2 - d.x) * decoGravStrength * 0.015;
         d.vy += (height / 2 - d.y) * decoGravStrength * 0.015;
@@ -402,7 +403,7 @@ function drawGraph(data, tooltip) {
     setVal('v-deco-spread', decoSpread);
     simulation.force('collision-deco',
       makeSubsetCollide(d => d.type === 'deco',
-        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
+        d => Math.max(decoR, (decoR + DECO_MARGIN / 2) * (1 + (d.spreadFactor - 0.5) * decoSpread * 2)))
     ).alpha(0.3).restart();
   });
 
@@ -446,14 +447,14 @@ function drawGraph(data, tooltip) {
     decoCircle.attr('r', decoR);
     simulation.force('collision-deco',
       makeSubsetCollide(d => d.type === 'deco',
-        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
+        d => Math.max(decoR, (decoR + DECO_MARGIN / 2) * (1 + (d.spreadFactor - 0.5) * decoSpread * 2)))
     ).alpha(0.3).restart();
   });
 }
 
 // ------------------------------------------------------------
 // デコ→episode/tag 一方向反発フォース（decoだけ押しのける）
-// velocity push方式：ソフトな押し出しで輪っかを作らない
+// constraint projection方式：毎tick確実に重なりを解消、振動なし
 // ------------------------------------------------------------
 function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR, decoMargin) {
   const epTagNodes = allNodes.filter(d => d.type !== 'deco');
@@ -470,10 +471,17 @@ function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR, decoMargin) {
         }
         const minR = (ep.type === 'tag' ? tagR() : getNodeRadius()) + getDecoR() + decoMargin;
         if (dist < minR) {
-          // 最低でも 0.5 の押し出しを保証してwanderに負けないようにする
-          const push = Math.max((minR - dist) / dist, 0.5);
-          d.vx += (dx / dist) * push;
-          d.vy += (dy / dist) * push;
+          // 位置を直接 minR に投影（オーバーシュートなし）
+          const scale = (minR - dist) / dist;
+          d.x += dx * scale;
+          d.y += dy * scale;
+          // ep方向への速度成分を除去
+          const ux = dx / dist, uy = dy / dist;
+          const vDot = d.vx * ux + d.vy * uy;
+          if (vDot < 0) {
+            d.vx -= vDot * ux;
+            d.vy -= vDot * uy;
+          }
         }
       });
     });
