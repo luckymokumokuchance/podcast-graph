@@ -133,9 +133,6 @@ function drawGraph(data, tooltip) {
           d.vx -= (bdx / bdist) * 0.6;
           d.vy -= (bdy / bdist) * 0.6;
         }
-        // 速度上限（ドラッグ時のalpha加熱でデコが吹き飛ぶのを防ぐ）
-        const spd = Math.hypot(d.vx, d.vy);
-        if (spd > 1.0) { d.vx = d.vx / spd; d.vy = d.vy / spd; }
       });
     })
     .alphaDecay(0.02)
