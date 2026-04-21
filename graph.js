@@ -108,7 +108,7 @@ function drawGraph(data, tooltip) {
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
-    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, decoR, nodeRadius, tagR))
+    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, decoR))
     .force('wander', () => {
       // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
@@ -429,20 +429,28 @@ function drawGraph(data, tooltip) {
 // ------------------------------------------------------------
 // デコ→episode/tag 一方向反発フォース（decoだけ押しのける、episode/tagは動かさない）
 // ------------------------------------------------------------
-function makeDecoEpRepel(allNodes, decoR, nodeRadius, tagR) {
+function makeDecoEpRepel(allNodes, getNodeRadius, tagR, decoR) {
   const epTagNodes = allNodes.filter(d => d.type !== 'deco');
   return function() {
     allNodes.forEach(d => {
       if (d.type !== 'deco') return;
       epTagNodes.forEach(ep => {
-        const dx   = d.x - ep.x;
-        const dy   = d.y - ep.y;
-        const dist = Math.hypot(dx, dy);
-        const minR = (ep.type === 'tag' ? tagR() : nodeRadius) + decoR + 2;
-        if (dist < minR && dist > 0) {
-          const push = (minR - dist) / dist;
-          d.vx += dx * push;
-          d.vy += dy * push;
+        let dx   = d.x - ep.x;
+        let dy   = d.y - ep.y;
+        let dist = Math.hypot(dx, dy);
+        // 完全重なりはランダム方向に押し出す
+        if (dist < 0.5) {
+          const a = Math.random() * Math.PI * 2;
+          dx = Math.cos(a); dy = Math.sin(a); dist = 1;
+        }
+        const minR = (ep.type === 'tag' ? tagR() : getNodeRadius()) + decoR + 2;
+        if (dist < minR) {
+          const scale = (minR - dist) / dist;
+          // 位置を直接修正（速度だけでは1tickで解消されない）
+          d.x  += dx * scale * 0.8;
+          d.y  += dy * scale * 0.8;
+          d.vx += dx * scale;
+          d.vy += dy * scale;
         }
       });
     });
