@@ -48,35 +48,23 @@ function drawGraph(data, tooltip) {
   let titleFontPx   = 12;
   let strokeMult    = 0.8;
   let hideThreshold = 1.2;
-  let rotSpeed      = parseFloat(document.getElementById('s-rotate').value); // 度/秒
+  let rotSpeed      = parseFloat(document.getElementById('s-rotate').value);
   let rotAngle      = 0;
   const TITLE_OFFSET_PX = 14;
 
-  // タグノードの半径（エピソードの55%）
-  const tagR = () => Math.max(8, nodeRadius * 0.55);
-
-  // 装飾ノード定数
-  const DECO_COUNT  = 200;
-  const decoR       = 4;
-  const decoColor   = '#dedede';
-  const EP_HOVER    = '#ffbba3'; // オレンジ味のある薄ピンク
-
-  // 装飾ノードを生成してデータに追加
-  const decoNodes = d3.range(DECO_COUNT).map(i => ({
-    id:   `deco_${i}`,
-    type: 'deco',
-    x:    Math.random() * width,
-    y:    Math.random() * height,
-  }));
-  data.nodes.push(...decoNodes);
+  const tagR      = () => Math.max(8, nodeRadius * 0.55);
+  const DECO_COUNT = 200;
+  const decoR      = 4;
+  const decoColor  = '#dedede';
+  const EP_HOVER   = '#ffbba3';
 
   // ---------- SVG ----------
   const svg = d3.select('#graph')
     .attr('viewBox', `0 0 ${width} ${height}`)
     .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  const g    = svg.append('g');  // ズームグループ
-  const rotG = g.append('g');    // 回転グループ
+  const g    = svg.append('g');
+  const rotG = g.append('g');
 
   const zoomBehavior = d3.zoom()
     .scaleExtent([0.2, 4])
@@ -89,23 +77,22 @@ function drawGraph(data, tooltip) {
 
   svg.call(zoomBehavior);
 
-  // 初期ズーム：中心を基点に2倍に拡大して画面を星で埋める
   const initScale = 2.0;
   svg.call(zoomBehavior.transform, d3.zoomIdentity
     .translate(width / 2 * (1 - initScale), height / 2 * (1 - initScale))
     .scale(initScale)
   );
 
-  // ---------- 凡例 ----------
   buildLegend();
 
-  // ---------- フォースシミュレーション ----------
+  // ---------- フォースシミュレーション（episode + tag のみ）----------
+  // deco は物理演算に参加しない。episode/tag の配置が決まってから隙間に配置する。
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(55))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? 0 : -80))
-    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 8 : nodeRadius + 20));
+    .force('charge',    d3.forceManyBody().strength(-80))
+    .force('x',         d3.forceX(width / 2).strength(0.08))
+    .force('y',         d3.forceY(height / 2).strength(0.08))
+    .force('collision', d3.forceCollide(d => d.type === 'tag' ? tagR() + 20 : nodeRadius + 20));
 
   // ---------- リンク ----------
   const link = rotG.append('g').attr('class', 'links')
@@ -117,14 +104,13 @@ function drawGraph(data, tooltip) {
     .style('stroke-dasharray', d => d.type === 'manual' ? '5,4' : 'none')
     .style('stroke-width', `${1.2 * strokeMult}px`);
 
-  // PCホバーで reason 表示（タッチは linkHandle で対応）
   link.on('mousemove', (event, d) => {
       if (d.type !== 'manual' || !d.reason) return;
       showTooltip(tooltip, event, d.reason);
     })
     .on('mouseleave', () => hideTooltip(tooltip));
 
-  // ---------- ノード ----------
+  // ---------- ノード（episode + tag）----------
   const node = rotG.append('g').attr('class', 'nodes')
     .selectAll('g')
     .data(data.nodes)
@@ -132,43 +118,29 @@ function drawGraph(data, tooltip) {
     .attr('class', d => `node ${d.type}`)
     .call(makeDrag(simulation));
 
-  // 円（色はD3で直接指定）
   node.append('circle')
-    .attr('r', d => {
-      if (d.type === 'deco') return decoR;
-      return d.type === 'tag' ? tagR() : nodeRadius;
-    })
-    .style('fill', d => {
-      if (d.type === 'deco') return decoColor;
-      return d.type === 'tag' ? '#4a8c3a' : '#999999';
-    })
+    .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius)
+    .style('fill', d => d.type === 'tag' ? '#4a8c3a' : '#999999')
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
-      if      (d.type === 'tag')  d3.select(this).style('fill', '#2d6b20');
-      else if (d.type === 'deco') d3.select(this).style('fill', '#aaaaaa');
+      if (d.type === 'tag') d3.select(this).style('fill', '#2d6b20');
     })
     .on('mouseleave', function(event, d) {
-      if      (d.type === 'tag')  d3.select(this).style('fill', '#4a8c3a');
-      else if (d.type === 'deco')    d3.select(this).style('fill', decoColor);
-      // episode はホバー後も色を保持（リロードまで戻さない）
+      if (d.type === 'tag') d3.select(this).style('fill', '#4a8c3a');
     });
 
-  // 円の中テキスト（番号 or # ／ decoは非表示）
-  node.filter(d => d.type !== 'deco')
-    .append('text')
+  node.append('text')
     .attr('class', 'node-ep')
     .attr('x', 0).attr('y', 0)
     .text(d => d.type === 'tag' ? '#' : formatEpId(d.id));
 
-  // 円の下：エピソードタイトル
   node.filter(d => d.type === 'episode')
     .append('text')
     .attr('class', 'node-title')
     .attr('x', 0).attr('y', 0)
     .text(d => truncate(d.title || '', 16));
 
-  // 円の下：タグラベル
   node.filter(d => d.type === 'tag')
     .append('text')
     .attr('class', 'node-tag-label')
@@ -198,7 +170,6 @@ function drawGraph(data, tooltip) {
       showTooltip(tooltip, event, d.reason);
     });
 
-  // 初期スタイルと表示状態を明示的に設定
   applyEpStyle();
   applyTitleStyle();
   svg.classed('hide-text', currentK < hideThreshold);
@@ -271,12 +242,34 @@ function drawGraph(data, tooltip) {
       .attr('cy', d => (d.source.y + d.target.y) / 2);
   });
 
-  // シミュレーション終了後、装飾ノードの位置を固定して以降の物理演算に影響させない
+  // episode/tag の配置が確定したら、隙間にデコ星を静的配置する
   simulation.on('end', () => {
-    data.nodes.filter(d => d.type === 'deco').forEach(d => {
-      d.fx = d.x;
-      d.fy = d.y;
-    });
+    const placed = placeDeco(data.nodes, DECO_COUNT, width, height, nodeRadius, tagR(), decoR);
+
+    // リンクより前、ノードより後ろに挿入して重なりを避ける
+    const decoG = rotG.insert('g', 'g.nodes')
+      .attr('class', 'deco-nodes')
+      .selectAll('circle')
+      .data(placed)
+      .join('circle')
+      .attr('r', decoR)
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y)
+      .style('fill', decoColor)
+      .style('stroke', 'none')
+      .style('cursor', 'default');
+
+    decoG
+      .on('mouseenter', function() { d3.select(this).style('fill', '#aaaaaa'); })
+      .on('mouseleave', function() { d3.select(this).style('fill', decoColor); });
+
+    // デコ星はシミュレーション外なのでドラッグは直接 cx/cy を更新する
+    decoG.call(d3.drag()
+      .on('drag', function(event, d) {
+        d.x = event.x; d.y = event.y;
+        d3.select(this).attr('cx', d.x).attr('cy', d.y);
+      })
+    );
   });
 
   // ---------- 回転アニメーション ----------
@@ -300,8 +293,8 @@ function drawGraph(data, tooltip) {
     svg.attr('viewBox', `0 0 ${w} ${h}`);
     const s = val('s-gravity');
     simulation
-      .force('x', d3.forceX(w / 2).strength(d => d.type === 'deco' ? 0 : s))
-      .force('y', d3.forceY(h / 2).strength(d => d.type === 'deco' ? 0 : s))
+      .force('x', d3.forceX(w / 2).strength(s))
+      .force('y', d3.forceY(h / 2).strength(s))
       .alpha(0.3).restart();
   });
 
@@ -309,20 +302,17 @@ function drawGraph(data, tooltip) {
   // スタイル適用
   // ============================================================
   function applyEpStyle() {
-    // 回転角の逆補正で番号を常に正立させる
     g.selectAll('.node-ep')
       .style('font-size', `${epFontPx}px`)
       .attr('transform', `rotate(${-rotAngle})`);
   }
 
   function applyTitleStyle() {
-    // 回転中も円の真下に文字を正立させる
-    // タイトルを視覚的に(0, titleY)に置くため、回転座標系内での位置を逆算する
-    const a       = rotAngle * Math.PI / 180;
-    const sinA    = Math.sin(a);
-    const cosA    = Math.cos(a);
-    const titleY  = nodeRadius + TITLE_OFFSET_PX / currentK;
-    const tagLY   = tagR()    + TITLE_OFFSET_PX / currentK;
+    const a      = rotAngle * Math.PI / 180;
+    const sinA   = Math.sin(a);
+    const cosA   = Math.cos(a);
+    const titleY = nodeRadius + TITLE_OFFSET_PX / currentK;
+    const tagLY  = tagR()    + TITLE_OFFSET_PX / currentK;
 
     g.selectAll('.node-title')
       .style('font-size', `${titleFontPx / currentK}px`)
@@ -358,8 +348,8 @@ function drawGraph(data, tooltip) {
     const s = val('s-gravity');
     setVal('v-gravity', s);
     simulation
-      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : s))
-      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : s))
+      .force('x', d3.forceX(width / 2).strength(s))
+      .force('y', d3.forceY(height / 2).strength(s))
       .alpha(0.3).restart();
   });
 
@@ -398,7 +388,47 @@ function drawGraph(data, tooltip) {
 }
 
 // ------------------------------------------------------------
-// ドラッグ処理
+// デコ星をすき間に静的配置する（rejection sampling）
+// ------------------------------------------------------------
+function placeDeco(epTagNodes, count, width, height, epR, tR, dR) {
+  const placed      = [];
+  const minFromNode = epR + dR + 12;  // episode/tagから離す距離
+  const minFromDeco = dR * 2 + 10;    // デコ同士の最小距離（episode間隔と揃える）
+  const maxTries    = 80;
+
+  for (let i = 0; i < count; i++) {
+    let ok = false;
+    for (let t = 0; t < maxTries; t++) {
+      const x = dR + Math.random() * (width  - dR * 2);
+      const y = dR + Math.random() * (height - dR * 2);
+
+      const clearNodes = epTagNodes.every(n => {
+        const r  = n.type === 'tag' ? tR : epR;
+        const dx = (n.x || 0) - x;
+        const dy = (n.y || 0) - y;
+        return Math.hypot(dx, dy) >= r + dR + 12;
+      });
+      if (!clearNodes) continue;
+
+      const clearDeco = placed.every(p => {
+        return Math.hypot(p.x - x, p.y - y) >= minFromDeco;
+      });
+      if (!clearDeco) continue;
+
+      placed.push({ x, y });
+      ok = true;
+      break;
+    }
+    // maxTries 内に置けなかった場合はランダムに強制配置（見た目優先）
+    if (!ok) {
+      placed.push({ x: Math.random() * width, y: Math.random() * height });
+    }
+  }
+  return placed;
+}
+
+// ------------------------------------------------------------
+// ドラッグ処理（episode / tag 用）
 // ------------------------------------------------------------
 function makeDrag(simulation) {
   return d3.drag()
@@ -409,14 +439,7 @@ function makeDrag(simulation) {
     .on('drag',  (event, d) => { d.fx = event.x; d.fy = event.y; })
     .on('end',   (event, d) => {
       if (!event.active) simulation.alphaTarget(0);
-      if (d.type === 'deco') {
-        // 装飾ノードはドラッグ後も位置固定のまま（物理演算に巻き込まれない）
-        d.fx = d.x;
-        d.fy = d.y;
-      } else {
-        d.fx = null;
-        d.fy = null;
-      }
+      d.fx = null; d.fy = null;
     });
 }
 
@@ -446,7 +469,7 @@ function formatEpId(id) {
 }
 
 // ------------------------------------------------------------
-// 凡例（リンク種別の2種類を固定表示）
+// 凡例
 // ------------------------------------------------------------
 function buildLegend() {
   const el = document.getElementById('legend');
@@ -478,12 +501,10 @@ function truncate(str, maxLen) {
 // ------------------------------------------------------------
 // 起動
 // ------------------------------------------------------------
-
-// iframeに埋め込まれているときは凡例とスライダーを非表示にし、回転を有効にする
 if (window.self !== window.top) {
   document.getElementById('legend').style.display   = 'none';
   document.getElementById('controls').style.display = 'none';
-  document.getElementById('s-rotate').value = '3'; // iframeでは3度/秒で回転
+  document.getElementById('s-rotate').value = '3';
 }
 
 main();
