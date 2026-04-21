@@ -48,8 +48,9 @@ function drawGraph(data, tooltip) {
   let titleFontPx   = 12;
   let strokeMult    = 0.8;
   let hideThreshold = 1.2;
-  let rotSpeed      = parseFloat(document.getElementById('s-rotate').value);
-  let rotAngle      = 0;
+  let rotSpeed         = parseFloat(document.getElementById('s-rotate').value);
+  let rotAngle         = 0;
+  let decoGravStrength = parseFloat(document.getElementById('s-deco-gravity').value); // 0〜1
   const TITLE_OFFSET_PX = 14;
 
   const tagR       = () => Math.max(8, nodeRadius * 0.55);
@@ -100,15 +101,20 @@ function drawGraph(data, tooltip) {
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(55))
     .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -80))
-    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0.02 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0.02 : 0.08))
+    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 6 : nodeRadius + 20))
     .force('wander', () => {
-      // デコ星に毎tickランダム速度を与えて漂い続けさせる
+      // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
         if (d.type !== 'deco') return;
+        // ランダムウォーク
         d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.6;
         d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.6;
+        // 中心引力（スライダー値を直接使用）
+        d.vx += (width  / 2 - d.x) * decoGravStrength * 0.015;
+        d.vy += (height / 2 - d.y) * decoGravStrength * 0.015;
+        // 画面端で跳ね返す
         if (d.x < 10)          d.vx += 0.5;
         if (d.x > width  - 10) d.vx -= 0.5;
         if (d.y < 10)          d.vy += 0.5;
@@ -116,7 +122,7 @@ function drawGraph(data, tooltip) {
       });
     })
     .alphaDecay(0.02)
-    .alphaTarget(0.005); // シミュレーションを止めない（alphaMinの0.001より大きい値）
+    .alphaTarget(0.005);
 
   // ---------- リンク ----------
   const link = rotG.append('g').attr('class', 'links')
@@ -362,13 +368,9 @@ function drawGraph(data, tooltip) {
   });
 
   document.getElementById('s-deco-gravity').addEventListener('input', () => {
-    const s  = val('s-gravity');
-    const sd = val('s-deco-gravity');
-    setVal('v-deco-gravity', sd);
-    simulation
-      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? sd : s))
-      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? sd : s))
-      .alpha(0.3).restart();
+    decoGravStrength = val('s-deco-gravity');
+    setVal('v-deco-gravity', decoGravStrength);
+    // wander内で直接使用するので再起動不要
   });
 
   document.getElementById('s-radius').addEventListener('input', () => {
