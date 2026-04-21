@@ -108,6 +108,7 @@ function drawGraph(data, tooltip) {
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
+    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, decoR, nodeRadius, tagR))
     .force('wander', () => {
       // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
@@ -423,6 +424,29 @@ function drawGraph(data, tooltip) {
     rotSpeed = val('s-rotate');
     setVal('v-rotate', rotSpeed);
   });
+}
+
+// ------------------------------------------------------------
+// デコ→episode/tag 一方向反発フォース（decoだけ押しのける、episode/tagは動かさない）
+// ------------------------------------------------------------
+function makeDecoEpRepel(allNodes, decoR, nodeRadius, tagR) {
+  const epTagNodes = allNodes.filter(d => d.type !== 'deco');
+  return function() {
+    allNodes.forEach(d => {
+      if (d.type !== 'deco') return;
+      epTagNodes.forEach(ep => {
+        const dx   = d.x - ep.x;
+        const dy   = d.y - ep.y;
+        const dist = Math.hypot(dx, dy);
+        const minR = (ep.type === 'tag' ? tagR() : nodeRadius) + decoR + 2;
+        if (dist < minR && dist > 0) {
+          const push = (minR - dist) / dist;
+          d.vx += dx * push;
+          d.vy += dy * push;
+        }
+      });
+    });
+  };
 }
 
 // ------------------------------------------------------------
