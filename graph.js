@@ -102,10 +102,10 @@ function drawGraph(data, tooltip) {
   // ---------- フォースシミュレーション ----------
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(55))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -15 : -80))
-    .force('x',         d3.forceX(width / 2).strength(0.08))
-    .force('y',         d3.forceY(height / 2).strength(0.08))
-    .force('collision', d3.forceCollide(nodeRadius + 20));
+    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? 0 : -80))
+    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 8 : nodeRadius + 20));
 
   // ---------- リンク ----------
   const link = rotG.append('g').attr('class', 'links')
@@ -271,6 +271,14 @@ function drawGraph(data, tooltip) {
       .attr('cy', d => (d.source.y + d.target.y) / 2);
   });
 
+  // シミュレーション終了後、装飾ノードの位置を固定して以降の物理演算に影響させない
+  simulation.on('end', () => {
+    data.nodes.filter(d => d.type === 'deco').forEach(d => {
+      d.fx = d.x;
+      d.fy = d.y;
+    });
+  });
+
   // ---------- 回転アニメーション ----------
   let lastTime = null;
   function rotateLoop(time) {
@@ -290,9 +298,10 @@ function drawGraph(data, tooltip) {
     const w = container.clientWidth;
     const h = container.clientHeight;
     svg.attr('viewBox', `0 0 ${w} ${h}`);
+    const s = val('s-gravity');
     simulation
-      .force('x', d3.forceX(w / 2).strength(val('s-gravity')))
-      .force('y', d3.forceY(h / 2).strength(val('s-gravity')))
+      .force('x', d3.forceX(w / 2).strength(d => d.type === 'deco' ? 0 : s))
+      .force('y', d3.forceY(h / 2).strength(d => d.type === 'deco' ? 0 : s))
       .alpha(0.3).restart();
   });
 
@@ -349,8 +358,8 @@ function drawGraph(data, tooltip) {
     const s = val('s-gravity');
     setVal('v-gravity', s);
     simulation
-      .force('x', d3.forceX(width / 2).strength(s))
-      .force('y', d3.forceY(height / 2).strength(s))
+      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : s))
+      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : s))
       .alpha(0.3).restart();
   });
 
@@ -400,7 +409,14 @@ function makeDrag(simulation) {
     .on('drag',  (event, d) => { d.fx = event.x; d.fy = event.y; })
     .on('end',   (event, d) => {
       if (!event.active) simulation.alphaTarget(0);
-      d.fx = null; d.fy = null;
+      if (d.type === 'deco') {
+        // 装飾ノードはドラッグ後も位置固定のまま（物理演算に巻き込まれない）
+        d.fx = d.x;
+        d.fy = d.y;
+      } else {
+        d.fx = null;
+        d.fy = null;
+      }
     });
 }
 
