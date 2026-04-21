@@ -54,7 +54,7 @@ function drawGraph(data, tooltip) {
   const TITLE_OFFSET_PX = 14;
 
   const tagR       = () => Math.max(8, nodeRadius * 0.55);
-  const DECO_COUNT = 200;
+  const DECO_COUNT = 500;
   const decoR      = 4;
   const decoColor  = '#dedede';
   const EP_HOVER   = '#ffbba3';
@@ -103,7 +103,7 @@ function drawGraph(data, tooltip) {
     .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -80))
     .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 6 : nodeRadius + 20))
+    .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 20 : nodeRadius + 20))
     .force('wander', () => {
       // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
@@ -114,11 +114,15 @@ function drawGraph(data, tooltip) {
         // 中心引力（スライダー値を直接使用）
         d.vx += (width  / 2 - d.x) * decoGravStrength * 0.015;
         d.vy += (height / 2 - d.y) * decoGravStrength * 0.015;
-        // 画面端で跳ね返す
-        if (d.x < 10)          d.vx += 0.5;
-        if (d.x > width  - 10) d.vx -= 0.5;
-        if (d.y < 10)          d.vy += 0.5;
-        if (d.y > height - 10) d.vy -= 0.5;
+        // 円形境界で跳ね返す（長方形境界だとモバイルで矩形に集まるため）
+        const cx = width / 2, cy = height / 2;
+        const bR = Math.min(width, height) * 0.48;
+        const bdx = d.x - cx, bdy = d.y - cy;
+        const bdist = Math.hypot(bdx, bdy);
+        if (bdist > bR) {
+          d.vx -= (bdx / bdist) * 0.6;
+          d.vy -= (bdy / bdist) * 0.6;
+        }
       });
     })
     .alphaDecay(0.02)
@@ -380,7 +384,7 @@ function drawGraph(data, tooltip) {
       .select('circle')
       .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius);
     simulation.force('collision',
-      d3.forceCollide(d => d.type === 'deco' ? decoR + 6 : (d.type === 'tag' ? tagR() : nodeRadius) + 20)
+      d3.forceCollide(d => d.type === 'deco' ? decoR + 20 : (d.type === 'tag' ? tagR() : nodeRadius) + 20)
     ).alpha(0.3).restart();
     applyTitleStyle();
   });
