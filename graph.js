@@ -107,7 +107,7 @@ function drawGraph(data, tooltip) {
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
-      d => (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread)))
+      d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
     .force('wander', () => {
       // alphaに依存しない独自計算でデコ星を動かす（D3のforceXはalphaが小さいと無効になるため）
       data.nodes.forEach(d => {
@@ -385,8 +385,8 @@ function drawGraph(data, tooltip) {
     setVal('v-deco-spread', decoSpread);
     simulation.force('collision-deco',
       makeSubsetCollide(d => d.type === 'deco',
-        d => (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread))
-    ).alpha(0.1).restart();
+        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
+    ).alpha(0.3).restart();
   });
 
   document.getElementById('s-radius').addEventListener('input', () => {
