@@ -58,7 +58,7 @@ function drawGraph(data, tooltip) {
 
   const tagR        = () => Math.max(8, nodeRadius * 0.55);
   const DECO_COUNT  = 500;
-  const DECO_MARGIN = 14; // アウトライン間の目標ギャップ（deco-deco / deco-ep 共通）
+  const DECO_MARGIN = 2; // アウトライン間の最小ギャップ（大きすぎると輪っかになる）
   const decoColor   = '#dedede';
   const EP_HOVER    = '#ffbba3';
 
