@@ -108,13 +108,16 @@ function drawGraph(data, tooltip) {
   };
 
   const simulation = d3.forceSimulation(data.nodes)
-    .force('link',      d3.forceLink(data.links).id(d => d.id).distance(getLinkDistance))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -80))
-    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('link',         d3.forceLink(data.links).id(d => d.id).distance(getLinkDistance))
+    // charge: ep/tag同士・deco同士は同じ強さ(-80)、互いには影響しない（subset分離）
+    .force('charge-ep',    makeSubsetManyBody(d => d.type !== 'deco', -80))
+    .force('charge-deco',  makeSubsetManyBody(d => d.type === 'deco',  -80))
+    // 中心引力: 全ノード共通（同じ引力）
+    .force('x', d3.forceX(width / 2).strength(parseFloat(document.getElementById('s-gravity').value)))
+    .force('y', d3.forceY(height / 2).strength(parseFloat(document.getElementById('s-gravity').value)))
+    // 当たり判定: 同じ式 r+20 を使用
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
-    .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
-      d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
+    .force('collision-deco', makeSubsetCollide(d => d.type === 'deco', () => decoR + 20))
     .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
     .force('wander', () => {
       data.nodes.forEach(d => {
@@ -347,11 +350,10 @@ function drawGraph(data, tooltip) {
     const w = container.clientWidth;
     const h = container.clientHeight;
     svg.attr('viewBox', `0 0 ${w} ${h}`);
-    const s  = val('s-gravity');
-    const sd = val('s-deco-gravity');
+    const s = val('s-gravity');
     simulation
-      .force('x', d3.forceX(w / 2).strength(d => d.type === 'deco' ? sd : s))
-      .force('y', d3.forceY(h / 2).strength(d => d.type === 'deco' ? sd : s))
+      .force('x', d3.forceX(w / 2).strength(s))
+      .force('y', d3.forceY(h / 2).strength(s))
       .alpha(0.3).restart();
   });
 
@@ -402,12 +404,11 @@ function drawGraph(data, tooltip) {
   });
 
   document.getElementById('s-gravity').addEventListener('input', () => {
-    const s  = val('s-gravity');
-    const sd = val('s-deco-gravity');
+    const s = val('s-gravity');
     setVal('v-gravity', s);
     simulation
-      .force('x', d3.forceX(width / 2).strength(d => d.type === 'deco' ? sd : s))
-      .force('y', d3.forceY(height / 2).strength(d => d.type === 'deco' ? sd : s))
+      .force('x', d3.forceX(width / 2).strength(s))
+      .force('y', d3.forceY(height / 2).strength(s))
       .alpha(0.3).restart();
   });
 
@@ -419,10 +420,6 @@ function drawGraph(data, tooltip) {
   document.getElementById('s-deco-spread').addEventListener('input', () => {
     decoSpread = val('s-deco-spread');
     setVal('v-deco-spread', decoSpread);
-    simulation.force('collision-deco',
-      makeSubsetCollide(d => d.type === 'deco',
-        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
-    ).alpha(0.3).restart();
   });
 
   document.getElementById('s-radius').addEventListener('input', () => {
@@ -464,8 +461,7 @@ function drawGraph(data, tooltip) {
     setVal('v-deco-size', decoR);
     decoCircle.attr('r', decoR);
     simulation.force('collision-deco',
-      makeSubsetCollide(d => d.type === 'deco',
-        d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
+      makeSubsetCollide(d => d.type === 'deco', () => decoR + 20)
     ).alpha(0.3).restart();
   });
 }
@@ -502,6 +498,15 @@ function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR, decoMargin) {
 // ------------------------------------------------------------
 // サブセット衝突フォース（指定ノード同士のみ衝突）
 // ------------------------------------------------------------
+function makeSubsetManyBody(filterFn, strength) {
+  const inner = d3.forceManyBody().strength(strength);
+  function force(alpha) { inner(alpha); }
+  force.initialize = function(nodes, random) {
+    inner.initialize(nodes.filter(filterFn), random);
+  };
+  return force;
+}
+
 function makeSubsetCollide(filterFn, radiusFn) {
   const inner = d3.forceCollide(radiusFn).strength(1);
   function force(alpha) { inner(alpha); }
