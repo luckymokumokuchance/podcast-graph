@@ -133,6 +133,9 @@ function drawGraph(data, tooltip) {
           d.vx -= (bdx / bdist) * 0.6;
           d.vy -= (bdy / bdist) * 0.6;
         }
+        // 速度上限（ドラッグ時のalpha加熱でデコが吹き飛ぶのを防ぐ）
+        const spd = Math.hypot(d.vx, d.vy);
+        if (spd > 1.0) { d.vx = d.vx / spd; d.vy = d.vy / spd; }
       });
     })
     .alphaDecay(0.02)
@@ -498,13 +501,12 @@ function makeSubsetCollide(filterFn, radiusFn) {
 function makeDrag(simulation) {
   return d3.drag()
     .on('start', (event, d) => {
-      // alphaTargetを上げないことでデコ星が吹き飛ぶのを防ぐ
-      // simは常時alphaTarget=0.005で動いているのでrestartだけで十分
-      if (!event.active) simulation.restart();
+      if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x; d.fy = d.y;
     })
     .on('drag',  (event, d) => { d.fx = event.x; d.fy = event.y; })
     .on('end',   (event, d) => {
+      if (!event.active) simulation.alphaTarget(0.005);
       d.fx = null; d.fy = null;
     });
 }
