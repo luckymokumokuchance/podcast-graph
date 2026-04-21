@@ -498,12 +498,13 @@ function makeSubsetCollide(filterFn, radiusFn) {
 function makeDrag(simulation) {
   return d3.drag()
     .on('start', (event, d) => {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      // alphaTargetを上げないことでデコ星が吹き飛ぶのを防ぐ
+      // simは常時alphaTarget=0.005で動いているのでrestartだけで十分
+      if (!event.active) simulation.restart();
       d.fx = d.x; d.fy = d.y;
     })
     .on('drag',  (event, d) => { d.fx = event.x; d.fy = event.y; })
     .on('end',   (event, d) => {
-      if (!event.active) simulation.alphaTarget(0.005);
       d.fx = null; d.fy = null;
     });
 }
