@@ -178,8 +178,8 @@ function drawGraph(data, tooltip) {
   epNode.call(makeDrag(simulation));
 
   epNode.append('circle')
-    .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius)
-    .style('fill', d => d.type === 'tag' ? '#4a8c3a' : '#999999')
+    .attr('r', decoR)           // デコサイズからスタート
+    .style('fill', decoColor)   // デコ色からスタート
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
@@ -188,6 +188,15 @@ function drawGraph(data, tooltip) {
     .on('mouseleave', function(event, d) {
       if (d.type === 'tag') d3.select(this).style('fill', '#4a8c3a');
     });
+
+  // 入場アニメーション：デコサイズ→本来のサイズ・色へランダムなタイミングで成長
+  epNode.select('circle')
+    .transition()
+    .delay(() => 600 + Math.random() * 800)
+    .duration(1000)
+    .ease(d3.easeCubicOut)
+    .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius)
+    .style('fill', d => d.type === 'tag' ? '#4a8c3a' : '#999999');
 
   // 4. 手動リンク中点ハンドル
   const manualLinks = data.links.filter(d => d.type === 'manual');
@@ -221,19 +230,29 @@ function drawGraph(data, tooltip) {
   textGroup.append('text')
     .attr('class', 'node-ep')
     .attr('x', 0).attr('y', 0)
+    .style('opacity', 0)
     .text(d => d.type === 'tag' ? '#' : formatEpId(d.id));
 
   textGroup.filter(d => d.type === 'episode')
     .append('text')
     .attr('class', 'node-title')
     .attr('x', 0).attr('y', 0)
+    .style('opacity', 0)
     .text(d => truncate(d.title || '', 16));
 
   textGroup.filter(d => d.type === 'tag')
     .append('text')
     .attr('class', 'node-tag-label')
     .attr('x', 0).attr('y', 0)
+    .style('opacity', 0)
     .text(d => d.label || '');
+
+  // テキストも遅れてフェードイン（円の成長完了後あたりに合わせる）
+  textGroup.selectAll('text')
+    .transition()
+    .delay(() => 1400 + Math.random() * 400)
+    .duration(600)
+    .style('opacity', 1);
 
   applyEpStyle();
   applyTitleStyle();
