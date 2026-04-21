@@ -103,7 +103,20 @@ function drawGraph(data, tooltip) {
     .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0.02 : 0.08))
     .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0.02 : 0.08))
     .force('collision', d3.forceCollide(d => d.type === 'deco' ? decoR + 6 : nodeRadius + 20))
-    .alphaDecay(0.02);
+    .force('wander', () => {
+      // デコ星に毎tickランダム速度を与えて漂い続けさせる
+      data.nodes.forEach(d => {
+        if (d.type !== 'deco') return;
+        d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.6;
+        d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.6;
+        if (d.x < 10)          d.vx += 0.5;
+        if (d.x > width  - 10) d.vx -= 0.5;
+        if (d.y < 10)          d.vy += 0.5;
+        if (d.y > height - 10) d.vy -= 0.5;
+      });
+    })
+    .alphaDecay(0.02)
+    .alphaTarget(0.005); // シミュレーションを止めない（alphaMinの0.001より大きい値）
 
   // ---------- リンク ----------
   const link = rotG.append('g').attr('class', 'links')
@@ -405,7 +418,7 @@ function makeDrag(simulation) {
     })
     .on('drag',  (event, d) => { d.fx = event.x; d.fy = event.y; })
     .on('end',   (event, d) => {
-      if (!event.active) simulation.alphaTarget(0);
+      if (!event.active) simulation.alphaTarget(0.005); // 止めずに低温維持
       d.fx = null; d.fy = null;
     });
 }
