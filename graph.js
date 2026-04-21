@@ -44,8 +44,8 @@ function drawGraph(data, tooltip) {
   // ---------- 状態変数 ----------
   let currentK      = 1;
   let nodeRadius    = 21;
-  let epFontPx      = 10;
-  let titleFontPx   = 12;
+  let epFontPx      = parseFloat(document.getElementById('s-ep-font').value);
+  let titleFontPx   = parseFloat(document.getElementById('s-title-font').value);
   let strokeMult    = 0.8;
   let hideThreshold = 1.2;
   let rotSpeed         = parseFloat(document.getElementById('s-rotate').value);
@@ -120,8 +120,8 @@ function drawGraph(data, tooltip) {
       data.nodes.forEach(d => {
         if (d.type !== 'deco') return;
         // ランダムウォーク（小さめにして安定後の震えを抑える）
-        d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.2;
-        d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.2;
+        d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.04;
+        d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.04;
         // 中心引力
         d.vx += (width  / 2 - d.x) * decoGravStrength * 0.015;
         d.vy += (height / 2 - d.y) * decoGravStrength * 0.015;
