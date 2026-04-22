@@ -208,12 +208,12 @@ function drawGraph(data, tooltip) {
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
-      if (d.type === 'tag')     d3.select(this).style('fill', COLORS.tagHover);
-      if (d.type === 'episode') d3.select(this).style('fill', COLORS.episodeHover);
+      if (d.type === 'tag')              d3.select(this).style('fill', COLORS.tagHover);
+      if (d.type === 'episode' && !d._clicked) d3.select(this).style('fill', COLORS.episodeHover);
     })
     .on('mouseleave', function(event, d) {
-      if (d.type === 'tag')     d3.select(this).style('fill', COLORS.tag);
-      if (d.type === 'episode') d3.select(this).style('fill', COLORS.episode);
+      if (d.type === 'tag')              d3.select(this).style('fill', COLORS.tag);
+      if (d.type === 'episode' && !d._clicked) d3.select(this).style('fill', COLORS.episode);
     });
 
   // 4. 手動リンク中点ハンドル
@@ -280,6 +280,7 @@ function drawGraph(data, tooltip) {
     const modalClose = document.getElementById('modal-close');
 
     function openModal(d) {
+      d._clicked = true;
       epNode.filter(n => n.id === d.id).select('circle').style('fill', COLORS.episodeClick);
       document.getElementById('modal-ep').textContent       = formatEpId(d.id);
       document.getElementById('modal-title').textContent    = d.title || '';
@@ -311,6 +312,7 @@ function drawGraph(data, tooltip) {
   } else {
     epNode.filter(d => d.type === 'episode')
       .on('click', (event, d) => {
+        d._clicked = true;
         d3.select(event.currentTarget).select('circle').style('fill', COLORS.episodeClick);
         if (d.url) window.open(d.url, '_blank');
       })
