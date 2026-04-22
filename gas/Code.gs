@@ -59,7 +59,6 @@ function buildPublicGraphData() {
     title:        ep.title,
     url:          ep.url,
     summary:      ep.summary,
-    shownote:     ep.shownote,
     published_at: ep.published_at,
   }));
 
