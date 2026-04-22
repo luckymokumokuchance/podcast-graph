@@ -2,42 +2,8 @@
 // Podcast関係図 - Google Apps Script
 // ============================================================
 
-const SHEET_EPISODES        = 'episodes';
-const SHEET_CANDIDATE_LINKS = 'candidate_links';
-const SHEET_PUBLIC_LINKS    = 'public_links';
-
-// ------------------------------------------------------------
-// スプレッドシートを開いたときにカスタムメニューを追加する
-// ------------------------------------------------------------
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('Podcast関係図')
-    .addItem('✅ 承認済みリンクを公開用にコピー', 'buildPublicLinks')
-    .addToUi();
-}
-
-// ------------------------------------------------------------
-// candidate_links の approved だけを public_links にコピーする
-// ------------------------------------------------------------
-function buildPublicLinks() {
-  const ss         = SpreadsheetApp.getActiveSpreadsheet();
-  const candidates = getRowsAsObjects(ss.getSheetByName(SHEET_CANDIDATE_LINKS));
-  const approved   = candidates.filter(row => row.status === 'approved');
-
-  const publicSheet = ss.getSheetByName(SHEET_PUBLIC_LINKS);
-  publicSheet.clearContents();
-
-  const headers = ['source', 'target', 'reason'];
-  publicSheet.appendRow(headers);
-
-  approved.forEach(row => {
-    publicSheet.appendRow([row.source, row.target, row.reason || '']);
-  });
-
-  SpreadsheetApp.getUi().alert(
-    `✅ ${approved.length} 件のリンクを public_links にコピーしました。`
-  );
-}
+const SHEET_EPISODES = 'episodes';
+const SHEET_LINKS    = 'links';
 
 // ------------------------------------------------------------
 // D3用のJSONデータを組み立てて返す
@@ -48,7 +14,8 @@ function buildPublicGraphData() {
   const episodes = getRowsAsObjects(ss.getSheetByName(SHEET_EPISODES))
     .filter(ep => ep.status === 'published');
 
-  const manualLinks = getRowsAsObjects(ss.getSheetByName(SHEET_PUBLIC_LINKS));
+  const allLinks = getRowsAsObjects(ss.getSheetByName(SHEET_LINKS))
+    .filter(lk => lk.status === 'approved');
 
   const publishedIds = new Set(episodes.map(ep => String(ep.id)));
 
@@ -68,7 +35,7 @@ function buildPublicGraphData() {
     const summary = ep.summary || '';
     const matches = summary.match(/#([^\s#、。！？…「」『』【】（）]+)/g) || [];
     matches.forEach(m => {
-      const label = m.slice(1); // # を除く
+      const label = m.slice(1);
       if (!tagMap[label]) tagMap[label] = new Set();
       tagMap[label].add(String(ep.id));
     });
@@ -87,8 +54,8 @@ function buildPublicGraphData() {
     });
   });
 
-  // 手動リンク（エピソード間）
-  const filteredManualLinks = manualLinks
+  // 手動リンク（両端が published のもののみ）
+  const manualLinks = allLinks
     .filter(lk => publishedIds.has(String(lk.source)) && publishedIds.has(String(lk.target)))
     .map(lk => ({
       source: String(lk.source),
@@ -99,7 +66,7 @@ function buildPublicGraphData() {
 
   return {
     nodes: [...episodeNodes, ...tagNodes],
-    links: [...filteredManualLinks, ...tagLinks],
+    links: [...manualLinks, ...tagLinks],
   };
 }
 

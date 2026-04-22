@@ -285,7 +285,7 @@ function drawGraph(data, tooltip) {
       document.getElementById('modal-ep').textContent       = formatEpId(d.id);
       document.getElementById('modal-title').textContent    = d.title || '';
       document.getElementById('modal-link').href            = d.url || '#';
-      document.getElementById('modal-summary').textContent  = d.summary || '';
+      document.getElementById('modal-summary').innerHTML = (d.summary || '').replace(/\n/g, '<br>');
       modal.classList.remove('hidden');
     }
 
