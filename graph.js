@@ -10,17 +10,18 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxcVMANVbx4Ia7QF9NL1zWK
 // 色の設定 ← ここだけ変更すれば全色が変わります
 // ============================================================
 const COLORS = {
-  episode:      '#999999',  // エピソード円
-  episodeHover: '#bbbbbb',  // エピソード円ホバー時
-  episodeClick: '#ffbba3',  // エピソード円クリック時
-  tag:          '#4a8c3a',  // タグ円
-  tagHover:     '#2d6b20',  // タグ円ホバー時
-  deco:         '#dedede',  // デコ星
-  linkTag:      '#4a8c3a',  // タグリンクの線
-  linkManual:   '#888888',  // 手動リンクの線
-  labelInner:   '#ffffff',  // 円内テキスト（番号・#）
-  labelTitle:   '#000000',  // エピソードタイトル
-  labelTag:     '#2d6b20',  // タグラベル
+  episode:          '#13a300',  // エピソード円
+  episodeHover:     '#0b6100',  // エピソード円ホバー時
+  episodeClick:     '#f29191',  // エピソード円クリック時
+  tag:              '#878787',  // タグ円
+  tagHover:         '#4d4d4d',  // タグ円ホバー時
+  deco:             '#dedede',  // デコ星
+  linkTag:          '#878787',  // タグリンクの線
+  linkManual:       '#878787',  // 手動リンクの線・点
+  linkManualHover:  '#4d4d4d',  // 手動リンク点ホバー時
+  labelInner:       '#ffffff',  // 円内テキスト（番号・#）
+  labelTitle:       '#000000',  // エピソードタイトル
+  labelTag:         '#878787',  // タグラベル
 };
 
 // ------------------------------------------------------------
@@ -190,11 +191,6 @@ function drawGraph(data, tooltip) {
     .style('stroke-dasharray', d => d.type === 'manual' ? '5,4' : 'none')
     .style('stroke-width', `${1.2 * strokeMult}px`);
 
-  link.on('mousemove', (event, d) => {
-      if (d.type !== 'manual' || !d.reason) return;
-      showTooltip(tooltip, event, d.reason);
-    })
-    .on('mouseleave', () => hideTooltip(tooltip));
 
   // 3. Episode / tag ノード（円のみ、テキストなし）
   const epTagNodeData = data.nodes.filter(d => d.type !== 'deco');
@@ -232,11 +228,17 @@ function drawGraph(data, tooltip) {
     .style('stroke', 'none');
 
   linkHandle
-    .on('mousemove', (event, d) => {
-      if (!d.reason) return;
-      showTooltip(tooltip, event, d.reason);
+    .on('mouseenter', function(event, d) {
+      d3.select(this).style('fill', COLORS.linkManualHover);
+      if (d.reason) showTooltip(tooltip, event, d.reason);
     })
-    .on('mouseleave', () => hideTooltip(tooltip))
+    .on('mousemove', (event, d) => {
+      if (d.reason) showTooltip(tooltip, event, d.reason);
+    })
+    .on('mouseleave', function() {
+      d3.select(this).style('fill', COLORS.linkManual);
+      hideTooltip(tooltip);
+    })
     .on('click', (event, d) => {
       if (!d.reason) return;
       event.stopPropagation();
@@ -491,9 +493,10 @@ function drawGraph(data, tooltip) {
     { key: 'tag',          label: 'タグ円' },
     { key: 'tagHover',     label: 'タグ（ホバー）' },
     { key: 'deco',         label: 'デコ星' },
-    { key: 'linkTag',      label: 'タグリンク' },
-    { key: 'linkManual',   label: '手動リンク' },
-    { key: 'labelInner',   label: '円内テキスト' },
+    { key: 'linkTag',         label: 'タグリンク' },
+    { key: 'linkManual',      label: '手動リンク' },
+    { key: 'linkManualHover', label: '手動リンク（ホバー）' },
+    { key: 'labelInner',      label: '円内テキスト' },
     { key: 'labelTitle',   label: 'タイトル' },
     { key: 'labelTag',     label: 'タグラベル' },
   ];
@@ -501,7 +504,7 @@ function drawGraph(data, tooltip) {
   const CSS_VAR = {
     episode: '--c-episode', episodeHover: '--c-episode-hover', episodeClick: '--c-episode-click',
     tag: '--c-tag', tagHover: '--c-tag-hover', deco: '--c-deco',
-    linkTag: '--c-link-tag', linkManual: '--c-link-manual',
+    linkTag: '--c-link-tag', linkManual: '--c-link-manual', linkManualHover: '--c-link-manual-hover',
     labelInner: '--c-label-inner', labelTitle: '--c-label-title', labelTag: '--c-label-tag',
   };
 
@@ -522,6 +525,7 @@ function drawGraph(data, tooltip) {
     if (key === 'deco')       decoCircle.style('fill', value);
     if (key === 'linkTag')  { link.filter(d => d.type === 'tag').style('stroke', value); buildLegend(); }
     if (key === 'linkManual') { link.filter(d => d.type !== 'tag').style('stroke', value); linkHandle.style('fill', value); buildLegend(); }
+    if (key === 'linkManualHover') { /* applied on hover */ }
   }
 
   cpEl.querySelectorAll('.color-swatch').forEach(swatch => {

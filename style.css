@@ -106,14 +106,8 @@ body {
 
 /* リンク */
 .link {
-  stroke-opacity: 0.8;
   fill: none;
-  cursor: pointer;
-  transition: stroke-opacity 0.2s;
-}
-
-.link:hover {
-  stroke-opacity: 1;
+  cursor: default;
 }
 
 /* ツールチップ */
