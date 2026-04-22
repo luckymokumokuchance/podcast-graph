@@ -286,7 +286,6 @@ function drawGraph(data, tooltip) {
       document.getElementById('modal-title').textContent    = d.title || '';
       document.getElementById('modal-link').href            = d.url || '#';
       document.getElementById('modal-summary').textContent  = d.summary || '';
-      document.getElementById('modal-shownote').textContent = d.shownote || '';
       modal.classList.remove('hidden');
     }
 
@@ -317,9 +316,8 @@ function drawGraph(data, tooltip) {
         if (d.url) window.open(d.url, '_blank');
       })
       .on('mousemove', (event, d) => {
-        const shownote = d.shownote ? `<br><br>${d.shownote}` : '';
         showTooltip(tooltip, event,
-          `<span class="tip-title">${d.title || d.id}</span>${d.summary || ''}${shownote}`
+          `<span class="tip-title">${d.title || d.id}</span>${d.summary || ''}`
         );
       })
       .on('mouseleave', () => hideTooltip(tooltip));

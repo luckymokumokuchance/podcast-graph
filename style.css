@@ -264,14 +264,6 @@ body {
   margin-bottom: 12px;
 }
 
-#modal-shownote {
-  font-size: 12px;
-  color: #666;
-  line-height: 1.7;
-  margin-bottom: 20px;
-  white-space: pre-wrap;
-}
-
 #modal-link {
   display: block;
   text-align: center;
