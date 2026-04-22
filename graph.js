@@ -317,7 +317,7 @@ function drawGraph(data, tooltip) {
       })
       .on('mousemove', (event, d) => {
         showTooltip(tooltip, event,
-          `<span class="tip-title">${d.title || d.id}</span>${d.summary || ''}`
+          `<span class="tip-title">${d.title || d.id}</span>${(d.summary || '').replace(/\n/g, '<br>')}`
         );
       })
       .on('mouseleave', () => hideTooltip(tooltip));
