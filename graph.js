@@ -480,6 +480,77 @@ function drawGraph(data, tooltip) {
         d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4)))
     ).alpha(0.3).restart();
   });
+
+  // ============================================================
+  // カラーパネル
+  // ============================================================
+  const COLOR_DEFS = [
+    { key: 'episode',      label: 'エピソード円' },
+    { key: 'episodeHover', label: 'エピソード（ホバー）' },
+    { key: 'episodeClick', label: 'エピソード（クリック）' },
+    { key: 'tag',          label: 'タグ円' },
+    { key: 'tagHover',     label: 'タグ（ホバー）' },
+    { key: 'deco',         label: 'デコ星' },
+    { key: 'linkTag',      label: 'タグリンク' },
+    { key: 'linkManual',   label: '手動リンク' },
+    { key: 'labelInner',   label: '円内テキスト' },
+    { key: 'labelTitle',   label: 'タイトル' },
+    { key: 'labelTag',     label: 'タグラベル' },
+  ];
+
+  const CSS_VAR = {
+    episode: '--c-episode', episodeHover: '--c-episode-hover', episodeClick: '--c-episode-click',
+    tag: '--c-tag', tagHover: '--c-tag-hover', deco: '--c-deco',
+    linkTag: '--c-link-tag', linkManual: '--c-link-manual',
+    labelInner: '--c-label-inner', labelTitle: '--c-label-title', labelTag: '--c-label-tag',
+  };
+
+  const cpEl = document.getElementById('color-panel');
+  cpEl.innerHTML = COLOR_DEFS.map(({ key, label }) => `
+    <div class="color-row">
+      <span class="color-label">${label}</span>
+      <input class="color-swatch" type="color" data-key="${key}" value="${COLORS[key]}">
+      <input class="color-text"   type="text"  data-key="${key}" value="${COLORS[key]}" maxlength="7" spellcheck="false">
+    </div>
+  `).join('');
+
+  function applyColor(key, value) {
+    COLORS[key] = value;
+    document.documentElement.style.setProperty(CSS_VAR[key], value);
+    if (key === 'episode')    epNode.filter(d => d.type === 'episode').select('circle').style('fill', value);
+    if (key === 'tag')        epNode.filter(d => d.type === 'tag').select('circle').style('fill', value);
+    if (key === 'deco')       decoCircle.style('fill', value);
+    if (key === 'linkTag')  { link.filter(d => d.type === 'tag').style('stroke', value); buildLegend(); }
+    if (key === 'linkManual') { link.filter(d => d.type !== 'tag').style('stroke', value); linkHandle.style('fill', value); buildLegend(); }
+  }
+
+  cpEl.querySelectorAll('.color-swatch').forEach(swatch => {
+    swatch.addEventListener('input', () => {
+      const key = swatch.dataset.key;
+      cpEl.querySelector(`.color-text[data-key="${key}"]`).value = swatch.value;
+      applyColor(key, swatch.value);
+    });
+  });
+
+  cpEl.querySelectorAll('.color-text').forEach(text => {
+    text.addEventListener('input', () => {
+      const key = text.dataset.key;
+      if (/^#[0-9a-fA-F]{6}$/.test(text.value)) {
+        text.classList.remove('invalid');
+        cpEl.querySelector(`.color-swatch[data-key="${key}"]`).value = text.value;
+        applyColor(key, text.value);
+      } else {
+        text.classList.add('invalid');
+      }
+    });
+    text.addEventListener('blur', () => {
+      if (text.classList.contains('invalid')) {
+        const key = text.dataset.key;
+        text.value = COLORS[key];
+        text.classList.remove('invalid');
+      }
+    });
+  });
 }
 
 // ------------------------------------------------------------
@@ -598,8 +669,9 @@ function truncate(str, maxLen) {
 // 起動
 // ------------------------------------------------------------
 if (window.self !== window.top) {
-  document.getElementById('legend').style.display   = 'none';
-  document.getElementById('controls').style.display = 'none';
+  document.getElementById('legend').style.display      = 'none';
+  document.getElementById('controls').style.display    = 'none';
+  document.getElementById('color-panel').style.display = 'none';
   document.getElementById('s-rotate').value = '3';
 }
 

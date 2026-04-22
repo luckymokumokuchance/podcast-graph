@@ -286,6 +286,61 @@ body {
   text-decoration: none;
 }
 
+/* カラーパネル */
+#color-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #555555;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 230px;
+}
+
+.color-row {
+  display: grid;
+  grid-template-columns: 7.5em 22px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-label {
+  font-size: 11px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+
+.color-text {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  padding: 2px 5px;
+  width: 100%;
+  color: #444;
+}
+
+.color-text.invalid {
+  border-color: #e05;
+  color: #e05;
+}
+
 /* コントロールパネル */
 #controls {
   position: absolute;
