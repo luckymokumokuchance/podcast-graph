@@ -6,6 +6,23 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxcVMANVbx4Ia7QF9NL1zWKdzO5LlnGx4LSSM6B5SoSDjL51x7KfEluLd4FYayURfKE/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
+// ============================================================
+// 色の設定 ← ここだけ変更すれば全色が変わります
+// ============================================================
+const COLORS = {
+  episode:      '#999999',  // エピソード円
+  episodeHover: '#bbbbbb',  // エピソード円ホバー時
+  episodeClick: '#ffbba3',  // エピソード円クリック時
+  tag:          '#4a8c3a',  // タグ円
+  tagHover:     '#2d6b20',  // タグ円ホバー時
+  deco:         '#dedede',  // デコ星
+  linkTag:      '#4a8c3a',  // タグリンクの線
+  linkManual:   '#888888',  // 手動リンクの線
+  labelInner:   '#ffffff',  // 円内テキスト（番号・#）
+  labelTitle:   '#000000',  // エピソードタイトル
+  labelTag:     '#2d6b20',  // タグラベル
+};
+
 // ------------------------------------------------------------
 // エントリーポイント
 // ------------------------------------------------------------
@@ -56,11 +73,23 @@ function drawGraph(data, tooltip) {
   let linkDist         = parseFloat(document.getElementById('s-link').value);
   const TITLE_OFFSET_PX = 14;
 
+  // CSSカスタムプロパティにCOLORSを反映（style.cssのvar()が自動追従）
+  const root = document.documentElement.style;
+  root.setProperty('--c-episode',       COLORS.episode);
+  root.setProperty('--c-episode-hover', COLORS.episodeHover);
+  root.setProperty('--c-episode-click', COLORS.episodeClick);
+  root.setProperty('--c-tag',           COLORS.tag);
+  root.setProperty('--c-tag-hover',     COLORS.tagHover);
+  root.setProperty('--c-deco',          COLORS.deco);
+  root.setProperty('--c-link-tag',      COLORS.linkTag);
+  root.setProperty('--c-link-manual',   COLORS.linkManual);
+  root.setProperty('--c-label-inner',   COLORS.labelInner);
+  root.setProperty('--c-label-title',   COLORS.labelTitle);
+  root.setProperty('--c-label-tag',     COLORS.labelTag);
+
   const tagR        = () => Math.max(8, nodeRadius * 0.55);
   const DECO_COUNT  = 500;
   const DECO_MARGIN = 2; // アウトライン間の最小ギャップ（大きすぎると輪っかになる）
-  const decoColor   = '#dedede';
-  const EP_HOVER    = '#ffbba3';
 
   // デコ星を生成してシミュレーションに参加させる
   const decoNodes = d3.range(DECO_COUNT).map(i => ({
@@ -148,7 +177,7 @@ function drawGraph(data, tooltip) {
     .data(decoNodes)
     .join('circle')
     .attr('r', decoR)
-    .style('fill', decoColor)
+    .style('fill', COLORS.deco)
     .style('stroke', 'none');
 
   // 2. リンク
@@ -157,7 +186,7 @@ function drawGraph(data, tooltip) {
     .data(data.links)
     .join('line')
     .attr('class', 'link')
-    .style('stroke',           d => d.type === 'tag' ? '#4a8c3a' : '#888888')
+    .style('stroke',           d => d.type === 'tag' ? COLORS.linkTag : COLORS.linkManual)
     .style('stroke-dasharray', d => d.type === 'manual' ? '5,4' : 'none')
     .style('stroke-width', `${1.2 * strokeMult}px`);
 
@@ -179,14 +208,16 @@ function drawGraph(data, tooltip) {
 
   epNode.append('circle')
     .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius)
-    .style('fill', d => d.type === 'tag' ? '#4a8c3a' : '#999999')
+    .style('fill', d => d.type === 'tag' ? COLORS.tag : COLORS.episode)
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
-      if (d.type === 'tag') d3.select(this).style('fill', '#2d6b20');
+      if (d.type === 'tag')     d3.select(this).style('fill', COLORS.tagHover);
+      if (d.type === 'episode') d3.select(this).style('fill', COLORS.episodeHover);
     })
     .on('mouseleave', function(event, d) {
-      if (d.type === 'tag') d3.select(this).style('fill', '#4a8c3a');
+      if (d.type === 'tag')     d3.select(this).style('fill', COLORS.tag);
+      if (d.type === 'episode') d3.select(this).style('fill', COLORS.episode);
     });
 
   // 4. 手動リンク中点ハンドル
@@ -196,7 +227,7 @@ function drawGraph(data, tooltip) {
     .data(manualLinks)
     .join('circle')
     .attr('r', 2.5)
-    .style('fill', '#888888')
+    .style('fill', COLORS.linkManual)
     .style('cursor', 'pointer')
     .style('stroke', 'none');
 
@@ -247,7 +278,7 @@ function drawGraph(data, tooltip) {
     const modalClose = document.getElementById('modal-close');
 
     function openModal(d) {
-      epNode.filter(n => n.id === d.id).select('circle').style('fill', EP_HOVER);
+      epNode.filter(n => n.id === d.id).select('circle').style('fill', COLORS.episodeClick);
       document.getElementById('modal-ep').textContent       = formatEpId(d.id);
       document.getElementById('modal-title').textContent    = d.title || '';
       document.getElementById('modal-link').href            = d.url || '#';
@@ -278,7 +309,7 @@ function drawGraph(data, tooltip) {
   } else {
     epNode.filter(d => d.type === 'episode')
       .on('click', (event, d) => {
-        d3.select(event.currentTarget).select('circle').style('fill', EP_HOVER);
+        d3.select(event.currentTarget).select('circle').style('fill', COLORS.episodeClick);
         if (d.url) window.open(d.url, '_blank');
       })
       .on('mousemove', (event, d) => {
@@ -542,14 +573,14 @@ function buildLegend() {
     <div class="legend-item">
       <svg width="24" height="8">
         <line x1="0" y1="4" x2="24" y2="4"
-          stroke="#4a8c3a" stroke-width="1.5"/>
+          stroke="${COLORS.linkTag}" stroke-width="1.5"/>
       </svg>
       <span>タグリンク</span>
     </div>
     <div class="legend-item">
       <svg width="24" height="8">
         <line x1="0" y1="4" x2="24" y2="4"
-          stroke="#888888" stroke-width="1.5" stroke-dasharray="5,3"/>
+          stroke="${COLORS.linkManual}" stroke-width="1.5" stroke-dasharray="5,3"/>
       </svg>
       <span>手動リンク</span>
     </div>
