@@ -73,6 +73,10 @@ body {
   user-select: none;
 }
 
+.node.episode .node-ep {
+  font-weight: 400;
+}
+
 /* 円の下：エピソードタイトル */
 .node-title {
   font-size: 11px;
