@@ -3,7 +3,7 @@
 // ============================================================
 
 // ▼▼▼ GASのWebアプリURLをここに貼り付けてください ▼▼▼
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwuIiUMDJoaZ0dNVd-TsWO4F86z_JfNyk78azt21SOCHRlQKYyq6AyAY0cDCHgfW7GI/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwc92jP3tffKqxyrIy_ccRy5XXJhjHVReHItk-aCxxlJOGxVRYFuzCiqELx0nWr7lWO/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // ============================================================
