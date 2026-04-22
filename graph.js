@@ -10,7 +10,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxcVMANVbx4Ia7QF9NL1zWK
 // 色の設定 ← ここだけ変更すれば全色が変わります
 // ============================================================
 const COLORS = {
-  episode:          '#13a300',  // エピソード円
+  episode:          '#089900',  // エピソード円
   episodeHover:     '#0b6100',  // エピソード円ホバー時
   episodeClick:     '#f29191',  // エピソード円クリック時
   tag:              '#878787',  // タグ円
