@@ -25,14 +25,14 @@ function buildPublicGraphData() {
     type:         'episode',
     title:        ep.title,
     url:          ep.url,
-    summary:      ep.summary,
+    summary:      ep.shownote,
     published_at: ep.published_at,
   }));
 
   // summaryから #タグ を抽出してタグノード・タグリンクを生成
   const tagMap = {}; // { タグ名: Set<epId> }
   episodes.forEach(ep => {
-    const summary = ep.summary || '';
+    const summary = ep.shownote || '';
     const matches = summary.match(/#([^\s#、。！？…「」『』【】（）]+)/g) || [];
     matches.forEach(m => {
       const label = m.slice(1);
