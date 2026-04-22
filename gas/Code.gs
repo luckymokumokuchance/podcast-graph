@@ -12,7 +12,7 @@ function buildPublicGraphData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   const episodes = getRowsAsObjects(ss.getSheetByName(SHEET_EPISODES))
-    .filter(ep => ep.status === 'published');
+    .filter(ep => ep.WEB_status === 'published');
 
   const allLinks = getRowsAsObjects(ss.getSheetByName(SHEET_LINKS))
     .filter(lk => lk.status === 'approved');
@@ -26,7 +26,6 @@ function buildPublicGraphData() {
     title:        ep.title,
     url:          ep.url,
     summary:      ep.shownote,
-    published_at: ep.published_at,
   }));
 
   // summaryから #タグ を抽出してタグノード・タグリンクを生成
