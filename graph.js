@@ -102,6 +102,35 @@ function drawGraph(data, tooltip) {
   }));
   data.nodes.push(...decoNodes);
 
+  // ロゴノード（3分割PNG、最初は左上に固定）
+  // initScale=2.0 なので画面左上付近のシミュレーション座標 = (画面px / 2 + offset)
+  const LOGO_W = 110; // 表示幅 (px in simulation space)
+  const logoBaseX = width / 2 - width / initScale / 2 + 20 + LOGO_W / 2;
+  const logoBaseY = height / 2 - height / initScale / 2 + 20;
+  const logoParts = [
+    { src: 'image/ラキモクチャン_ロゴ_ラッキー.png',  origW: 2130, origH: 827 },
+    { src: 'image/ラキモクチャン_ロゴ_もくもく.png', origW: 1965, origH: 827 },
+    { src: 'image/ラキモクチャン_ロゴ_チャンス.png', origW: 2114, origH: 827 },
+  ];
+  const logoNodes = logoParts.map((p, i) => {
+    const h = Math.round(LOGO_W * p.origH / p.origW);
+    const y = logoBaseY + i * (h + 6) + h / 2;
+    return {
+      id:   `logo_${i}`,
+      type: 'logo',
+      src:  p.src,
+      w:    LOGO_W,
+      h:    h,
+      x:    logoBaseX,
+      y:    y,
+      fx:   logoBaseX,
+      fy:   y,
+    };
+  });
+  data.nodes.push(...logoNodes);
+
+  const initScale = 2.0;
+
   // ---------- SVG ----------
   const svg = d3.select('#graph')
     .attr('viewBox', `0 0 ${width} ${height}`)
@@ -121,7 +150,6 @@ function drawGraph(data, tooltip) {
 
   svg.call(zoomBehavior);
 
-  const initScale = 2.0;
   svg.call(zoomBehavior.transform, d3.zoomIdentity
     .translate(width / 2 * (1 - initScale), height / 2 * (1 - initScale))
     .scale(initScale)
@@ -139,16 +167,16 @@ function drawGraph(data, tooltip) {
 
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(getLinkDistance))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -80))
-    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
-    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
+    .force('charge',    d3.forceManyBody().strength(d => (d.type === 'deco' || d.type === 'logo') ? -8 : -80))
+    .force('x',         d3.forceX(width / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
+    .force('y',         d3.forceY(height / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
+    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco' && d.type !== 'logo', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
     .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
     .force('wander', () => {
       data.nodes.forEach(d => {
-        if (d.type !== 'deco') return;
+        if (d.type !== 'deco' && d.type !== 'logo') return;
         d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.2;
         d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.2;
         // 中心引力
@@ -181,6 +209,25 @@ function drawGraph(data, tooltip) {
     .style('fill', COLORS.deco)
     .style('stroke', 'none');
 
+  // 1b. ロゴレイヤー（デコ星の前面・リンクの背面）
+  const logoLayer = rotG.append('g').attr('class', 'logo-layer');
+  const logoImage = logoLayer.selectAll('image')
+    .data(logoNodes)
+    .join('image')
+    .attr('href',   d => d.src)
+    .attr('width',  d => d.w)
+    .attr('height', d => d.h)
+    .attr('x',      d => d.x - d.w / 2)
+    .attr('y',      d => d.y - d.h / 2)
+    .style('opacity', 0);
+
+  // フェードイン → 2.5秒後に解放してふわふわ
+  logoImage.transition().duration(600).style('opacity', 1);
+  setTimeout(() => {
+    logoNodes.forEach(d => { d.fx = null; d.fy = null; });
+    simulation.alpha(0.3).restart();
+  }, 2500);
+
   // 2. リンク
   const link = rotG.append('g').attr('class', 'links')
     .selectAll('line')
@@ -193,7 +240,7 @@ function drawGraph(data, tooltip) {
 
 
   // 3. Episode / tag ノード（円のみ、テキストなし）
-  const epTagNodeData = data.nodes.filter(d => d.type !== 'deco');
+  const epTagNodeData = data.nodes.filter(d => d.type !== 'deco' && d.type !== 'logo');
   const epNode = rotG.append('g').attr('class', 'ep-nodes')
     .selectAll('g')
     .data(epTagNodeData)
@@ -335,6 +382,7 @@ function drawGraph(data, tooltip) {
       .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
       .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     decoCircle.attr('cx', d => d.x).attr('cy', d => d.y);
+    logoImage.attr('x', d => d.x - d.w / 2).attr('y', d => d.y - d.h / 2);
     epNode.attr('transform', d => `translate(${d.x},${d.y})`);
     textGroup.attr('transform', d => `translate(${d.x},${d.y})`);
     linkHandle
