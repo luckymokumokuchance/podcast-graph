@@ -108,9 +108,9 @@ function drawGraph(data, tooltip) {
   const logoBaseX = width / 2 - width / initScale / 2 + 20 + LOGO_W / 2;
   const logoBaseY = height / 2 - height / initScale / 2 + 20;
   const logoParts = [
-    { src: 'image/ラキモクチャン_ロゴ_ラッキー.png',  origW: 2130, origH: 827 },
-    { src: 'image/ラキモクチャン_ロゴ_もくもく.png', origW: 1965, origH: 827 },
-    { src: 'image/ラキモクチャン_ロゴ_チャンス.png', origW: 2114, origH: 827 },
+    { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_ラッキー.png'),  origW: 2130, origH: 827 },
+    { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_もくもく.png'), origW: 1965, origH: 827 },
+    { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_チャンス.png'), origW: 2114, origH: 827 },
   ];
   const logoNodes = logoParts.map((p, i) => {
     const h = Math.round(LOGO_W * p.origH / p.origW);
@@ -219,10 +219,9 @@ function drawGraph(data, tooltip) {
     .attr('height', d => d.h)
     .attr('x',      d => d.x - d.w / 2)
     .attr('y',      d => d.y - d.h / 2)
-    .style('opacity', 0);
+    .style('opacity', 1);
 
-  // フェードイン → 2.5秒後に解放してふわふわ
-  logoImage.transition().duration(600).style('opacity', 1);
+  // 2.5秒後に解放してふわふわ
   setTimeout(() => {
     logoNodes.forEach(d => { d.fx = null; d.fy = null; });
     simulation.alpha(0.3).restart();
