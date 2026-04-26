@@ -102,6 +102,8 @@ function drawGraph(data, tooltip) {
   }));
   data.nodes.push(...decoNodes);
 
+  const initScale = 2.0;
+
   // ロゴノード（3分割PNG、最初は左上に固定）
   // initScale=2.0 なので画面左上付近のシミュレーション座標 = (画面px / 2 + offset)
   const LOGO_W = 110; // 表示幅 (px in simulation space)
@@ -128,8 +130,6 @@ function drawGraph(data, tooltip) {
     };
   });
   data.nodes.push(...logoNodes);
-
-  const initScale = 2.0;
 
   // ---------- SVG ----------
   const svg = d3.select('#graph')
