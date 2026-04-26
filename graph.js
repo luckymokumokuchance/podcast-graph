@@ -104,29 +104,31 @@ function drawGraph(data, tooltip) {
 
   const initScale = 2.0;
 
-  // ロゴノード（3分割PNG、最初は左上に固定）
-  // initScale=2.0 なので画面左上付近のシミュレーション座標 = (画面px / 2 + offset)
-  const LOGO_W = 110; // 表示幅 (px in simulation space)
-  const logoBaseX = width / 2 - width / initScale / 2 + 20 + LOGO_W / 2;
-  const logoBaseY = height / 2 - height / initScale / 2 + 20;
+  // ロゴノード（3分割PNG、最初は画面中央に整列）
+  const LOGO_W = 110;
+  const GAP    = 6;
   const logoParts = [
     { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_ラッキー.png'),  origW: 2130, origH: 827 },
     { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_もくもく.png'), origW: 1965, origH: 827 },
     { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_チャンス.png'), origW: 2114, origH: 827 },
   ];
+  const logoHeights  = logoParts.map(p => Math.round(LOGO_W * p.origH / p.origW));
+  const totalLogoH   = logoHeights.reduce((a, b) => a + b, 0) + GAP * (logoParts.length - 1);
+  let   logoTopY     = height / 2 - totalLogoH / 2;
   const logoNodes = logoParts.map((p, i) => {
-    const h = Math.round(LOGO_W * p.origH / p.origW);
-    const y = logoBaseY + i * (h + 6) + h / 2;
+    const h  = logoHeights[i];
+    const cy = logoTopY + h / 2;
+    logoTopY += h + GAP;
     return {
       id:   `logo_${i}`,
       type: 'logo',
       src:  p.src,
       w:    LOGO_W,
       h:    h,
-      x:    logoBaseX,
-      y:    y,
-      fx:   logoBaseX,
-      fy:   y,
+      x:    width / 2,
+      y:    cy,
+      fx:   width / 2,
+      fy:   cy,
     };
   });
   data.nodes.push(...logoNodes);
