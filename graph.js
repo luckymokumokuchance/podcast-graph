@@ -397,6 +397,7 @@ function drawGraph(data, tooltip) {
       rotG.attr('transform', `rotate(${rotAngle}, ${width / 2}, ${height / 2})`);
       applyEpStyle();
       applyTitleStyle();
+      applyLogoStyle();
     }
     lastTime = time;
     requestAnimationFrame(rotateLoop);
@@ -438,6 +439,10 @@ function drawGraph(data, tooltip) {
     g.selectAll('.node-tag-label')
       .style('font-size', `${titleFontPx / currentK}px`)
       .attr('transform', `translate(${tagLY * sinA}, ${tagLY * cosA}) rotate(${-rotAngle})`);
+  }
+
+  function applyLogoStyle() {
+    logoImage.attr('transform', d => `rotate(${-rotAngle}, ${d.x}, ${d.y})`);
   }
 
   // ============================================================
