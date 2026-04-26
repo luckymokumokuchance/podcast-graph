@@ -176,6 +176,7 @@ function drawGraph(data, tooltip) {
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
     .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
+    .force('logo-ep-repel',  makeLogoEpRepel(data.nodes, () => nodeRadius, tagR))
     .force('wander', () => {
       data.nodes.forEach(d => {
         if (d.type !== 'deco' && d.type !== 'logo') return;
@@ -612,6 +613,30 @@ function drawGraph(data, tooltip) {
 }
 
 // ------------------------------------------------------------
+// ロゴ矩形→episode/tag 反発フォース（ep/tagノードをロゴ領域から押し出す）
+// ------------------------------------------------------------
+function makeLogoEpRepel(allNodes, getNodeRadius, tagR) {
+  const logoNds  = allNodes.filter(d => d.type === 'logo');
+  const epTagNds = allNodes.filter(d => d.type === 'episode' || d.type === 'tag');
+  return function() {
+    logoNds.forEach(logo => {
+      const logoR = Math.hypot(logo.w / 2, logo.h / 2) + 10;
+      epTagNds.forEach(ep => {
+        const dx   = ep.x - logo.x;
+        const dy   = ep.y - logo.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const epR  = ep.type === 'tag' ? tagR() : getNodeRadius();
+        const minD = logoR + epR;
+        if (dist < minD) {
+          const push = (minD - dist) / dist * 0.8;
+          ep.vx += (dx / dist) * push;
+          ep.vy += (dy / dist) * push;
+        }
+      });
+    });
+  };
+}
+
 // デコ→episode/tag 一方向反発フォース（decoだけ押しのける）
 // velocity push方式：ソフトな押し出しで輪っかを作らない
 // ------------------------------------------------------------
