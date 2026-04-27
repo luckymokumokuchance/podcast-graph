@@ -170,7 +170,7 @@ function drawGraph(data, tooltip) {
 
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id).distance(getLinkDistance))
-    .force('charge',    d3.forceManyBody().strength(d => (d.type === 'deco' || d.type === 'logo') ? -8 : -80))
+    .force('charge',    d3.forceManyBody().strength(d => d.type === 'logo' ? 0 : d.type === 'deco' ? -8 : -80))
     .force('x',         d3.forceX(width / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
     .force('y',         d3.forceY(height / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco' && d.type !== 'logo', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
@@ -224,9 +224,10 @@ function drawGraph(data, tooltip) {
     .attr('x',      d => d.x - d.w / 2)
     .attr('y',      d => d.y - d.h / 2)
     .style('opacity', 1)
-    .style('cursor', d => d.url ? 'pointer' : 'default')
+    .style('cursor', 'grab')
+    .call(makeDrag(simulation))
     .on('click', (event, d) => {
-      if (d.url) window.open(d.url, '_blank');
+      if (d.url && !event.defaultPrevented) window.open(d.url, '_blank');
     });
 
   // 2.5秒後に解放 → α値を二次曲線でランプアップして滑らかに演算開始
