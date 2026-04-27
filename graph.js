@@ -184,7 +184,7 @@ function drawGraph(data, tooltip) {
         d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.2;
         d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.2;
         // 中心引力（デコ星はスライダー連動、ロゴは固定値で ep/tag の反発フィールドに打ち勝つ）
-        const gravK = d.type === 'logo' ? 0.0015 : decoGravStrength * 0.015;
+        const gravK = d.type === 'logo' ? 0.0012 : decoGravStrength * 0.015;
         d.vx += (width  / 2 - d.x) * gravK;
         d.vy += (height / 2 - d.y) * gravK;
         // 円形境界で跳ね返す
