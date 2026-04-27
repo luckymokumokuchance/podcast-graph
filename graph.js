@@ -234,6 +234,7 @@ function drawGraph(data, tooltip) {
   // 2.5秒後に解放 → α値を二次曲線でランプアップして滑らかに演算開始
   setTimeout(() => {
     logoNodes.forEach(d => { d.fx = null; d.fy = null; });
+    simulation.force('logo-ep-repel', null); // 解放後は押しのけ不要
     simulation.alphaDecay(0).restart(); // 自然減衰を一時停止して自前でαを制御
     const RAMP_MS   = 1500;
     const rampStart = performance.now();
