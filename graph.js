@@ -224,10 +224,19 @@ function drawGraph(data, tooltip) {
     .attr('y',      d => d.y - d.h / 2)
     .style('opacity', 1);
 
-  // 2.5秒後に解放してふわふわ
+  // 2.5秒後に解放 → α値を二次曲線でランプアップして滑らかに演算開始
   setTimeout(() => {
     logoNodes.forEach(d => { d.fx = null; d.fy = null; });
-    simulation.alpha(0.3).restart();
+    simulation.alphaDecay(0).restart(); // 自然減衰を一時停止して自前でαを制御
+    const RAMP_MS   = 1500;
+    const rampStart = performance.now();
+    (function ramp(now) {
+      const t      = Math.min((now - rampStart) / RAMP_MS, 1);
+      const eased  = t * t; // 二次曲線（ゆっくり→加速）
+      simulation.alpha(eased * 0.3);
+      if (t < 1) requestAnimationFrame(ramp);
+      else        simulation.alphaDecay(0.02); // 自然減衰を再開
+    })(rampStart);
   }, 2500);
 
   // 2. リンク
