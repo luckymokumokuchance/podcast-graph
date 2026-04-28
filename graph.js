@@ -176,6 +176,7 @@ function drawGraph(data, tooltip) {
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco' && d.type !== 'logo', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
+    .force('collision-logo', makeSubsetCollide(d => d.type === 'logo', d => Math.hypot(d.w / 2, d.h / 2) + 4))
     .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
     .force('logo-ep-repel',  makeLogoEpRepel(data.nodes, () => nodeRadius, tagR))
     .force('wander', () => {
@@ -184,7 +185,7 @@ function drawGraph(data, tooltip) {
         d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.2;
         d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.2;
         // 中心引力（デコ星はスライダー連動、ロゴは固定値で ep/tag の反発フィールドに打ち勝つ）
-        const gravK = d.type === 'logo' ? 0.0012 : decoGravStrength * 0.015;
+        const gravK = d.type === 'logo' ? 0.0008 : decoGravStrength * 0.015;
         d.vx += (width  / 2 - d.x) * gravK;
         d.vy += (height / 2 - d.y) * gravK;
         // 円形境界で跳ね返す
