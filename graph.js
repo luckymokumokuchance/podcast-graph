@@ -347,6 +347,18 @@ function drawGraph(data, tooltip) {
   const modalClose = document.getElementById('modal-close');
   const imageMap   = data.images || {};
 
+  // shownote内のリンクは別タブで開く（iframe埋め込み時の親ナビ汚染防止も兼ねる）
+  if (typeof marked !== 'undefined') {
+    marked.use({
+      renderer: {
+        link({ href, title, text }) {
+          const titleAttr = title ? ` title="${title}"` : '';
+          return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+        }
+      }
+    });
+  }
+
   // shownote本文の整形：[img:key] → <img> 展開 → Markdown パース（改行尊重）
   function renderShownote(text) {
     if (!text) return '';
