@@ -229,7 +229,9 @@ body {
   overflow-x: hidden;
   touch-action: pan-y;
   position: relative;
+  scrollbar-width: none; /* Firefox: スクロールバー非表示 */
 }
+#modal-box::-webkit-scrollbar { display: none; } /* Safari/Chrome */
 
 #modal-close {
   position: absolute;
@@ -261,6 +263,7 @@ body {
   font-size: 13px;
   color: #444;
   line-height: 1.7;
+  margin-top: 18px;
   margin-bottom: 12px;
   overflow-wrap: break-word;
   word-break: break-word;
