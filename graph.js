@@ -347,16 +347,18 @@ function drawGraph(data, tooltip) {
   const modalClose = document.getElementById('modal-close');
   const imageMap   = data.images || {};
 
-  // shownote本文の整形：[img:key] → <img> 展開（ツールチップでは画像非表示）、\n → <br>
-  function renderShownote(text, { includeImages = true } = {}) {
+  // shownote本文の整形：[img:key] → <img> 展開 → Markdown パース（改行尊重）
+  function renderShownote(text) {
     if (!text) return '';
-    const html = String(text).replace(/\[img:([^\]]+)\]/g, (match, key) => {
-      if (!includeImages) return '';
+    const withImages = String(text).replace(/\[img:([^\]]+)\]/g, (match, key) => {
       const fileId = imageMap[key.trim()];
       if (!fileId) return match;
       return `<img class="shownote-img" src="https://lh3.googleusercontent.com/d/${fileId}=w800" alt="${key}">`;
     });
-    return html.replace(/\n/g, '<br>');
+    if (typeof marked !== 'undefined') {
+      return marked.parse(withImages, { breaks: true, gfm: true });
+    }
+    return withImages.replace(/\n/g, '<br>');
   }
 
   function openModal(d) {
@@ -391,16 +393,7 @@ function drawGraph(data, tooltip) {
 
   } else {
     epNode.filter(d => d.type === 'episode')
-      .on('click', (event, d) => {
-        hideTooltip(tooltip);
-        openModal(d);
-      })
-      .on('mousemove', (event, d) => {
-        showTooltip(tooltip, event,
-          `<span class="tip-title">${d.title || d.id}</span>${renderShownote(d.summary, { includeImages: false })}`
-        );
-      })
-      .on('mouseleave', () => hideTooltip(tooltip));
+      .on('click', (event, d) => openModal(d));
 
     epNode.filter(d => d.type === 'tag')
       .on('mousemove', (event, d) => {

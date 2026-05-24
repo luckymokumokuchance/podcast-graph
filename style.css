@@ -262,8 +262,21 @@ body {
   color: #444;
   line-height: 1.7;
   margin-bottom: 12px;
-  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
+
+#modal-summary p     { margin: 0 0 10px; }
+#modal-summary p:last-child { margin-bottom: 0; }
+#modal-summary a     { color: #1db954; text-decoration: underline; word-break: break-all; }
+#modal-summary h1,
+#modal-summary h2,
+#modal-summary h3    { font-size: 14px; margin: 14px 0 6px; font-weight: 700; color: #1a1a1a; }
+#modal-summary ul,
+#modal-summary ol    { margin: 0 0 10px; padding-left: 20px; }
+#modal-summary li    { margin-bottom: 2px; }
+#modal-summary code  { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+#modal-summary strong { color: #1a1a1a; }
 
 .shownote-img {
   display: block;
