@@ -325,9 +325,8 @@ function drawGraph(data, tooltip) {
   } else {
     epNode.filter(d => d.type === 'episode')
       .on('click', (event, d) => {
-        d._clicked = true;
-        d3.select(event.currentTarget).select('circle').style('fill', COLORS.episodeClick);
-        if (d.url) window.open(d.url, '_blank');
+        hideTooltip(tooltip);
+        openModal(d);
       })
       .on('mousemove', (event, d) => {
         showTooltip(tooltip, event,
