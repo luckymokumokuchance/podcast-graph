@@ -350,10 +350,9 @@ function drawGraph(data, tooltip) {
   // shownote内のリンクは別タブで開く（iframe埋め込み時の親ナビ汚染防止も兼ねる）
   if (typeof marked !== 'undefined') {
     marked.use({
-      renderer: {
-        link({ href, title, text }) {
-          const titleAttr = title ? ` title="${title}"` : '';
-          return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+      hooks: {
+        postprocess(html) {
+          return html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ');
         }
       }
     });
