@@ -275,20 +275,39 @@ function drawGraph(data, tooltip) {
   // ---------- インタラクション ----------
   const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
+  // モーダル（PCでも ?ep= ディープリンクで使うため共通スコープに置く）
+  const modal      = document.getElementById('modal');
+  const modalClose = document.getElementById('modal-close');
+  const imageMap   = data.images || {};
+
+  // shownote本文の整形：[img:key] → <img> 展開（ツールチップでは画像非表示）、\n → <br>
+  function renderShownote(text, { includeImages = true } = {}) {
+    if (!text) return '';
+    const html = String(text).replace(/\[img:([^\]]+)\]/g, (match, key) => {
+      if (!includeImages) return '';
+      const fileId = imageMap[key.trim()];
+      if (!fileId) return match;
+      return `<img class="shownote-img" src="https://lh3.googleusercontent.com/d/${fileId}=w800" alt="${key}">`;
+    });
+    return html.replace(/\n/g, '<br>');
+  }
+
+  function openModal(d) {
+    d._clicked = true;
+    epNode.filter(n => n.id === d.id).select('circle').style('fill', COLORS.episodeClick);
+    document.getElementById('modal-ep').textContent    = formatEpId(d.id);
+    document.getElementById('modal-title').textContent = d.title || '';
+    document.getElementById('modal-link').href         = d.url || '#';
+    document.getElementById('modal-summary').innerHTML = renderShownote(d.summary);
+    modal.classList.remove('hidden');
+  }
+
+  modalClose.addEventListener('click', () => modal.classList.add('hidden'));
+  modal.addEventListener('click', e => {
+    if (e.target === modal) modal.classList.add('hidden');
+  });
+
   if (isTouch) {
-    const modal      = document.getElementById('modal');
-    const modalClose = document.getElementById('modal-close');
-
-    function openModal(d) {
-      d._clicked = true;
-      epNode.filter(n => n.id === d.id).select('circle').style('fill', COLORS.episodeClick);
-      document.getElementById('modal-ep').textContent       = formatEpId(d.id);
-      document.getElementById('modal-title').textContent    = d.title || '';
-      document.getElementById('modal-link').href            = d.url || '#';
-      document.getElementById('modal-summary').innerHTML = (d.summary || '').replace(/\n/g, '<br>');
-      modal.classList.remove('hidden');
-    }
-
     epNode.filter(d => d.type === 'episode')
       .on('click', (event, d) => openModal(d));
 
@@ -303,11 +322,6 @@ function drawGraph(data, tooltip) {
       }
     });
 
-    modalClose.addEventListener('click', () => modal.classList.add('hidden'));
-    modal.addEventListener('click', e => {
-      if (e.target === modal) modal.classList.add('hidden');
-    });
-
   } else {
     epNode.filter(d => d.type === 'episode')
       .on('click', (event, d) => {
@@ -317,7 +331,7 @@ function drawGraph(data, tooltip) {
       })
       .on('mousemove', (event, d) => {
         showTooltip(tooltip, event,
-          `<span class="tip-title">${d.title || d.id}</span>${(d.summary || '').replace(/\n/g, '<br>')}`
+          `<span class="tip-title">${d.title || d.id}</span>${renderShownote(d.summary, { includeImages: false })}`
         );
       })
       .on('mouseleave', () => hideTooltip(tooltip));
@@ -327,6 +341,13 @@ function drawGraph(data, tooltip) {
         showTooltip(tooltip, event, `<span class="tip-title">#${d.label}</span>`);
       })
       .on('mouseleave', () => hideTooltip(tooltip));
+  }
+
+  // ---------- ディープリンク: ?ep=<id> で該当エピソードのモーダルを自動表示 ----------
+  const targetEpId = new URLSearchParams(window.location.search).get('ep');
+  if (targetEpId) {
+    const targetNode = data.nodes.find(n => n.type === 'episode' && String(n.id) === String(targetEpId));
+    if (targetNode) openModal(targetNode);
   }
 
   // ---------- tick ----------

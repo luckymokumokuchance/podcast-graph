@@ -265,6 +265,14 @@ body {
   white-space: pre-wrap;
 }
 
+.shownote-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
 #modal-link {
   display: block;
   text-align: center;

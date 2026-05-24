@@ -4,6 +4,7 @@
 
 const SHEET_EPISODES = 'episodes';
 const SHEET_LINKS    = 'links';
+const SHEET_IMAGES   = 'images';
 
 // ------------------------------------------------------------
 // D3用のJSONデータを組み立てて返す
@@ -63,9 +64,22 @@ function buildPublicGraphData() {
       type:   'manual',
     }));
 
+  // 画像マップ（images シート：key, fileId）
+  // shownote 内の [img:key] を Drive 画像URLに展開するためのマッピング
+  const imagesSheet = ss.getSheetByName(SHEET_IMAGES);
+  const images = {};
+  if (imagesSheet) {
+    getRowsAsObjects(imagesSheet).forEach(row => {
+      const key    = String(row.key    || '').trim();
+      const fileId = String(row.fileId || '').trim();
+      if (key && fileId) images[key] = fileId;
+    });
+  }
+
   return {
     nodes: [...episodeNodes, ...tagNodes],
     links: [...manualLinks, ...tagLinks],
+    images,
   };
 }
 
