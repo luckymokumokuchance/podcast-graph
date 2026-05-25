@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Claude Code のローカルキャッシュ・設定
+.claude/
+
+# エディタ
+.vscode/
+.idea/
