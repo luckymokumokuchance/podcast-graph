@@ -300,6 +300,12 @@ body {
   border-radius: 50px;
   text-decoration: none;
 }
+#modal-link.coming-soon {
+  background: #cccccc;
+  color: #ffffff;
+  cursor: default;
+  pointer-events: none;
+}
 
 /* カラーパネル */
 #color-panel {

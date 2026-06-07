@@ -377,7 +377,18 @@ function drawGraph(data, tooltip) {
     epNode.filter(n => n.id === d.id).select('circle').style('fill', COLORS.episodeClick);
     document.getElementById('modal-ep').textContent    = formatEpId(d.id);
     document.getElementById('modal-title').textContent = d.title || '';
-    document.getElementById('modal-link').href         = d.url || '#';
+    const modalLink = document.getElementById('modal-link');
+    if (d.url) {
+      modalLink.href = d.url;
+      modalLink.textContent = 'Spotifyで聴く →';
+      modalLink.classList.remove('coming-soon');
+      modalLink.setAttribute('target', '_blank');
+    } else {
+      modalLink.removeAttribute('href');
+      modalLink.textContent = 'Coming soon';
+      modalLink.classList.add('coming-soon');
+      modalLink.removeAttribute('target');
+    }
     document.getElementById('modal-summary').innerHTML = renderShownote(d.summary);
     modal.classList.remove('hidden');
   }
