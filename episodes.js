@@ -202,17 +202,16 @@ function buildTagChips() {
 // ------------------------------------------------------------
 function bindSearch() {
   const input = document.getElementById('search-input');
-  const clear = document.getElementById('search-clear');
+  const btn   = document.getElementById('search-btn');
 
-  input.addEventListener('input', () => {
-    clear.hidden = input.value === '';
+  // 入力と同時に即時検索（ボタンはキーボードを閉じる/明示実行用）
+  input.addEventListener('input', render);
+  btn.addEventListener('click', () => {
     render();
+    input.blur();
   });
-  clear.addEventListener('click', () => {
-    input.value = '';
-    clear.hidden = true;
-    input.focus();
-    render();
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
   });
 }
 
