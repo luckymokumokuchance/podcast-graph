@@ -26,10 +26,19 @@ body {
   font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "BIZ UDGothic", sans-serif;
   color: var(--c-ink);
   background-color: #2e8b1e;
-  /* トップページと同じ、もくもくリングのアート */
+}
+
+/* 背景はページ全体ではなく「画面」に固定したレイヤーに敷く。
+   ページが縦に長くなっても画像が引き伸ばされない
+   （iOS Safariのbackground-attachment: fixedバグ回避のため疑似要素方式） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background-image: url("image/bg_mokumoku.webp");
   background-size: cover;
-  background-position: center top;
+  background-position: center;
   background-repeat: no-repeat;
 }
 
