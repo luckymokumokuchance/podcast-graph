@@ -1,0 +1,10 @@
+{
+  "name": "podcast-graph",
+  "private": true,
+  "scripts": {
+    "test": "node test_episodes.mjs && node test_quickpanel.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}

@@ -1,0 +1,259 @@
+/* ============================================================
+   ラッキーもくもくチャンス - エピソード一覧＆検索
+   世界観：緑(#089900)のけむり / 白いくもカード / 丸ゴシック
+   ============================================================ */
+
+:root {
+  --c-green:       #089900;
+  --c-green-deep:  #0b6100;
+  --c-ink:         #111111;
+  --c-sub:         #5a6b58;
+  --c-cloud:       #ffffff;
+  --c-mist:        #eef6ec;
+  --c-mark:        #ffe58a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "BIZ UDGothic", sans-serif;
+  color: var(--c-ink);
+  background: var(--c-mist);
+  /* けむりの背景（SVG turbulence を dataURI で埋め込み） */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.03  0 0 0 0 0.60  0 0 0 0 0.00  0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 14px 64px;
+}
+
+/* ---------- 検索ボックス（くも型） ---------- */
+#search-cloud {
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+  background: var(--c-cloud);
+  border-radius: 32px;
+  padding: 14px 18px 10px;
+  box-shadow:
+    0 4px 14px rgba(8, 60, 0, 0.14),
+    0 0 0 6px rgba(255, 255, 255, 0.45);
+}
+
+#search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#search-input {
+  flex: 1;
+  font: inherit;
+  font-size: 16px; /* iOSズーム防止のため16px以上 */
+  border: none;
+  outline: none;
+  background: var(--c-mist);
+  border-radius: 999px;
+  padding: 10px 16px;
+  color: var(--c-ink);
+}
+
+#search-input::placeholder { color: #9ab097; }
+
+#search-input:focus-visible {
+  box-shadow: 0 0 0 3px var(--c-green);
+}
+
+#search-clear {
+  flex: none;
+  font: inherit;
+  border: none;
+  background: var(--c-green);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ---------- タグ ---------- */
+#tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.tag-chip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid #c6d8c2;
+  background: #fff;
+  color: var(--c-sub);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.tag-chip[aria-pressed="true"] {
+  background: var(--c-green);
+  border-color: var(--c-green);
+  color: #fff;
+}
+
+#result-count {
+  margin: 8px 2px 2px;
+  font-size: 11px;
+  color: var(--c-sub);
+}
+
+/* ---------- 一覧 ---------- */
+#loading, #error, #empty {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--c-sub);
+}
+
+#episode-list {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ep-card {
+  background: var(--c-cloud);
+  border-radius: 26px;
+  padding: 18px 20px 16px;
+  box-shadow: 0 3px 12px rgba(8, 60, 0, 0.10);
+}
+
+.ep-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ep-num {
+  font-weight: 900;
+  font-size: 15px;
+  color: var(--c-green);
+  letter-spacing: 0.06em;
+}
+
+.ep-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.ep-date {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--c-sub);
+}
+
+.ep-excerpt {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: #333;
+  overflow-wrap: anywhere;
+}
+
+mark {
+  background: var(--c-mark);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.ep-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ep-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-sub);
+  background: var(--c-mist);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+/* ショーノート全文（開閉） */
+.ep-more {
+  margin-top: 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--c-green-deep);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.ep-shownote {
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.9;
+  border-top: 1.5px dashed #d7e6d3;
+  padding-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.ep-shownote img.shownote-img {
+  max-width: 100%;
+  border-radius: 14px;
+  margin: 6px 0;
+}
+
+.ep-shownote a { color: var(--c-green-deep); }
+
+/* Spotify埋め込み */
+.ep-player {
+  margin-top: 12px;
+}
+
+.ep-player iframe {
+  display: block;
+  width: 100%;
+  height: 152px;
+  border: none;
+  border-radius: 14px;
+}
+
+.ep-listen {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--c-green);
+  border-radius: 999px;
+  padding: 8px 18px;
+  text-decoration: none;
+}
+
+/* ---------- アクセシビリティ ---------- */
+:focus-visible { outline: 3px solid var(--c-green); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ep-card { transition: transform 0.15s ease; }
+  .ep-card:hover { transform: translateY(-2px); }
+}

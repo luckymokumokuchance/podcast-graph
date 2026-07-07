@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>エピソード一覧 | ラッキーもくもくチャンス</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="episodes.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- 検索ボックス（くも型カード） -->
+    <div id="search-cloud">
+      <div id="search-row">
+        <input id="search-input" type="search"
+               placeholder="タイトル・ショーノートから検索"
+               autocomplete="off" aria-label="エピソードを検索">
+        <button id="search-clear" aria-label="検索をクリア" hidden>✕</button>
+      </div>
+      <div id="tag-row" aria-label="タグで絞り込み"></div>
+      <p id="result-count" role="status"></p>
+    </div>
+
+    <!-- 一覧 -->
+    <div id="loading">preparing...</div>
+    <div id="error" hidden>データの取得に失敗しました。時間をおいて再読み込みしてください。</div>
+    <ul id="episode-list"></ul>
+    <p id="empty" hidden>見つかりませんでした。ことばを変えてもう一度どうぞ。</p>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="episodes.js"></script>
+</body>
+</html>

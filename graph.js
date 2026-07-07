@@ -663,6 +663,9 @@ function drawGraph(data, tooltip) {
       }
     });
   });
+
+  // 訪問者向け調整パネル(quickpanel.js)へ初期化完了を通知
+  window.dispatchEvent(new CustomEvent('graph-ready'));
 }
 
 // ------------------------------------------------------------
