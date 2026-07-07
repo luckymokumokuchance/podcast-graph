@@ -5,7 +5,7 @@ function makeDom(storageData) {
   const dom = new JSDOM(`<!DOCTYPE html><html><head></head><body>
     <div id="graph-container">
       <input id="s-link"    type="range" min="0" max="100" step="1"    value="13">
-      <input id="s-gravity" type="range" min="0" max="0.3" step="0.01" value="0.04">
+      <input id="s-charge" type="range" min="20" max="200" step="5" value="80">
       <input id="s-radius"  type="range" min="12" max="56" step="1"    value="21">
       <input id="s-rotate"  type="range" min="0" max="30"  step="0.5"  value="3">
     </div></body></html>`, { url: 'https://example.com/', runScripts: 'outside-only' });
@@ -23,7 +23,7 @@ const check = (name, cond) => { console.log((cond?'PASS':'FAIL')+' | '+name); if
   const doc = window.document;
   // graph.js側のリスナーを模擬（inputイベント受信を記録）
   const received = {};
-  ['s-link','s-gravity','s-radius','s-rotate'].forEach(id =>
+  ['s-link','s-charge','s-radius','s-rotate'].forEach(id =>
     doc.getElementById(id).addEventListener('input', e => { received[id] = e.target.value; }));
 
   window.dispatchEvent(new window.CustomEvent('graph-ready'));

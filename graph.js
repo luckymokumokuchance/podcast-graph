@@ -72,6 +72,7 @@ function drawGraph(data, tooltip) {
   let decoSpread       = parseFloat(document.getElementById('s-deco-spread').value);
   let decoR            = parseFloat(document.getElementById('s-deco-size').value);
   let linkDist         = parseFloat(document.getElementById('s-link').value);
+  let chargeStrength   = parseFloat(document.getElementById('s-charge').value);
   const TITLE_OFFSET_PX = 14;
 
   // CSSカスタムプロパティにCOLORSを反映（style.cssのvar()が自動追従）
@@ -89,6 +90,34 @@ function drawGraph(data, tooltip) {
   root.setProperty('--c-label-tag',     COLORS.labelTag);
 
   const tagR        = () => Math.max(8, nodeRadius * 0.55);
+
+  // ---------- 重要度サイズ(FORCE_MAP_SPEC §2-1) ----------
+  // sizeMetric相当が無いので次数(degree)で代用。r = MIN + (MAX-MIN)*sqrt(deg/max)
+  const degree = {};
+  data.links.forEach(l => {
+    const sId = typeof l.source === 'object' ? l.source.id : l.source;
+    const tId = typeof l.target === 'object' ? l.target.id : l.target;
+    degree[sId] = (degree[sId] || 0) + 1;
+    degree[tId] = (degree[tId] || 0) + 1;
+  });
+  let maxDeg = 1;
+  data.nodes.forEach(n => {
+    if (n.type === 'episode' || n.type === 'tag') {
+      maxDeg = Math.max(maxDeg, degree[n.id] || 0);
+    }
+  });
+  const sizeK = d => Math.sqrt((degree[d.id] || 0) / maxDeg); // 0..1
+  const nodeR = d => d.type === 'tag'
+    ? tagR()      * (0.80 + 0.50 * sizeK(d))   // タグ: 0.8〜1.3倍
+    : nodeRadius  * (0.72 + 0.56 * sizeK(d));  // エピソード: 0.72〜1.28倍
+
+  // ---------- 脈打つ輪(§2-3): published_atが直近30日 ----------
+  const RECENT_DAYS = 30;
+  const isRecent = d => {
+    if (d.type !== 'episode' || !d.published_at) return false;
+    const t = Date.parse(d.published_at);
+    return Number.isFinite(t) && (Date.now() - t) <= RECENT_DAYS * 86400e3;
+  };
   const DECO_COUNT  = 500;
   const DECO_MARGIN = 2; // アウトライン間の最小ギャップ（大きすぎると輪っかになる）
 
@@ -163,22 +192,26 @@ function drawGraph(data, tooltip) {
   // ---------- フォースシミュレーション ----------
   // アウトライン間距離 = linkDist + 両ノードの半径
   const getLinkDistance = d => {
-    const sr = d.source.type === 'tag' ? tagR() : nodeRadius;
-    const tr = d.target.type === 'tag' ? tagR() : nodeRadius;
-    return linkDist + sr + tr;
+    const sr = nodeR(d.source);
+    const tr = nodeR(d.target);
+    // 手動リンク(点線)はタグリンク(実線)の1.4倍離す(§3)
+    const base = linkDist * (d.type === 'manual' ? 1.4 : 1);
+    return base + sr + tr;
   };
+  const getLinkStrength = d => (d.type === 'manual' ? 0.25 : 0.5);
 
   const simulation = d3.forceSimulation(data.nodes)
-    .force('link',      d3.forceLink(data.links).id(d => d.id).distance(getLinkDistance))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'logo' ? 0 : d.type === 'deco' ? -8 : -80))
+    .force('link',      d3.forceLink(data.links).id(d => d.id)
+                          .distance(getLinkDistance).strength(getLinkStrength))
+    .force('charge',    d3.forceManyBody().strength(d => d.type === 'logo' ? 0 : d.type === 'deco' ? -8 : -chargeStrength))
     .force('x',         d3.forceX(width / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
     .force('y',         d3.forceY(height / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
-    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco' && d.type !== 'logo', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20))
+    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco' && d.type !== 'logo', d => nodeR(d) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
     .force('collision-logo', makeSubsetCollide(d => d.type === 'logo', d => Math.hypot(d.w / 2, d.h / 2) + 4))
-    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, () => nodeRadius, tagR, () => decoR, DECO_MARGIN))
-    .force('logo-ep-repel',  makeLogoEpRepel(data.nodes, () => nodeRadius, tagR))
+    .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, nodeR, () => decoR, DECO_MARGIN))
+    .force('logo-ep-repel',  makeLogoEpRepel(data.nodes, nodeR))
     .force('wander', () => {
       data.nodes.forEach(d => {
         if (d.type !== 'deco' && d.type !== 'logo') return;
@@ -269,8 +302,18 @@ function drawGraph(data, tooltip) {
 
   epNode.call(makeDrag(simulation));
 
+  // 脈打つ輪(最近のエピソードにだけ重ねる)
+  const pulseRing = epNode.filter(d => isRecent(d))
+    .append('circle')
+    .attr('class', 'pulse-ring')
+    .attr('r', d => nodeR(d) + 5)
+    .style('fill', 'none')
+    .style('stroke', COLORS.episode)
+    .style('stroke-width', '2.5px')
+    .style('pointer-events', 'none');
+
   epNode.append('circle')
-    .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius)
+    .attr('r', d => nodeR(d))
     .style('fill', d => d.type === 'tag' ? COLORS.tag : COLORS.episode)
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
@@ -486,15 +529,18 @@ function drawGraph(data, tooltip) {
     const a      = rotAngle * Math.PI / 180;
     const sinA   = Math.sin(a);
     const cosA   = Math.cos(a);
-    const titleY = nodeRadius + TITLE_OFFSET_PX / currentK;
-    const tagLY  = tagR()    + TITLE_OFFSET_PX / currentK;
-
     g.selectAll('.node-title')
       .style('font-size', `${titleFontPx / currentK}px`)
-      .attr('transform', `translate(${titleY * sinA}, ${titleY * cosA}) rotate(${-rotAngle})`);
+      .attr('transform', d => {
+        const ty = nodeR(d) + TITLE_OFFSET_PX / currentK;
+        return `translate(${ty * sinA}, ${ty * cosA}) rotate(${-rotAngle})`;
+      });
     g.selectAll('.node-tag-label')
       .style('font-size', `${titleFontPx / currentK}px`)
-      .attr('transform', `translate(${tagLY * sinA}, ${tagLY * cosA}) rotate(${-rotAngle})`);
+      .attr('transform', d => {
+        const ty = nodeR(d) + TITLE_OFFSET_PX / currentK;
+        return `translate(${ty * sinA}, ${ty * cosA}) rotate(${-rotAngle})`;
+      });
   }
 
   function applyLogoStyle() {
@@ -519,8 +565,17 @@ function drawGraph(data, tooltip) {
   document.getElementById('s-link').addEventListener('input', () => {
     linkDist = val('s-link');
     setVal('v-link', linkDist);
-    simulation.force('link', d3.forceLink(data.links).id(d => d.id).distance(getLinkDistance));
-    simulation.alpha(0.3).restart();
+    simulation.force('link', d3.forceLink(data.links).id(d => d.id)
+      .distance(getLinkDistance).strength(getLinkStrength));
+    simulation.alpha(0.5).restart();
+  });
+
+  document.getElementById('s-charge').addEventListener('input', () => {
+    chargeStrength = val('s-charge');
+    setVal('v-charge', chargeStrength);
+    simulation.force('charge',
+      d3.forceManyBody().strength(d => d.type === 'logo' ? 0 : d.type === 'deco' ? -8 : -chargeStrength));
+    simulation.alpha(0.5).restart();
   });
 
   document.getElementById('s-gravity').addEventListener('input', () => {
@@ -550,10 +605,11 @@ function drawGraph(data, tooltip) {
   document.getElementById('s-radius').addEventListener('input', () => {
     nodeRadius = val('s-radius');
     setVal('v-radius', nodeRadius);
-    epNode.select('circle')
-      .attr('r', d => d.type === 'tag' ? tagR() : nodeRadius);
+    epNode.select('circle:not(.pulse-ring)')
+      .attr('r', d => nodeR(d));
+    pulseRing.attr('r', d => nodeR(d) + 5);
     simulation.force('collision-ep',
-      makeSubsetCollide(d => d.type !== 'deco', d => (d.type === 'tag' ? tagR() : nodeRadius) + 20)
+      makeSubsetCollide(d => d.type !== 'deco', d => nodeR(d) + 20)
     ).alpha(0.3).restart();
     applyTitleStyle();
   });
@@ -671,7 +727,7 @@ function drawGraph(data, tooltip) {
 // ------------------------------------------------------------
 // ロゴ矩形→episode/tag 反発フォース（ep/tagノードをロゴ領域から押し出す）
 // ------------------------------------------------------------
-function makeLogoEpRepel(allNodes, getNodeRadius, tagR) {
+function makeLogoEpRepel(allNodes, getNodeRadius) {
   const logoNds  = allNodes.filter(d => d.type === 'logo');
   const epTagNds = allNodes.filter(d => d.type === 'episode' || d.type === 'tag');
   return function() {
@@ -681,7 +737,7 @@ function makeLogoEpRepel(allNodes, getNodeRadius, tagR) {
         const dx   = ep.x - logo.x;
         const dy   = ep.y - logo.y;
         const dist = Math.hypot(dx, dy) || 1;
-        const epR  = ep.type === 'tag' ? tagR() : getNodeRadius();
+        const epR  = getNodeRadius(ep);
         const minD = logoR + epR;
         if (dist < minD) {
           const push = (minD - dist) / dist * 0.8;
@@ -696,7 +752,7 @@ function makeLogoEpRepel(allNodes, getNodeRadius, tagR) {
 // デコ→episode/tag 一方向反発フォース（decoだけ押しのける）
 // velocity push方式：ソフトな押し出しで輪っかを作らない
 // ------------------------------------------------------------
-function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR, decoMargin) {
+function makeDecoEpRepel(allNodes, getNodeRadius, getDecoR, decoMargin) {
   const epTagNodes = allNodes.filter(d => d.type !== 'deco');
   return function() {
     allNodes.forEach(d => {
@@ -709,7 +765,7 @@ function makeDecoEpRepel(allNodes, getNodeRadius, tagR, getDecoR, decoMargin) {
           const a = Math.random() * Math.PI * 2;
           dx = Math.cos(a); dy = Math.sin(a); dist = 1;
         }
-        const minR = (ep.type === 'tag' ? tagR() : getNodeRadius()) + getDecoR() + decoMargin;
+        const minR = getNodeRadius(ep) + getDecoR() + decoMargin;
         if (dist < minR) {
           // 最低でも 0.5 の押し出しを保証してwanderに負けないようにする
           const push = Math.max((minR - dist) / dist, 0.5);

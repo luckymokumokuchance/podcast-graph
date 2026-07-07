@@ -38,6 +38,11 @@
         <span class="ctrl-val"    id="v-link">13</span>
       </div>
       <div class="ctrl-row">
+        <span class="ctrl-label">散らばり</span>
+        <input class="ctrl-slider" id="s-charge"       type="range" min="20"  max="200" step="5"    value="80">
+        <span class="ctrl-val"    id="v-charge">80</span>
+      </div>
+      <div class="ctrl-row">
         <span class="ctrl-label">中心引力</span>
         <input class="ctrl-slider" id="s-gravity"      type="range" min="0"   max="0.3"  step="0.01" value="0.04">
         <span class="ctrl-val"    id="v-gravity">0.04</span>
@@ -85,7 +90,7 @@
     </div>
   </div>
 
-  <div id="version">v20</div>
+  <div id="version">v21</div>
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
   <script src="graph.js"></script>

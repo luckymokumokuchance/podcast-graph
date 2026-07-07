@@ -430,3 +430,14 @@ body {
     padding: 6px 10px;
   }
 }
+
+
+/* ------------------------------------------------------------
+   脈打つ輪 = 直近30日のエピソード (FORCE_MAP_SPEC §2-3)
+   opacityのみをアニメ(transformに触れない=60fps・レイアウト非破壊)
+------------------------------------------------------------ */
+@keyframes pulse { 0% { opacity: .5; } 50% { opacity: .12; } 100% { opacity: .5; } }
+.pulse-ring { animation: pulse 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring { animation: none; opacity: .3; }
+}
