@@ -807,7 +807,12 @@ function truncate(str, maxLen) {
 // ------------------------------------------------------------
 // 起動
 // ------------------------------------------------------------
-if (window.self !== window.top) {
+// 開発用パネル(凡例・細かい調整・色設定)は、通常は常に非表示。
+// 開発時に確認したい場合だけ URL に ?dev=1 を付けて開く。
+// （以前は「iframe内かどうか」で判定していたが、直リンクを開いた
+// 　時にも一般訪問者向け表示にしたいため、この方式に変更）
+const isDevMode = new URLSearchParams(location.search).get('dev') === '1';
+if (!isDevMode) {
   document.getElementById('legend').style.display      = 'none';
   document.getElementById('controls').style.display    = 'none';
   document.getElementById('color-panel').style.display = 'none';
