@@ -303,13 +303,23 @@ function drawGraph(data, tooltip) {
   epNode.call(makeDrag(simulation));
 
   // 脈打つ輪(最近のエピソードにだけ重ねる)
-  const pulseRing = epNode.filter(d => isRecent(d))
-    .append('circle')
-    .attr('class', 'pulse-ring')
-    .attr('r', d => nodeR(d) + 5)
+  // 内側リング(太め・強めの明滅)＋外側リング(半周期ずらして波紋のように)の二重構成
+  const recentEp = epNode.filter(d => isRecent(d));
+
+  const pulseRingOuter = recentEp.append('circle')
+    .attr('class', 'pulse-ring pulse-ring-outer')
+    .attr('r', d => nodeR(d) + 11)
     .style('fill', 'none')
     .style('stroke', COLORS.episode)
-    .style('stroke-width', '2.5px')
+    .style('stroke-width', '3px')
+    .style('pointer-events', 'none');
+
+  const pulseRing = recentEp.append('circle')
+    .attr('class', 'pulse-ring pulse-ring-inner')
+    .attr('r', d => nodeR(d) + 6)
+    .style('fill', 'none')
+    .style('stroke', COLORS.episode)
+    .style('stroke-width', '4px')
     .style('pointer-events', 'none');
 
   epNode.append('circle')
@@ -607,7 +617,8 @@ function drawGraph(data, tooltip) {
     setVal('v-radius', nodeRadius);
     epNode.select('circle:not(.pulse-ring)')
       .attr('r', d => nodeR(d));
-    pulseRing.attr('r', d => nodeR(d) + 5);
+    pulseRing.attr('r', d => nodeR(d) + 6);
+    pulseRingOuter.attr('r', d => nodeR(d) + 11);
     simulation.force('collision-ep',
       makeSubsetCollide(d => d.type !== 'deco', d => nodeR(d) + 20)
     ).alpha(0.3).restart();

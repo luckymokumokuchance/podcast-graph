@@ -434,10 +434,23 @@ body {
 
 /* ------------------------------------------------------------
    脈打つ輪 = 直近30日のエピソード (FORCE_MAP_SPEC §2-3)
+   内リング(太め・強い明滅)＋外リング(半周期ずらして波紋のように)の
+   二重構成で、ぱっと見て分かりやすくする。
    opacityのみをアニメ(transformに触れない=60fps・レイアウト非破壊)
 ------------------------------------------------------------ */
-@keyframes pulse { 0% { opacity: .5; } 50% { opacity: .12; } 100% { opacity: .5; } }
-.pulse-ring { animation: pulse 2.6s ease-in-out infinite; }
+@keyframes pulse-inner { 0% { opacity: .85; } 50% { opacity: .15; } 100% { opacity: .85; } }
+@keyframes pulse-outer { 0% { opacity: .45; } 50% { opacity: .05; } 100% { opacity: .45; } }
+
+.pulse-ring-inner {
+  animation: pulse-inner 2.6s ease-in-out infinite;
+}
+.pulse-ring-outer {
+  animation: pulse-outer 2.6s ease-in-out infinite;
+  animation-delay: -1.3s; /* 内リングと半周期ずらして波紋のように広がって見せる */
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pulse-ring { animation: none; opacity: .3; }
+  .pulse-ring-inner, .pulse-ring-outer { animation: none; }
+  .pulse-ring-inner { opacity: .4; }
+  .pulse-ring-outer { opacity: .18; }
 }
