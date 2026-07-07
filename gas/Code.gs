@@ -27,6 +27,10 @@ function buildPublicGraphData() {
     title:        ep.title,
     url:          ep.url,
     summary:      ep.shownote,
+    // 公開日（episodesシートに published_at 列があれば返す。無ければ空）
+    published_at: ep.published_at
+      ? Utilities.formatDate(new Date(ep.published_at), 'Asia/Tokyo', 'yyyy-MM-dd')
+      : '',
   }));
 
   // summaryから #タグ を抽出してタグノード・タグリンクを生成
