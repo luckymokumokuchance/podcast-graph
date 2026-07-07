@@ -7,6 +7,7 @@ function makeDom(storageData) {
       <input id="s-link"    type="range" min="0" max="100" step="1"    value="13">
       <input id="s-charge" type="range" min="20" max="200" step="5" value="80">
       <input id="s-radius"  type="range" min="12" max="56" step="1"    value="21">
+      <input id="s-threshold" type="range" min="0.5" max="3" step="0.1" value="1.2">
       <input id="s-rotate"  type="range" min="0" max="30"  step="0.5"  value="3">
     </div></body></html>`, { url: 'https://example.com/', runScripts: 'outside-only' });
   if (storageData) dom.window.localStorage.setItem('lmc-graph-settings-v1', storageData);
@@ -23,7 +24,7 @@ const check = (name, cond) => { console.log((cond?'PASS':'FAIL')+' | '+name); if
   const doc = window.document;
   // graph.js側のリスナーを模擬（inputイベント受信を記録）
   const received = {};
-  ['s-link','s-charge','s-radius','s-rotate'].forEach(id =>
+  ['s-link','s-charge','s-radius','s-threshold','s-rotate'].forEach(id =>
     doc.getElementById(id).addEventListener('input', e => { received[id] = e.target.value; }));
 
   window.dispatchEvent(new window.CustomEvent('graph-ready'));
@@ -33,7 +34,7 @@ const check = (name, cond) => { console.log((cond?'PASS':'FAIL')+' | '+name); if
 
   doc.getElementById('qp-toggle').click();
   check('トグルで開く', doc.getElementById('qp-panel').hidden === false);
-  check('スライダーは4本', doc.querySelectorAll('#qp-panel input[type=range]').length === 4);
+  check('スライダーは5本', doc.querySelectorAll('#qp-panel input[type=range]').length === 5);
 
   const qpLink = doc.getElementById('qp-s-link');
   check('min/max/初期値を既存スライダーから引き継ぐ', qpLink.min==='0' && qpLink.max==='100' && qpLink.value==='13');

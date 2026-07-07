@@ -10,10 +10,11 @@
 
   // 訪問者に見せる項目（id = 既存スライダーのid）
   const ITEMS = [
-    { id: 's-link',    label: 'つながりの長さ' },
-    { id: 's-charge',  label: 'ちらばり具合' },
-    { id: 's-radius',  label: '円の大きさ' },
-    { id: 's-rotate',  label: 'まわる速さ' },
+    { id: 's-link',      label: 'つながりの長さ' },
+    { id: 's-charge',    label: 'ちらばり具合' },
+    { id: 's-radius',    label: '円の大きさ' },
+    { id: 's-threshold', label: '文字が消える倍率' },
+    { id: 's-rotate',    label: 'まわる速さ' },
   ];
 
   // ---------- スタイル ----------
