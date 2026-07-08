@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LOG | ラッキーもくもくチャンス</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="log.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <div id="search-cloud">
+    <div id="search-row">
+      <input id="search-input" type="text" placeholder="タイトル・本文から検索" autocomplete="off" />
+      <button id="search-btn" type="button">Search</button>
+    </div>
+    <div id="result-count" aria-live="polite"></div>
+  </div>
+
+  <div id="loading">よみこみ中…</div>
+  <div id="error" hidden>データの取得に失敗しました。時間をおいて再度お試しください。</div>
+  <div id="empty" hidden>まだLOGがありません。</div>
+
+  <ul id="log-list" hidden></ul>
+
+</div>
+
+<script src="log.js"></script>
+</body>
+</html>

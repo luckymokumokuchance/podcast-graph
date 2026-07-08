@@ -1,0 +1,205 @@
+/* ============================================================
+   ラッキーもくもくチャンス - LOG（日記）一覧＆検索
+   episodes.css とトークンを共通化し、サイト全体のテイストを踏襲。
+   カード横並びのepisodesと違い、LOGは縦1カラムの日記形式。
+   ============================================================ */
+
+:root {
+  --c-green:       #089900;
+  --c-green-deep:  #0b6100;
+  --c-ink:         #111111;
+  --c-sub:         #5a6b58;
+  --c-cloud:       #ffffff;
+  --c-mist:        #eef6ec;
+  --c-dark:        #4a4a4a;
+  --c-mark:        #ffe58a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "BIZ UDGothic", sans-serif;
+  color: var(--c-ink);
+  background-color: #2e8b1e;
+}
+
+/* 背景は body::before に固定表示（episodes.htmlと同じ理由：
+   縦長ページでbackground-attachment: fixedを使うと画像が伸びてボケるバグの回避） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url("image/bg_mokumoku.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#app {
+  max-width: 760px;
+  margin: 0 auto;
+  /* 上余白: Studio埋め込み時にTOPロゴ（画面左上）と被らないための余白。
+     episodes.htmlと同じ罠なので先に確保しておく。実機のプレビューを見て
+     必要に応じてこの数値だけ調整すればよい（90pxは仮値） */
+  padding: 90px 16px 72px;
+}
+
+/* ---------- 検索 ---------- */
+#search-cloud {
+  max-width: 560px;
+  margin: 0 auto 30px;
+}
+
+#search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+#search-input {
+  flex: 1;
+  font: inherit;
+  font-size: 16px; /* iOSズーム防止 */
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: var(--c-ink);
+  min-width: 0;
+}
+
+#search-input::placeholder { color: #8b998a; }
+
+#search-input:focus-visible {
+  box-shadow: 0 0 0 3px var(--c-green);
+}
+
+#search-btn {
+  flex: none;
+  font: inherit;
+  font-size: 15px;
+  border: none;
+  background: var(--c-dark);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 22px;
+  cursor: pointer;
+}
+
+#result-count {
+  margin: 10px 2px 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 50, 0, 0.5);
+}
+
+/* ---------- 一覧 ---------- */
+#loading, #error, #empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 50, 0, 0.5);
+}
+
+#log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.log-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 22px 24px 20px;
+}
+
+.log-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.log-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.5;
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.log-date {
+  font-size: 12.5px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.log-author {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-sub);
+  background: var(--c-mist);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+/* ---------- 本文 ---------- */
+.log-body {
+  margin-top: 14px;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: #222;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* 折りたたみ状態：最大高さで切り、下端をフェードアウト */
+.log-body.is-collapsed {
+  position: relative;
+  max-height: 8.6em; /* 400字前後の目安。line-height 1.9 basis */
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 75%, transparent 100%);
+}
+
+mark {
+  background: var(--c-mark);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.log-toggle {
+  margin-top: 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--c-green-deep);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+/* ---------- アクセシビリティ ---------- */
+:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
