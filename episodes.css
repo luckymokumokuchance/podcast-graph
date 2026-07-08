@@ -45,7 +45,7 @@ body::before {
 #app {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 28px 16px 72px;
+  padding: 90px 16px 72px;
 }
 
 /* ---------- 検索（CMS版と同じ、白入力欄＋ダークボタン） ---------- */
