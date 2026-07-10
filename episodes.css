@@ -30,11 +30,22 @@ body {
 
 /* 背景はページ全体ではなく「画面」に固定したレイヤーに敷く。
    ページが縦に長くなっても画像が引き伸ばされない
-   （iOS Safariのbackground-attachment: fixedバグ回避のため疑似要素方式） */
+   （iOS Safariのbackground-attachment: fixedバグ回避のため疑似要素方式）
+
+   高さは inset:0 ではなく 100lvh（アドレスバーが引っ込んだ状態＝最大の
+   表示領域）で固定する。inset:0 だとアドレスバーの開閉のたびに表示領域が
+   変わり、そのたびに background-size:cover が再計算されて背景が
+   拡大／移動して見えるバグになる（スクロール時に背景が動く症状の原因）。
+   100lvh で一度だけサイズを確定させれば、バーが出ている間は下端が
+   画面外に少しはみ出すだけで、視覚的な破綻は起きない。 */
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;   /* 対応していない古いブラウザ向けの保険 */
+  height: 100lvh;
   z-index: -1;
   background-image: url("image/bg_mokumoku.webp");
   background-size: cover;
