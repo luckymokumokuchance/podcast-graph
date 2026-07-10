@@ -109,7 +109,7 @@ body::before {
   color: var(--ink);
   text-decoration: none;
   padding: 4px 2px;
-  border-bottom: 1.5px solid transparent;
+  border-bottom: 1.5px solid var(--ink);
   transition: color .18s ease, border-color .18s ease;
 }
 
@@ -125,7 +125,10 @@ body::before {
    がそのまま正しいので、ここでは触らない。 */
 @media (max-aspect-ratio: 1 / 1) {
   .cloud {
-    transform: translate(0, calc(18 * var(--u)));
+    transform: translate(0, calc(55 * var(--u)));
+  }
+  .logo img {
+    height: clamp(50px, 11vmin, 90px);
   }
 }
 
