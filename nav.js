@@ -12,9 +12,11 @@
 
   // ── ページ一覧（ここを編集すればメニューが増える）────────────────
   var PAGES = [
-    { file: 'index.html', label: 'グラフ',     alsoMatch: ['', '/'] },
-    { file: 'episodes.html', label: 'エピソード' },
-    { file: 'log.html',   label: 'LOG' }
+    { file: 'index.html',    label: 'TOP',     alsoMatch: ['', '/'] },
+    { file: 'about.html',    label: 'ABOUT' },
+    { file: 'episodes.html', label: 'EP LIST' },
+    { file: 'log.html',      label: 'LOG' },
+    { file: 'contact.html',  label: 'CONTACT' }
   ];
 
   // ── 今どのページを見ているかを判定 ──────────────────────────
@@ -30,48 +32,54 @@
     '#lm-nav{position:fixed;z-index:9999;',
     'right:calc(20px + env(safe-area-inset-right,0px));',
     'bottom:calc(20px + env(safe-area-inset-bottom,0px));',
-    'display:flex;flex-direction:column;align-items:flex-end;',
-    'max-height:calc(100dvh - 40px);',
+    'display:flex;flex-direction:column;align-items:center;',
+    'max-height:calc(100svh - 32px);',
     'font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;}',
 
+    /* 開閉ボタン */
     '#lm-nav-btn{width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;',
-    'background:#1a1a1a;color:#fff;display:flex;align-items:center;justify-content:center;',
-    'box-shadow:0 2px 12px rgba(0,0,0,.18);transition:transform .2s ease;padding:0;}',
-    '#lm-nav-btn:hover{transform:scale(1.06);}',
+    'background:#6b6b6b;color:#fff;position:relative;padding:0;flex:none;',
+    'display:flex;align-items:center;justify-content:center;',
+    'box-shadow:0 2px 10px rgba(0,0,0,.15);transition:transform .2s ease,background .2s ease;}',
+    '#lm-nav-btn:hover{background:#4d4d4d;transform:scale(1.06);}',
     '#lm-nav-btn:focus-visible{outline:3px solid #089900;outline-offset:3px;}',
 
-    '#lm-nav-btn .lm-bar{display:block;width:20px;height:2px;background:#fff;border-radius:2px;',
-    'position:absolute;transition:transform .25s ease,opacity .2s ease;}',
+    '#lm-nav-btn .lm-bar{position:absolute;display:block;width:20px;height:2px;',
+    'background:#fff;border-radius:2px;transition:transform .25s ease,opacity .2s ease;}',
     '#lm-nav-btn .lm-bar:nth-child(1){transform:translateY(-6px);}',
     '#lm-nav-btn .lm-bar:nth-child(3){transform:translateY(6px);}',
     '#lm-nav.open #lm-nav-btn .lm-bar:nth-child(1){transform:rotate(45deg);}',
     '#lm-nav.open #lm-nav-btn .lm-bar:nth-child(2){opacity:0;}',
     '#lm-nav.open #lm-nav-btn .lm-bar:nth-child(3){transform:rotate(-45deg);}',
 
-    '#lm-nav-list{list-style:none;margin:0 0 14px 0;padding:2px;',
-    'display:flex;flex-direction:column;align-items:flex-end;gap:10px;',
-    'overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;}',
+    /* 丸ノードのリスト */
+    '#lm-nav-list{list-style:none;margin:0 0 12px 0;padding:3px;',
+    'display:flex;flex-direction:column;align-items:center;gap:9px;',
+    'overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;',
+    'scrollbar-width:none;}',
+    '#lm-nav-list::-webkit-scrollbar{display:none;}',
 
-    '#lm-nav-list li{opacity:0;transform:translateY(8px);pointer-events:none;',
-    'transition:opacity .22s ease,transform .22s ease;}',
+    '#lm-nav-list li{opacity:0;transform:translateY(10px) scale(.85);pointer-events:none;',
+    'flex:none;',
+    'transition:opacity .22s ease,transform .22s cubic-bezier(.34,1.4,.64,1);}',
     '#lm-nav.open #lm-nav-list li{opacity:1;transform:none;pointer-events:auto;}',
-    '#lm-nav.open #lm-nav-list li:nth-child(1){transition-delay:.06s;}',
-    '#lm-nav.open #lm-nav-list li:nth-child(2){transition-delay:.03s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(1){transition-delay:.12s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(2){transition-delay:.09s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(3){transition-delay:.06s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(4){transition-delay:.03s;}',
 
-    '#lm-nav-list a{display:flex;align-items:center;gap:10px;text-decoration:none;',
-    'background:#fff;color:#1a1a1a;font-size:15px;padding:9px 16px 9px 13px;',
-    'border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,.12);white-space:nowrap;',
-    'transition:transform .15s ease;}',
-    '#lm-nav-list a:hover{transform:translateX(-3px);}',
-    '#lm-nav-list a:focus-visible{outline:3px solid #089900;outline-offset:2px;}',
+    '#lm-nav-list a{width:58px;height:58px;border-radius:50%;',
+    'display:flex;align-items:center;justify-content:center;text-align:center;',
+    'background:#a3a3a3;color:#fff;text-decoration:none;',
+    'font-size:10.5px;font-weight:700;letter-spacing:.05em;line-height:1.2;',
+    'box-shadow:0 2px 10px rgba(0,0,0,.12);',
+    'transition:background .18s ease,transform .18s ease;}',
+    '#lm-nav-list a:hover{background:#787878;transform:scale(1.07);}',
+    '#lm-nav-list a:focus-visible{outline:3px solid #089900;outline-offset:3px;}',
 
-    '.lm-dot{width:12px;height:12px;border-radius:50%;background:#d6d6d6;flex:none;}',
-    '#lm-nav-list a[aria-current="page"] .lm-dot{background:#089900;}',
-    '#lm-nav-list a[aria-current="page"]{font-weight:700;}',
-
-    '@keyframes lm-pulse{0%{box-shadow:0 0 0 0 rgba(8,153,0,.45);}',
-    '70%{box-shadow:0 0 0 7px rgba(8,153,0,0);}100%{box-shadow:0 0 0 0 rgba(8,153,0,0);}}',
-    '#lm-nav-list a[aria-current="page"] .lm-dot{animation:lm-pulse 2s ease-out infinite;}',
+    /* 今いるページ */
+    '#lm-nav-list a[aria-current="page"]{background:#089900;}',
+    '#lm-nav-list a[aria-current="page"]:hover{background:#0b6100;}',
 
     '@media (prefers-reduced-motion:reduce){',
     '#lm-nav *{animation:none!important;transition:none!important;}}',
@@ -79,8 +87,13 @@
     '@media (max-width:480px){',
     '#lm-nav{right:calc(14px + env(safe-area-inset-right,0px));',
     'bottom:calc(16px + env(safe-area-inset-bottom,0px));}',
-    '#lm-nav-btn{width:52px;height:52px;}',
-    '#lm-nav-list a{font-size:16px;padding:11px 18px 11px 14px;}}'
+    '#lm-nav-btn{width:50px;height:50px;}',
+    '#lm-nav-list{gap:7px;}',
+    '#lm-nav-list a{width:52px;height:52px;font-size:9.5px;}}',
+
+    '@media (max-height:640px){',
+    '#lm-nav-list{gap:6px;}',
+    '#lm-nav-list a{width:46px;height:46px;font-size:9px;}}'
   ].join('');
 
   var style = document.createElement('style');
@@ -99,14 +112,8 @@
     var li = document.createElement('li');
     var a = document.createElement('a');
     a.href = page.file;
+    a.textContent = page.label;
     if (isCurrent(page)) a.setAttribute('aria-current', 'page');
-
-    var dot = document.createElement('span');
-    dot.className = 'lm-dot';
-    dot.setAttribute('aria-hidden', 'true');
-
-    a.appendChild(dot);
-    a.appendChild(document.createTextNode(page.label));
     li.appendChild(a);
     list.appendChild(li);
   });
@@ -116,7 +123,6 @@
   btn.type = 'button';
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('aria-label', 'メニューを開く');
-  btn.style.position = 'relative';
   for (var i = 0; i < 3; i++) {
     var bar = document.createElement('span');
     bar.className = 'lm-bar';
