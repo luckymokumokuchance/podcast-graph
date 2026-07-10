@@ -27,7 +27,11 @@
 
   // ── スタイル ───────────────────────────────────────────
   var css = [
-    '#lm-nav{position:fixed;right:20px;bottom:20px;z-index:9999;',
+    '#lm-nav{position:fixed;z-index:9999;',
+    'right:calc(20px + env(safe-area-inset-right,0px));',
+    'bottom:calc(20px + env(safe-area-inset-bottom,0px));',
+    'display:flex;flex-direction:column;align-items:flex-end;',
+    'max-height:calc(100dvh - 40px);',
     'font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;}',
 
     '#lm-nav-btn{width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;',
@@ -44,8 +48,9 @@
     '#lm-nav.open #lm-nav-btn .lm-bar:nth-child(2){opacity:0;}',
     '#lm-nav.open #lm-nav-btn .lm-bar:nth-child(3){transform:rotate(-45deg);}',
 
-    '#lm-nav-list{list-style:none;margin:0 0 14px 0;padding:0;',
-    'display:flex;flex-direction:column;align-items:flex-end;gap:10px;}',
+    '#lm-nav-list{list-style:none;margin:0 0 14px 0;padding:2px;',
+    'display:flex;flex-direction:column;align-items:flex-end;gap:10px;',
+    'overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;}',
 
     '#lm-nav-list li{opacity:0;transform:translateY(8px);pointer-events:none;',
     'transition:opacity .22s ease,transform .22s ease;}',
@@ -71,8 +76,11 @@
     '@media (prefers-reduced-motion:reduce){',
     '#lm-nav *{animation:none!important;transition:none!important;}}',
 
-    '@media (max-width:480px){#lm-nav{right:14px;bottom:14px;}',
-    '#lm-nav-btn{width:50px;height:50px;}}'
+    '@media (max-width:480px){',
+    '#lm-nav{right:calc(14px + env(safe-area-inset-right,0px));',
+    'bottom:calc(16px + env(safe-area-inset-bottom,0px));}',
+    '#lm-nav-btn{width:52px;height:52px;}',
+    '#lm-nav-list a{font-size:16px;padding:11px 18px 11px 14px;}}'
   ].join('');
 
   var style = document.createElement('style');
