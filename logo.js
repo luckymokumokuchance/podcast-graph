@@ -24,13 +24,13 @@
     'gap:clamp(6px, 1.6vw, 20px);',
     'text-decoration:none;line-height:0;}',
 
-    '#lm-logo img{height:clamp(20px, 5.6vw, 40px);width:auto;display:block;}',
+    '#lm-logo img{height:clamp(32px, 8.5vw, 50px);width:auto;display:block;}',
 
     '#lm-logo:focus-visible{outline:3px solid #089900;outline-offset:4px;',
     'border-radius:4px;}',
 
     '@media (min-width:900px){',
-    '#lm-logo img{height:clamp(30px, 3vw, 40px);}',
+    '#lm-logo img{height:clamp(46px, 3.4vw, 64px);}',
     '#lm-logo{gap:clamp(10px, 1.4vw, 20px);',
     'top:calc(20px + env(safe-area-inset-top,0px));',
     'left:calc(20px + env(safe-area-inset-left,0px));}}'
