@@ -118,6 +118,18 @@ body::before {
 
 .listen .sep { color: #bdbdbd; }
 
+/* ── 縦長の画面（スマホ縦持ちなど）─────────────────
+   画像の左右が切り落とされるため、雲中心への右ズラしは効かない。
+   ズラしをやめ、横幅を画面内に収める。 */
+@media (max-aspect-ratio: 1 / 1) {
+  .cloud {
+    width: min(calc(657 * var(--u)), 84vw);
+    transform: translate(0, calc(-28.5 * var(--u)));
+  }
+  .lead { font-size: clamp(11px, 3.6vw, 17px); line-height: 1.9; }
+  .listen { font-size: clamp(10px, 2.9vw, 14px); }
+}
+
 /* ── 画面が極端に低い / 狭いとき ────────────────── */
 @media (max-height: 420px), (max-width: 340px) {
   .cloud { align-items: center; justify-content: flex-start; }
