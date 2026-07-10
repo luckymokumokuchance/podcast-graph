@@ -43,21 +43,7 @@ body::before {
 }
 
 /* ── ロゴ（左上）──────────────────────────────── */
-.logo {
-  position: fixed;
-  top: clamp(14px, 2.8vmin, 28px);
-  left: clamp(14px, 2.8vmin, 28px);
-  display: flex;
-  align-items: center;
-  gap: clamp(12px, 2.6vmin, 28px);
-  z-index: 10;
-}
-
-.logo img {
-  height: clamp(26px, 6vmin, 48px);
-  width: auto;
-  display: block;
-}
+/* ロゴは logo.js が自前でスタイルを持って挿入するため、ここでは定義しない */
 
 /* ── 雲の中の領域 ─────────────────────────────── */
 .stage {
@@ -126,9 +112,6 @@ body::before {
 @media (max-aspect-ratio: 1 / 1) {
   .cloud {
     transform: translate(0, calc(55 * var(--u)));
-  }
-  .logo img {
-    height: clamp(50px, 11vmin, 90px);
   }
 }
 
