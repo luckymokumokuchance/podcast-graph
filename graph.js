@@ -4,6 +4,7 @@
 
 // ▼▼▼ GASのWebアプリURLをここに貼り付けてください ▼▼▼
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxk2jQTHhowhGTXBAMsAcEZWbjELoxQAoSEkVy8EIMHuwXsgO_H6xxNqJPiqsvj5Dnd/exec';
+const ASSET_BASE = window.GRAPH_ASSET_BASE || '';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // ============================================================
@@ -137,9 +138,9 @@ function drawGraph(data, tooltip) {
   const LOGO_W = 110;
   const GAP    = 6;
   const logoParts = [
-    { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_ラッキー.png'),  origW: 2130, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
-    { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_もくもく.png'), origW: 1965, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
-    { src: 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_チャンス.png'), origW: 2114, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
+    { src: ASSET_BASE + 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_ラッキー.png'),  origW: 2130, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
+    { src: ASSET_BASE + 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_もくもく.png'), origW: 1965, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
+    { src: ASSET_BASE + 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_チャンス.png'), origW: 2114, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
   ];
   const logoHeights  = logoParts.map(p => Math.round(LOGO_W * p.origH / p.origW));
   const totalLogoH   = logoHeights.reduce((a, b) => a + b, 0) + GAP * (logoParts.length - 1);
