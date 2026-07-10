@@ -56,7 +56,14 @@ body::before {
 #app {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 90px 16px 72px;
+  /* 上余白: logo.js（左上固定ロゴ）の下端と被らないための余白。
+     モバイル: ロゴ下端 最大62px + 余裕 → 84px
+     PC(900px〜): ロゴ下端 最大84px + 余裕 → 112px */
+  padding: 84px 16px 72px;
+}
+
+@media (min-width: 900px) {
+  #app { padding-top: 112px; }
 }
 
 /* ---------- 検索（CMS版と同じ、白入力欄＋ダークボタン） ---------- */

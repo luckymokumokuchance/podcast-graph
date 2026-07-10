@@ -55,10 +55,14 @@ body::before {
 #app {
   max-width: 760px;
   margin: 0 auto;
-  /* 上余白: Studio埋め込み時にTOPロゴ（画面左上）と被らないための余白。
-     episodes.htmlと同じ罠なので先に確保しておく。実機のプレビューを見て
-     必要に応じてこの数値だけ調整すればよい（90pxは仮値） */
-  padding: 90px 16px 72px;
+  /* 上余白: logo.js（左上固定ロゴ）の下端と被らないための余白。
+     モバイル: ロゴ下端 最大62px + 余裕 → 84px
+     PC(900px〜): ロゴ下端 最大84px + 余裕 → 112px */
+  padding: 84px 16px 72px;
+}
+
+@media (min-width: 900px) {
+  #app { padding-top: 112px; }
 }
 
 /* ---------- 検索 ---------- */
