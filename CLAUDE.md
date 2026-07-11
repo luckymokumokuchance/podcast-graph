@@ -38,6 +38,15 @@
 - 実験機能は新ブランチで開発し、本番ブランチ（feature/logo-deco）に merge
 - 説明は1行で。返答は短く
 
+## 開発体制・コミュニケーション
+
+4人体制（河﨑+Win側Claude／イノウエ+もう一台のClaude）。
+
+- **状況報告・引き継ぎ**：`HANDOVER*.md`（大きめの区切りごとに作成。前回分を必ず読んでから着手）
+- **軽い質問・確認**：`QUESTIONS.md`（相手への質問はここに追記。回答が付いたら解決済みへ移動）
+- Win側Claude（河﨑と作業）は git CLIに直接アクセスでき、push/pull/マージが可能
+- もう一台のClaude（イノウエと作業）は非公開リポジトリを直接見られず、貼ってもらう／公開URL確認に頼る。git CLIは使わずGitHubのWeb UIのみ
+
 ## 関連リソース
 
 - **本番サイト**: https://luckymokumokuchance.github.io/podcast-graph/
