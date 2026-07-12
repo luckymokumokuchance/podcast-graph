@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>未タグ化の概念 | ラッキーもくもくチャンス</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="untagged.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 説明（説明的トーン） -->
+    <div class="page-intro">
+      <h1>未タグ化の概念</h1>
+      <p>エピソードで話に出たけれど、まだタグとして整理していない概念です。登場したエピソード数の多い順に並んでいます（数字は登場したエピソードの数）。</p>
+    </div>
+
+    <!-- 検索（episodesと同じ作法） -->
+    <div id="search-cloud">
+      <div id="search-row">
+        <input id="search-input" type="search"
+               placeholder="概念・エピソードから検索"
+               autocomplete="off" aria-label="概念を検索">
+        <button id="search-btn" aria-label="検索">Search</button>
+      </div>
+      <p id="result-count" role="status"></p>
+    </div>
+
+    <!-- 一覧 -->
+    <div id="loading">preparing...</div>
+    <div id="error" hidden>データの取得に失敗しました。時間をおいて再読み込みしてください。</div>
+    <ul id="concept-list"></ul>
+    <p id="empty" hidden>見つかりませんでした。ことばを変えてもう一度どうぞ。</p>
+  </div>
+
+  <script src="untagged.js"></script>
+  <script src="nav.js"></script>
+  <script src="logo.js"></script>
+</body>
+</html>

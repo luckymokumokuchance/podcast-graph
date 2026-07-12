@@ -1,0 +1,230 @@
+/* ============================================================
+   ラッキーもくもくチャンス - 未タグ化の概念 一覧＆検索
+   episodes.css と同じ「緑もくもく」背景・白カードのテイストを踏襲。
+   背景の敷き方(body::before/100lvh)・上余白・検索UIは episodes.css を流用。
+   ============================================================ */
+
+:root {
+  --c-green:       #089900;
+  --c-green-deep:  #0b6100;
+  --c-ink:         #111111;
+  --c-sub:         #5a6b58;
+  --c-cloud:       #ffffff;
+  --c-mist:        #eef6ec;
+  --c-dark:        #4a4a4a;
+  --c-mark:        #ffe58a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "BIZ UDGothic", sans-serif;
+  color: var(--c-ink);
+  background-color: #2e8b1e;
+}
+
+/* 背景は画面に固定したレイヤーに敷く（episodes.cssと同一の手法）。
+   高さは inset:0 ではなく 100lvh で一度だけ確定させ、スマホのアドレスバー
+   開閉で背景が拡大／移動して見えるバグを避ける。 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;   /* 古いブラウザ向けの保険 */
+  height: 100lvh;
+  z-index: -1;
+  background-image: url("image/bg_mokumoku.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#app {
+  max-width: 1080px;
+  margin: 0 auto;
+  /* 上余白: logo.js（左上固定ロゴ）の下端と被らないための余白（episodesと同値） */
+  padding: 84px 16px 72px;
+}
+
+@media (min-width: 900px) {
+  #app { padding-top: 112px; }
+}
+
+/* ---------- ページ説明 ---------- */
+.page-intro {
+  max-width: 640px;
+  margin: 0 auto 26px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 50, 0, 0.55);
+}
+
+.page-intro h1 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.page-intro p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+/* ---------- 検索（episodesと同じ、白入力欄＋ダークボタン） ---------- */
+#search-cloud {
+  max-width: 560px;
+  margin: 0 auto 30px;
+}
+
+#search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+#search-input {
+  flex: 1;
+  font: inherit;
+  font-size: 16px; /* iOSズーム防止 */
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: var(--c-ink);
+  min-width: 0;
+}
+
+#search-input::placeholder { color: #8b998a; }
+
+#search-input:focus-visible {
+  box-shadow: 0 0 0 3px var(--c-green);
+}
+
+#search-btn {
+  flex: none;
+  font: inherit;
+  font-size: 15px;
+  border: none;
+  background: var(--c-dark);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 22px;
+  cursor: pointer;
+}
+
+#result-count {
+  margin: 10px 2px 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 50, 0, 0.5);
+}
+
+/* ---------- 状態表示 ---------- */
+#loading, #error, #empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 50, 0, 0.5);
+}
+
+/* ---------- 一覧（episodesと同じ 1／2／3 カラム） ---------- */
+#concept-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+@media (min-width: 680px) {
+  #concept-list { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 980px) {
+  #concept-list { grid-template-columns: repeat(3, 1fr); }
+}
+
+.concept-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.concept-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.45;
+  color: var(--c-ink);
+}
+
+.concept-desc {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--c-sub);
+  overflow-wrap: anywhere;
+}
+
+.concept-count {
+  margin-top: 12px;
+  align-self: flex-start;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--c-green-deep);
+  background: var(--c-mist);
+  border-radius: 999px;
+  padding: 3px 11px;
+}
+
+/* 登場エピソード（開閉） */
+.concept-more {
+  margin-top: 12px;
+  align-self: flex-start;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--c-green-deep);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.concept-eps {
+  margin-top: 6px;
+  border-top: 1.5px dashed #d7e6d3;
+  padding-top: 10px;
+}
+
+.concept-eps a {
+  display: block;
+  font-size: 12.5px;
+  color: var(--c-green-deep);
+  text-decoration: none;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  overflow-wrap: anywhere;
+}
+
+.concept-eps a:last-child { border-bottom: 0; }
+.concept-eps a:hover { color: var(--c-green); }
+.concept-eps a::before { content: "▶ "; font-size: 0.6em; color: var(--c-sub); }
+
+/* ---------- アクセシビリティ ---------- */
+:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
