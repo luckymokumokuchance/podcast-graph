@@ -1,0 +1,252 @@
+/* ============================================================
+   ラッキーもくもくチャンス - 概念 詳細ページ
+   episodes / concepts と同じ「緑もくもく背景＋白カード」の世界観。
+   ============================================================ */
+
+:root {
+  --green:        #57a55f;   /* タグ済みピル・アクセント */
+  --green-deep:   #3f8a48;
+  --green-soft:   #cfe8c9;
+  --ink:          #33413a;   /* 本文 */
+  --ink-soft:     #6b7a70;   /* 補助テキスト */
+  --card:         #ffffff;
+  --card-line:    #e6efe2;
+  --gray-pill:    #9aa8a0;
+  --mark-bg:      #ffe49c;   /* 強調（本物っぽさのハイライト） */
+  --mark-line:    #f0b429;
+  --radius:       18px;
+  --shadow:       0 6px 20px rgba(60, 100, 60, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+               "Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  color: var(--ink);
+  min-height: 100lvh;
+  /* 白い中心 → 縁にいくほど緑もくもく（モックの見え方） */
+  background:
+    radial-gradient(120% 90% at 50% 35%,
+      #ffffff 0%, #f4faf1 42%, #dcefd3 70%, #b7dcac 100%) fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 16px 96px; /* 下は nav の丸ボタンに被らない余白 */
+}
+
+/* もどるリンク ------------------------------------------------ */
+.back-link {
+  display: inline-block;
+  margin: 4px 0 14px;
+  color: var(--green-deep);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+.back-link:focus-visible { outline: 2px solid var(--green-deep); outline-offset: 3px; border-radius: 4px; }
+
+/* 状態メッセージ --------------------------------------------- */
+.state-msg {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 14px;
+  padding: 22px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+  box-shadow: var(--shadow);
+}
+
+/* 見出しカード ----------------------------------------------- */
+.head-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 24px 24px;
+  margin-bottom: 26px;
+}
+.status-pill {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.status-pill.is-tagged    { background: var(--green); }
+.status-pill.is-candidate { background: var(--gray-pill); }
+
+.concept-name {
+  margin: 0 0 8px;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.concept-desc {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.concept-desc.is-empty { font-style: italic; opacity: 0.75; }
+
+.ep-count-badge {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--green-deep);
+  background: var(--green-soft);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+/* セクション ------------------------------------------------- */
+.block { margin-bottom: 28px; }
+.block-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--ink);
+  /* 緑背景でも沈まないよう白フチ */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+.block-title::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex: none;
+}
+
+/* どんな文脈で語られたか ------------------------------------- */
+.context-item {
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.ctx-meta {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.ctx-no { font-weight: 700; color: var(--green-deep); flex: none; }
+.ctx-title { font-weight: 600; color: var(--ink); }
+.ctx-text {
+  margin: 0;
+  line-height: 1.85;
+  font-size: 1rem;
+}
+.ctx-text mark,
+mark {
+  background: var(--mark-bg);
+  color: var(--ink);
+  padding: 1px 5px;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px 0 var(--mark-line);
+  font-weight: 600;
+}
+
+/* 登場エピソード --------------------------------------------- */
+.ep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.ep-list li + li { border-top: 1px solid var(--card-line); }
+.ep-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 0.15s;
+}
+.ep-list a:hover { background: #f3faf0; }
+.ep-list a:focus-visible { outline: 2px solid var(--green-deep); outline-offset: -2px; }
+.row-title { font-weight: 600; }
+.row-no { flex: none; font-size: 0.82rem; color: var(--ink-soft); }
+
+/* よく一緒に語られる概念 ------------------------------------- */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cooc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--green-soft);
+  border-radius: 999px;
+  padding: 8px 14px;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.92rem;
+  box-shadow: 0 2px 6px rgba(60, 100, 60, 0.08);
+  transition: border-color 0.15s, transform 0.08s;
+}
+.cooc-chip:hover { border-color: var(--green); }
+.cooc-chip:active { transform: translateY(1px); }
+.cooc-chip:focus-visible { outline: 2px solid var(--green-deep); outline-offset: 2px; }
+.cooc-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--green-deep);
+  background: var(--green-soft);
+  border-radius: 999px;
+}
+
+/* 補助メッセージ・空表示 ------------------------------------- */
+.soft-note {
+  margin: 0;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+.soft-note code {
+  background: #eef5ea;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 0.88em;
+}
+
+@media (max-width: 480px) {
+  .concept-name { font-size: 1.55rem; }
+  .head-card { padding: 20px 18px; }
+  .ctx-meta { flex-direction: column; gap: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

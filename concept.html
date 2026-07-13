@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>概念詳細 - ラッキーもくもくチャンス</title>
+  <link rel="stylesheet" href="concept.css">
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="concepts.html">← 概念一覧にもどる</a>
+
+    <p id="loading" class="state-msg">よみこみ中…</p>
+    <p id="error"   class="state-msg" hidden>データを読み込めませんでした。少し時間をおいて、もう一度お試しください。</p>
+    <p id="notfound" class="state-msg" hidden>その概念は見つかりませんでした。<br><a href="concepts.html">概念一覧へもどる</a></p>
+
+    <div id="content" hidden>
+      <!-- 見出しカード -->
+      <section class="head-card">
+        <span class="status-pill" id="status-pill"></span>
+        <h1 class="concept-name" id="concept-name"></h1>
+        <p class="concept-desc" id="concept-desc"></p>
+        <span class="ep-count-badge" id="ep-count"></span>
+      </section>
+
+      <!-- どんな文脈で語られたか -->
+      <section class="block">
+        <h2 class="block-title">どんな文脈で語られたか</h2>
+        <div id="context-list"></div>
+      </section>
+
+      <!-- 登場エピソード -->
+      <section class="block">
+        <h2 class="block-title">登場エピソード</h2>
+        <ul class="ep-list" id="ep-list"></ul>
+      </section>
+
+      <!-- よく一緒に語られる概念 -->
+      <section class="block">
+        <h2 class="block-title">よく一緒に語られる概念</h2>
+        <div class="chip-row" id="cooc-list"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 右下の共通ページ移動メニュー（他ページと同じ） -->
+  <script src="nav.js"></script>
+  <script src="concept.js"></script>
+</body>
+</html>

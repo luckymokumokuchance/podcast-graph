@@ -1,15 +1,23 @@
 {
+  "concepts": [
+    { "name": "本物っぽさ", "status": "tagged", "description": "作り物なのに \"本物っぽい\" と感じる、その境目についての話題。",
+      "episodes": [ {"id":3,"title":"「なんか良い」の正体"}, {"id":8,"title":"手ざわりの話"}, {"id":20,"title":"本物と偽物のあいだ"} ] },
+    { "name": "手ざわりのある言葉", "status": "tagged", "description": "",
+      "episodes": [ {"id":3,"title":"「なんか良い」の正体"}, {"id":8,"title":"手ざわりの話"}, {"id":8,"title":"手ざわりの話"}, {"id":12,"title":"走りながら直す"} ] },
+    { "name": "名付けの快楽", "status": "tagged", "description": "",
+      "episodes": [ {"id":20,"title":"本物と偽物のあいだ"}, {"id":3,"title":"「なんか良い」の正体"} ] },
+    { "name": "引き算の勇気", "status": "candidate", "description": "",
+      "episodes": [ {"id":20,"title":"本物と偽物のあいだ"} ] },
+    { "name": "無関係な概念", "status": "tagged", "description": "",
+      "episodes": [ {"id":99,"title":"別の話"} ] }
+  ],
   "nodes": [
-    {"id":"5","type":"episode","title":"自認ハッフルパフ","url":"https://open.spotify.com/episode/AAA111","summary":"[トピック]ハリー・ポッターの組み分け帽子と自他評価のズレ / MBTIや六星占術などの占い・ラベリング / 学生時代の得意科目\n\n#小学生理論 #ゆる継承","published_at":"2026-03-31"},
-    {"id":"4","type":"episode","title":"焼きたらこの話","url":"https://open.spotify.com/episode/BBB222","summary":"[トピック]焼きたらこの再発見と進化の歴史／春の苦い思い出と別れの記憶／方言のラベリングと文化的アイデンティティ\n\n#テクスチャ","published_at":"2026-03-31"},
-    {"id":"11","type":"episode","title":"月が綺麗ですねとVOGUE","url":"","summary":"[トピック]月が綺麗ですね／VOGUEとファッション誌 #テクスチャ #ピエロ","published_at":"2026-05-12"},
-    {"id":"tag_テクスチャ","type":"tag","label":"テクスチャ"},
-    {"id":"tag_ピエロ","type":"tag","label":"ピエロ"}
-  ],
-  "links": [
-    {"source":"tag_テクスチャ","target":"4","type":"tag"},
-    {"source":"tag_テクスチャ","target":"11","type":"tag"},
-    {"source":"tag_ピエロ","target":"11","type":"tag"}
-  ],
-  "images": {}
+    { "type": "episode", "id": 3, "title": "「なんか良い」の正体",
+      "summary": "結局さ、なんかこう #本物っぽさ ってあるじゃん。作り物なのに本物に見えるというか。 #手ざわりのある言葉 も少し。\n#名付けの快楽" },
+    { "type": "episode", "id": 8, "title": "手ざわりの話",
+      "summary": "手ざわりがある方が #本物っぽさ を感じるっていうのはずっと言ってる気がする。" },
+    { "type": "episode", "id": 20, "title": "本物と偽物のあいだ",
+      "summary": "今日はまさに「本物っぽさ」の回。あの境界線ってどこにあるんだろうね、という話。\n#本物っぽさ #名付けの快楽 #引き算の勇気" },
+    { "type": "episode", "id": 99, "title": "別の話", "summary": "これは #無関係な概念 だけの回。" }
+  ]
 }
