@@ -196,8 +196,10 @@ function renderPage(target, allConcepts, epById) {
   let ctxShown = 0;
   (target.episodes || []).forEach(ep => {
     const shownote = epById[String(ep.id)] || '';
-    const sentence = findContext(shownote, target.name);
+    let sentence = findContext(shownote, target.name);
     if (!sentence) return;
+    // 行頭の箇条書き記号（- * ・ >）を落として読みやすく
+    sentence = sentence.replace(/^\s*[-*・>＞]+\s+/, '');
     ctxShown++;
     const item = document.createElement('div');
     item.className = 'context-item';

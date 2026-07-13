@@ -4,18 +4,17 @@
    ============================================================ */
 
 :root {
-  --green:        #57a55f;   /* タグ済みピル・アクセント */
-  --green-deep:   #3f8a48;
-  --green-soft:   #cfe8c9;
-  --ink:          #33413a;   /* 本文 */
-  --ink-soft:     #6b7a70;   /* 補助テキスト */
-  --card:         #ffffff;
+  --green:        #089900;   /* サイト共通のブランドグリーン（episodes.css と統一） */
+  --green-deep:   #0b6100;
+  --green-soft:   #dcefd3;
+  --ink:          #111111;   /* 本文 */
+  --ink-soft:     #5a6b58;   /* 補助テキスト */
+  --card:         rgba(255, 255, 255, 0.94);
   --card-line:    #e6efe2;
   --gray-pill:    #9aa8a0;
-  --mark-bg:      #ffe49c;   /* 強調（本物っぽさのハイライト） */
-  --mark-line:    #f0b429;
+  --mark-bg:      #ffe58a;   /* 強調（episodes.css と同じ黄色） */
   --radius:       18px;
-  --shadow:       0 6px 20px rgba(60, 100, 60, 0.10);
+  --shadow:       0 6px 20px rgba(11, 97, 0, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -23,15 +22,29 @@
 html, body { margin: 0; padding: 0; }
 
 body {
-  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans",
-               "Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN",
+               "BIZ UDGothic", sans-serif;
   color: var(--ink);
   min-height: 100lvh;
-  /* 白い中心 → 縁にいくほど緑もくもく（モックの見え方） */
-  background:
-    radial-gradient(120% 90% at 50% 35%,
-      #ffffff 0%, #f4faf1 42%, #dcefd3 70%, #b7dcac 100%) fixed;
+  background-color: #2e8b1e; /* 画像読み込み前／端の保険色（episodes.css と同じ） */
   -webkit-font-smoothing: antialiased;
+}
+
+/* 背景は episodes.css と同じ方式：画面に固定した疑似要素へ緑もくもく画像を敷く。
+   高さは 100lvh で一度だけ確定させ、スマホのアドレスバー開閉で背景が動くのを防ぐ。 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;   /* 古いブラウザ向けの保険 */
+  height: 100lvh;
+  z-index: -1;
+  background-image: url("image/bg_mokumoku.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .wrap {
@@ -151,14 +164,11 @@ body {
   line-height: 1.85;
   font-size: 1rem;
 }
-.ctx-text mark,
 mark {
   background: var(--mark-bg);
   color: var(--ink);
-  padding: 1px 5px;
-  border-radius: 5px;
-  box-shadow: inset 0 -2px 0 var(--mark-line);
-  font-weight: 600;
+  border-radius: 3px;
+  padding: 0 3px;
 }
 
 /* 登場エピソード --------------------------------------------- */
