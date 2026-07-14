@@ -41,21 +41,28 @@ function spotifyEmbedUrl(url) {
 }
 
 // shownote → 検索・抜粋用のプレーンテキスト
-// （#タグ, [img:], Markdown記号, URL を除去）
+// （#タグ・##候補・[img:]・Markdown記号・URL を除去）
 function toPlainText(shownote) {
   return String(shownote || '')
     .replace(/\[img:[^\]]*\]/g, ' ')
-    .replace(/#[^\s#、。！？…「」『』【】（）]+/g, ' ')
+    .replace(/#+[^\s#、。！？…「」『』【】（）]+/g, ' ') // # も ## もまとめて除去
     .replace(/https?:\/\/\S+/g, ' ')
     .replace(/[#*_`>\[\]()]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// shownote内の #タグ を配列で
+// shownote内の「本タグ（# 1個）」だけを配列で返す。
+// ##（未タグ候補）はグラフに載らないのと同様、一覧のタグとしても扱わない。
 function extractTags(shownote) {
-  const m = String(shownote || '').match(/#([^\s#、。！？…「」『』【】（）]+)/g) || [];
-  return [...new Set(m.map(t => t.slice(1)))];
+  const matches = String(shownote || '').match(/#+([^\s#、。！？…「」『』【】（）]+)/g) || [];
+  const names = [];
+  matches.forEach(m => {
+    const hashes = m.match(/^#+/)[0].length;
+    if (hashes !== 1) return;            // ## 以上（未タグ候補）は除外
+    names.push(m.replace(/^#+/, ''));
+  });
+  return [...new Set(names)];
 }
 
 // HTMLエスケープ
@@ -80,8 +87,6 @@ function excerptWithHighlight(plain, query, maxLen = 140) {
 
   if (!nQuery) return esc(prefix + slice + suffix);
 
-  // 正規化後の位置と元文字列の位置は1対1（NFKC/大小/カナ変換は長さ不変が前提。
-  // 万一ズレる文字が混ざっても表示が崩れるだけで安全側）
   const nSlice = normalize(slice);
   const parts = [];
   let cursor = 0;
@@ -158,7 +163,7 @@ async function main() {
         title:    n.title || '',
         url:      n.url || '',
         shownote: n.summary || '',
-        date:     n.published_at || '',   // GAS側が対応していれば表示
+        date:     n.published_at || '',
         plain,
         tags,
         searchText: normalize(`${formatEpId(n.id)} ${n.title} ${plain} ${tags.join(' ')}`),
@@ -173,7 +178,7 @@ async function main() {
 }
 
 // ------------------------------------------------------------
-// タグチップ（出現数の多い順）
+// タグチップ（出現数の多い順・本タグのみ）
 // ------------------------------------------------------------
 function buildTagChips() {
   const count = {};
@@ -204,7 +209,6 @@ function bindSearch() {
   const input = document.getElementById('search-input');
   const btn   = document.getElementById('search-btn');
 
-  // 入力と同時に即時検索（ボタンはキーボードを閉じる/明示実行用）
   input.addEventListener('input', render);
   btn.addEventListener('click', () => {
     render();

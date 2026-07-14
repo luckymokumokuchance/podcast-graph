@@ -2,28 +2,25 @@
 // ラッキーもくもくチャンス - 概念 詳細ページ
 //   URL:  concept.html?c=<概念名>
 //
-// 新しいGAS・新しいシート列は不要。既存の2本のJSONを組み合わせるだけ。
-//   1) ?type=concepts … 概念のメタ情報（name/status/description/episodes）＋共起計算用の全概念
-//   2) 既定エンドポイント … エピソード本文（shownote）＝「どんな文脈で語られたか」の抜き出し元
+// データは ?type=concepts の1本だけ（軽い）。
+//   見出し（名前・状態・説明・EP数） → 該当概念
+//   どんな文脈で語られたか           → 各EPの context（concept_contexts シートに手書き）
+//   登場エピソード                   → episodes 配列
+//   よく一緒に語られる概念           → 全概念の episodes 集合を突き合わせて共起集計
 //
-// ページ内訳とデータの出どころ:
-//   見出し（名前・状態・説明・EP数） → ?type=concepts の該当概念
-//   どんな文脈で語られたか           → 各EPの shownote から「#概念名 を含む一文」を抽出
-//   登場エピソード                   → 該当概念の episodes 配列
-//   よく一緒に語られる概念           → 全概念の episodes 集合を突き合わせて共起数を集計
+// ※「どんな文脈で語られたか」はショーノートからの自動抽出をやめ、
+//   スプレッドシート（concept_contexts）に手書きした一文だけを表示する。
+//   書いてある回だけ表示され、空欄の回は出ない。
 // ============================================================
 
 // ▼ graph.js / episodes.js / concepts.js と同じURL
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxk2jQTHhowhGTXBAMsAcEZWbjELoxQAoSEkVy8EIMHuwXsgO_H6xxNqJPiqsvj5Dnd/exec';
 
-// 関連エピソードのリンク先（グラフの既存ディープリンク ?ep=<id>）
-const GRAPH_PAGE = 'index.html';
-// 概念一覧・共起チップのリンク先
-const LIST_PAGE = 'concepts.html';
-const DETAIL_PAGE = 'concept.html';
+const GRAPH_PAGE  = 'index.html';   // 登場エピソードのリンク先（?ep=<id>）
+const DETAIL_PAGE = 'concept.html'; // 共起チップのリンク先
 
-// タグの区切り文字（episodes.js / GAS と同じ集合）
-const TAG_DELIMS = '\\s#、。！？…「」『』【】（）';
+// タグの区切り文字（ハイライト処理用）
+const DELIM_SET = new Set([...' \t\n#、。！？…「」『』【】（）']);
 
 // ------------------------------------------------------------
 // 汎用ユーティリティ
@@ -33,58 +30,14 @@ function esc(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function escapeRegExp(s) {
-  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 // エピソード番号の表示（"3" → "003"）
 function formatEpNo(id) {
   const m = String(id).match(/(\d+)/);
   return m ? m[1].padStart(3, '0') : String(id);
 }
 
-// ------------------------------------------------------------
-// 文脈抽出（純粋関数・テスト対象）
-// ------------------------------------------------------------
-
-// ショーノートを「一文」に割る（。！？ の直後、または改行で区切る）
-function splitSentences(text) {
-  return String(text || '')
-    .replace(/\r\n/g, '\n')
-    .split(/(?<=[。！？])|\n+/)
-    .map(s => s.trim())
-    .filter(Boolean);
-}
-
-// その「文」がタグの羅列だけ（本文が無い）かどうか
-const TAG_GLOBAL = new RegExp('#{1,2}[^' + TAG_DELIMS + ']+', 'g');
-function isTagOnly(s) {
-  const rest = s
-    .replace(TAG_GLOBAL, '')
-    .replace(new RegExp('[' + TAG_DELIMS + ']', 'g'), '')
-    .trim();
-  return rest.length === 0;
-}
-
-// shownote から「概念名を語っている一文」を1つだけ選ぶ。
-// 優先順位: ①#タグを含み本文もある文 → ②概念名が素で出る本文の文 → ③#タグを含む文（羅列でも）
-function findContext(shownote, name) {
-  const sentences = splitSentences(shownote);
-  const tagRe = new RegExp('#{1,2}' + escapeRegExp(name) + '(?=[' + TAG_DELIMS + ']|$)');
-
-  let hit = sentences.find(s => tagRe.test(s) && !isTagOnly(s));
-  if (hit) return hit;
-
-  hit = sentences.find(s => s.includes(name) && !isTagOnly(s));
-  if (hit) return hit;
-
-  hit = sentences.find(s => tagRe.test(s));
-  return hit || null;
-}
-
-// 抽出した一文をHTML化。概念名は <mark> で強調し、# は取り除く。
-// 他の #タグ も # を外して素の言葉として表示（読みやすさのため）。
-const DELIM_SET = new Set([...' \t\n#、。！？…「」『』【】（）']);
+// 手書き文脈をHTML化。概念名（# 付き / 素 どちらでも）を <mark> で強調し、
+// # は取り除く。他の #タグ も # を外して素の言葉として表示。
 function renderContext(sentence, name) {
   let out = '';
   let i = 0;
@@ -92,19 +45,17 @@ function renderContext(sentence, name) {
   while (i < n) {
     if (sentence[i] === '#') {
       let j = i;
-      while (sentence[j] === '#') j++;          // # / ## をまとめて飛ばす
+      while (sentence[j] === '#') j++;
       let k = j;
       while (k < n && !DELIM_SET.has(sentence[k])) k++;
       const tag = sentence.slice(j, k);
       if (tag.length) {
-        out += (tag === name)
-          ? '<mark>' + esc(tag) + '</mark>'
-          : esc(tag);                            // 他タグは # を外して素表示
+        out += (tag === name) ? '<mark>' + esc(tag) + '</mark>' : esc(tag);
         i = k;
         continue;
       }
     }
-    if (sentence.startsWith(name, i)) {           // # の付かない素の概念名も強調
+    if (name && sentence.startsWith(name, i)) {
       out += '<mark>' + esc(name) + '</mark>';
       i += name.length;
       continue;
@@ -115,7 +66,7 @@ function renderContext(sentence, name) {
   return out;
 }
 
-// 共起（よく一緒に語られる概念）の集計
+// 共起（よく一緒に語られる概念）：共有エピソード数を集計（同一EPは1回だけ）
 function computeCooccurrence(allConcepts, target) {
   const ids = new Set((target.episodes || []).map(e => String(e.id)));
   return allConcepts
@@ -131,32 +82,15 @@ function computeCooccurrence(allConcepts, target) {
 }
 
 // ------------------------------------------------------------
-// データ取得
+// データ取得（?type=concepts の1本だけ）
 // ------------------------------------------------------------
-async function loadData() {
-  const params = new URLSearchParams(location.search);
-  const src = params.get('src'); // テスト用：concepts と nodes を1つに入れたモックJSON
-
-  if (src) {
-    const d = await (await fetch(src)).json();
-    return {
-      concepts: d.concepts || [],
-      episodes: (d.nodes || []).filter(n => n.type === 'episode'),
-    };
-  }
-
-  const [cRes, eRes] = await Promise.all([
-    fetch(GAS_URL + '?type=concepts'),
-    fetch(GAS_URL),
-  ]);
-  if (!cRes.ok) throw new Error('concepts HTTP ' + cRes.status);
-  if (!eRes.ok) throw new Error('episodes HTTP ' + eRes.status);
-  const cd = await cRes.json();
-  const ed = await eRes.json();
-  return {
-    concepts: cd.concepts || [],
-    episodes: (ed.nodes || []).filter(n => n.type === 'episode'),
-  };
+async function loadConcepts() {
+  const src = new URLSearchParams(location.search).get('src'); // テスト用モック
+  const url = src || (GAS_URL + '?type=concepts');
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('concepts HTTP ' + res.status);
+  const d = await res.json();
+  return d.concepts || [];
 }
 
 // ------------------------------------------------------------
@@ -165,7 +99,7 @@ async function loadData() {
 function show(id) { document.getElementById(id).hidden = false; }
 function hide(id) { document.getElementById(id).hidden = true; }
 
-function renderPage(target, allConcepts, epById) {
+function renderPage(target, allConcepts) {
   // 見出しカード
   const pill = document.getElementById('status-pill');
   if (target.status === 'tagged') {
@@ -176,7 +110,7 @@ function renderPage(target, allConcepts, epById) {
     pill.className = 'status-pill is-candidate';
   }
   document.getElementById('concept-name').textContent = target.name;
-  document.title = target.name + ' - ラッキーもくもくチャンス';
+  document.title = target.name + ' | ラッキーもくもくチャンス';
 
   const descEl = document.getElementById('concept-desc');
   if (target.description) {
@@ -190,28 +124,24 @@ function renderPage(target, allConcepts, epById) {
   const count = (target.episodes || []).length;
   document.getElementById('ep-count').textContent = count + 'エピソードで登場';
 
-  // どんな文脈で語られたか
+  // どんな文脈で語られたか（手書きの context がある回だけ表示）
   const ctxList = document.getElementById('context-list');
   ctxList.innerHTML = '';
   let ctxShown = 0;
   (target.episodes || []).forEach(ep => {
-    const shownote = epById[String(ep.id)] || '';
-    let sentence = findContext(shownote, target.name);
-    if (!sentence) return;
-    // 行頭の箇条書き記号（- * ・ >）を落として読みやすく
-    sentence = sentence.replace(/^\s*[-*・>＞]+\s+/, '');
+    const text = String(ep.context || '').trim();
+    if (!text) return;
     ctxShown++;
     const item = document.createElement('div');
     item.className = 'context-item';
     item.innerHTML =
       '<p class="ctx-meta"><span class="ctx-no">第' + esc(formatEpNo(ep.id)) + '回</span>' +
       '<span class="ctx-title">' + esc(ep.title || '') + '</span></p>' +
-      '<p class="ctx-text">' + renderContext(sentence, target.name) + '</p>';
+      '<p class="ctx-text">' + renderContext(text, target.name) + '</p>';
     ctxList.appendChild(item);
   });
   if (ctxShown === 0) {
-    ctxList.innerHTML = '<p class="soft-note">抜き出せる文脈がまだ見つかりませんでした。ショーノート内でこの概念に触れている一文に <code>#' +
-      esc(target.name) + '</code> を書くと、ここに表示されます。</p>';
+    ctxList.innerHTML = '<p class="soft-note">この概念の文脈はまだ記入されていません。スプレッドシートの <code>concept_contexts</code> シートで、登場回の <code>context</code> 欄に一文を書くと、ここに表示されます。</p>';
   }
 
   // 登場エピソード
@@ -254,9 +184,9 @@ async function main() {
     return;
   }
 
-  let data;
+  let concepts;
   try {
-    data = await loadData();
+    concepts = await loadConcepts();
   } catch (e) {
     console.error(e);
     hide('loading');
@@ -264,19 +194,16 @@ async function main() {
     return;
   }
 
-  const target = (data.concepts || []).find(c => c.name === name);
+  const target = concepts.find(c => c.name === name);
   if (!target) {
     hide('loading');
     show('notfound');
     return;
   }
 
-  const epById = {};
-  data.episodes.forEach(n => { epById[String(n.id)] = n.summary || ''; });
-
   hide('loading');
   show('content');
-  renderPage(target, data.concepts, epById);
+  renderPage(target, concepts);
 }
 
 // ブラウザでのみ自動実行。Node（テスト）では純粋関数だけを公開する。
@@ -284,8 +211,5 @@ if (typeof document !== 'undefined') {
   main();
 }
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    splitSentences, isTagOnly, findContext, renderContext,
-    computeCooccurrence, formatEpNo,
-  };
+  module.exports = { renderContext, computeCooccurrence, formatEpNo };
 }
