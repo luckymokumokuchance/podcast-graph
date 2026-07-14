@@ -5,6 +5,7 @@
 //   ## … 未タグ（グラフには出さない候補）   → status: 'candidate'
 // どちらも1ページに並べ、上部のボタンで絞り込む。
 // カードの一言コメントは（任意の）concepts シートの description から出る。
+// 各カードの概念名は詳細ページ concept.html?c=<名前> へのリンクになっている。
 // ============================================================
 
 // ▼ graph.js / episodes.js と同じURL
@@ -15,8 +16,25 @@ const DATA_URL = _src || (GAS_URL + '?type=concepts');
 
 // 関連エピソードのリンク先（グラフの既存ディープリンク ?ep=<id>）
 const GRAPH_PAGE = 'index.html';
+// 概念の詳細ページ
+const DETAIL_PAGE = 'concept.html';
 
 const FILTER_LABEL = { all: 'すべて', tagged: 'タグ済み', candidate: '未タグ' };
+
+// ------------------------------------------------------------
+// 概念名リンクの見た目（自己完結。concepts.css を触らずに済むよう注入）
+// ------------------------------------------------------------
+(function injectConceptLinkStyle() {
+  const css = `
+    .concept-name a.concept-link { color: inherit; text-decoration: none; }
+    .concept-name a.concept-link:hover .concept-name-text { text-decoration: underline; }
+    .concept-link-arrow { margin-left: 6px; font-weight: 900; opacity: 0.55; }
+    .concept-name a.concept-link:hover .concept-link-arrow { opacity: 1; }
+  `;
+  const el = document.createElement('style');
+  el.textContent = css;
+  document.head.appendChild(el);
+})();
 
 // ------------------------------------------------------------
 // 検索用の正規化（episodes.js と同一）：全半角そろえ・小文字化・カタカナ→ひらがな
@@ -144,13 +162,15 @@ function render() {
     const statusLabel = c.status === 'tagged' ? 'タグ済み' : '未タグ';
     const statusClass = c.status === 'tagged' ? 'is-tagged' : 'is-candidate';
 
+    const detailHref = `${DETAIL_PAGE}?c=${encodeURIComponent(c.name)}`;
+
     const epsHtml = c.episodes.map(e =>
       `<a href="${GRAPH_PAGE}?ep=${encodeURIComponent(e.id)}">${esc(e.title || ('第' + e.id + '回'))}</a>`
     ).join('');
 
     li.innerHTML = `
       <span class="concept-status ${statusClass}">${statusLabel}</span>
-      <h2 class="concept-name">${esc(c.name)}</h2>
+      <h2 class="concept-name"><a class="concept-link" href="${detailHref}"><span class="concept-name-text">${esc(c.name)}</span><span class="concept-link-arrow">→</span></a></h2>
       ${c.description ? `<p class="concept-desc">${esc(c.description)}</p>` : ''}
       <span class="concept-count">${c.count}エピソード</span>
       ${c.count ? `<button class="concept-more" aria-expanded="false">登場エピソードをみる ▾</button>
