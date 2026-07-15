@@ -13,6 +13,8 @@
   --card-line:    #e6efe2;
   --gray-pill:    #9aa8a0;
   --mark-bg:      #ffe58a;   /* 強調（episodes.css と同じ黄色） */
+  --contrast:     #d98c1a;   /* 対比概念用のアクセント色（橙系） */
+  --contrast-soft: #f7e2bd;
   --radius:       18px;
   --shadow:       0 6px 20px rgba(11, 97, 0, 0.12);
 }
@@ -111,12 +113,27 @@ body::before {
 }
 .concept-desc.is-empty { font-style: italic; opacity: 0.75; }
 
+.head-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .ep-count-badge {
   display: inline-block;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--green-deep);
   background: var(--green-soft);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.proposer-badge {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: #eef1ed;
   padding: 5px 12px;
   border-radius: 999px;
 }
@@ -198,12 +215,23 @@ mark {
 .row-title { font-weight: 600; }
 .row-no { flex: none; font-size: 0.82rem; color: var(--ink-soft); }
 
-/* よく一緒に語られる概念 ------------------------------------- */
+/* チップ共通 --------------------------------------------------- */
 .chip-row {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
+.chip-group { margin-bottom: 16px; }
+.chip-group:last-child { margin-bottom: 0; }
+.chip-group-label {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* よく一緒に語られる概念／近接概念（ページリンクのチップ） ---- */
 .cooc-chip {
   display: inline-flex;
   align-items: center;
@@ -233,6 +261,26 @@ mark {
   color: var(--green-deep);
   background: var(--green-soft);
   border-radius: 999px;
+}
+
+/* 対比概念チップ（cooc-chip をベースに橙アクセントへ差し替え） */
+.contrast-chip {
+  border-color: var(--contrast-soft);
+}
+.contrast-chip:hover { border-color: var(--contrast); }
+.contrast-chip:focus-visible { outline-color: var(--contrast); }
+
+/* 近接概念・文献由来（リンクにしないテキストのみのチップ） ---- */
+.external-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed var(--ink-soft);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.92rem;
 }
 
 /* 補助メッセージ・空表示 ------------------------------------- */
