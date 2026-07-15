@@ -123,6 +123,24 @@ function renderPage(target, allConcepts) {
   document.getElementById('concept-name').textContent = target.name;
   document.title = target.name + ' | ラッキーもくもくチャンス';
 
+  // ---- ここから追加：概念ごとにdescription / OGP / canonicalを書き換え ----
+  const pageUrl = location.origin + location.pathname + '?c=' + encodeURIComponent(target.name);
+  const pageDesc = target.description
+    ? target.name + 'について：' + target.description
+    : 'ラッキーもくもくチャンスで語られた概念「' + target.name + '」の詳細ページです。';
+
+  const setMeta = (selector, attr, value) => {
+    const el = document.querySelector(selector);
+    if (el) el.setAttribute(attr, value);
+  };
+
+  setMeta('meta[name="description"]', 'content', pageDesc);
+  setMeta('meta[property="og:title"]', 'content', target.name + ' | ラッキーもくもくチャンス');
+  setMeta('meta[property="og:description"]', 'content', pageDesc);
+  setMeta('meta[property="og:url"]', 'content', pageUrl);
+  setMeta('#canonical-link', 'href', pageUrl);
+  // ---- ここまで追加 ----
+
   const descEl = document.getElementById('concept-desc');
   if (target.description) {
     descEl.textContent = target.description;
