@@ -3,10 +3,12 @@
 //   URL:  concept.html?c=<概念名>
 //
 // データは ?type=concepts の1本だけ（軽い）。
-//   見出し（名前・状態・説明・EP数） → 該当概念
-//   どんな文脈で語られたか           → 各EPの context（concept_contexts シートに手書き）
-//   登場エピソード                   → episodes 配列
-//   よく一緒に語られる概念           → 全概念の episodes 集合を突き合わせて共起集計
+//   見出し（名前・状態・説明・EP数・提唱者）  → 該当概念
+//   どんな文脈で語られたか                    → 各EPの context（concept_contexts シートに手書き）
+//   登場エピソード                            → episodes 配列
+//   近接概念（話した分）・対比概念            → concepts シートの手動列（GAS側で双方向展開済み）
+//   近接概念（文献由来）                      → concepts シートの手動列（自由記述・リンクなし）
+//   よく一緒に語られる概念                    → 全概念の episodes 集合を突き合わせて共起集計（自動）
 //
 // ※「どんな文脈で語られたか」はショーノートからの自動抽出をやめ、
 //   スプレッドシート（concept_contexts）に手書きした一文だけを表示する。
@@ -17,7 +19,7 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxk2jQTHhowhGTXBAMsAcEZWbjELoxQAoSEkVy8EIMHuwXsgO_H6xxNqJPiqsvj5Dnd/exec';
 
 const GRAPH_PAGE  = 'index.html';   // 登場エピソードのリンク先（?ep=<id>）
-const DETAIL_PAGE = 'concept.html'; // 共起チップのリンク先
+const DETAIL_PAGE = 'concept.html'; // 共起・近接・対比チップのリンク先
 
 // タグの区切り文字（ハイライト処理用）
 const DELIM_SET = new Set([...' \t\n#、。！？…「」『』【】（）']);
@@ -99,6 +101,15 @@ async function loadConcepts() {
 function show(id) { document.getElementById(id).hidden = false; }
 function hide(id) { document.getElementById(id).hidden = true; }
 
+// ページリンクのチップ（近接概念・対比概念・共起で共通）
+function makeLinkChip(name, extraClass) {
+  const a = document.createElement('a');
+  a.className = extraClass ? 'cooc-chip ' + extraClass : 'cooc-chip';
+  a.href = DETAIL_PAGE + '?c=' + encodeURIComponent(name);
+  a.textContent = name;
+  return a;
+}
+
 function renderPage(target, allConcepts) {
   // 見出しカード
   const pill = document.getElementById('status-pill');
@@ -123,6 +134,15 @@ function renderPage(target, allConcepts) {
 
   const count = (target.episodes || []).length;
   document.getElementById('ep-count').textContent = count + 'エピソードで登場';
+
+  // 提唱者（無ければバッジごと非表示）
+  const proposerEl = document.getElementById('proposer-badge');
+  if (target.proposer) {
+    proposerEl.textContent = '提唱：' + target.proposer;
+    proposerEl.hidden = false;
+  } else {
+    proposerEl.hidden = true;
+  }
 
   // どんな文脈で語られたか（手書きの context がある回だけ表示）
   const ctxList = document.getElementById('context-list');
@@ -156,7 +176,49 @@ function renderPage(target, allConcepts) {
     epList.appendChild(li);
   });
 
-  // よく一緒に語られる概念
+  // 近接概念（話した分：ページリンク）
+  const related = target.related || [];
+  const relatedGroup = document.getElementById('related-group');
+  const relatedList  = document.getElementById('related-list');
+  relatedList.innerHTML = '';
+  if (related.length) {
+    related.forEach(name => relatedList.appendChild(makeLinkChip(name)));
+    relatedGroup.hidden = false;
+  } else {
+    relatedGroup.hidden = true;
+  }
+
+  // 近接概念（文献由来：テキストのみ、リンクなし）
+  const relatedExternal = target.related_external || [];
+  const relatedExtGroup = document.getElementById('related-external-group');
+  const relatedExtList  = document.getElementById('related-external-list');
+  relatedExtList.innerHTML = '';
+  if (relatedExternal.length) {
+    relatedExternal.forEach(text => {
+      const span = document.createElement('span');
+      span.className = 'external-chip';
+      span.textContent = text;
+      relatedExtList.appendChild(span);
+    });
+    relatedExtGroup.hidden = false;
+  } else {
+    relatedExtGroup.hidden = true;
+  }
+
+  // どちらも空の時だけ「まだありません」を出す
+  document.getElementById('related-empty').hidden = (related.length > 0 || relatedExternal.length > 0);
+
+  // 対比概念（ページリンク）
+  const contrast = target.contrast || [];
+  const contrastList = document.getElementById('contrast-list');
+  contrastList.innerHTML = '';
+  if (contrast.length === 0) {
+    contrastList.innerHTML = '<p class="soft-note">まだありません。</p>';
+  } else {
+    contrast.forEach(name => contrastList.appendChild(makeLinkChip(name, 'contrast-chip')));
+  }
+
+  // よく一緒に語られる概念（自動計算・共起数バッジ付き）
   const cooc = computeCooccurrence(allConcepts, target);
   const coocList = document.getElementById('cooc-list');
   coocList.innerHTML = '';
@@ -164,9 +226,7 @@ function renderPage(target, allConcepts) {
     coocList.innerHTML = '<p class="soft-note">まだありません。</p>';
   } else {
     cooc.forEach(c => {
-      const a = document.createElement('a');
-      a.className = 'cooc-chip';
-      a.href = DETAIL_PAGE + '?c=' + encodeURIComponent(c.name);
+      const a = makeLinkChip(c.name);
       a.innerHTML = esc(c.name) + '<span class="cooc-count">' + c.shared + '</span>';
       coocList.appendChild(a);
     });
