@@ -16,6 +16,7 @@
     { file: 'about.html',    label: 'ABOUT' },
     { file: 'episodes.html', label: 'EP LIST' },
     { file: 'concepts.html', label: 'CONCEPTS', alsoMatch: ['concept.html'] },
+    { file: 'inspired.html', label: 'INSPIRED' },
     { file: 'log.html',      label: 'LOG' },
     { file: 'contact.html',  label: 'CONTACT' }
   ];
@@ -64,12 +65,13 @@
     'flex:none;',
     'transition:opacity .22s ease,transform .22s cubic-bezier(.34,1.4,.64,1);}',
     '#lm-nav.open #lm-nav-list li{opacity:1;transform:none;pointer-events:auto;}',
-    /* 下（ボタンに近い方）から順に出るよう、上のノードほど遅らせる。6個ぶん。 */
-    '#lm-nav.open #lm-nav-list li:nth-child(1){transition-delay:.15s;}',
-    '#lm-nav.open #lm-nav-list li:nth-child(2){transition-delay:.12s;}',
-    '#lm-nav.open #lm-nav-list li:nth-child(3){transition-delay:.09s;}',
-    '#lm-nav.open #lm-nav-list li:nth-child(4){transition-delay:.06s;}',
-    '#lm-nav.open #lm-nav-list li:nth-child(5){transition-delay:.03s;}',
+    /* 下（ボタンに近い方）から順に出るよう、上のノードほど遅らせる。7個ぶん。 */
+    '#lm-nav.open #lm-nav-list li:nth-child(1){transition-delay:.18s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(2){transition-delay:.15s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(3){transition-delay:.12s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(4){transition-delay:.09s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(5){transition-delay:.06s;}',
+    '#lm-nav.open #lm-nav-list li:nth-child(6){transition-delay:.03s;}',
 
     '#lm-nav-list a{width:58px;height:58px;border-radius:50%;',
     'display:flex;align-items:center;justify-content:center;text-align:center;',
