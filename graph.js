@@ -327,7 +327,7 @@ function drawGraph(data, tooltip) {
     .attr('r', d => nodeR(d))
     .style('fill', d => d.type === 'tag' ? COLORS.tag : COLORS.episode)
     .style('stroke', 'none')
-    .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
+    .style('cursor', d => (d.type === 'episode' || d.type === 'tag') ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
       if (d.type === 'tag')              d3.select(this).style('fill', COLORS.tagHover);
       if (d.type === 'episode' && !d._clicked) d3.select(this).style('fill', COLORS.episodeHover);
@@ -458,7 +458,7 @@ function drawGraph(data, tooltip) {
 
     epNode.filter(d => d.type === 'tag')
       .on('click', (event, d) => {
-        showTooltip(tooltip, event, `<span class="tip-title">#${d.label}</span>`);
+        window.location.href = `concept.html?c=${encodeURIComponent(d.label)}`;
       });
 
     svg.on('click', (event) => {
@@ -475,7 +475,10 @@ function drawGraph(data, tooltip) {
       .on('mousemove', (event, d) => {
         showTooltip(tooltip, event, `<span class="tip-title">#${d.label}</span>`);
       })
-      .on('mouseleave', () => hideTooltip(tooltip));
+      .on('mouseleave', () => hideTooltip(tooltip))
+      .on('click', (event, d) => {
+        window.location.href = `concept.html?c=${encodeURIComponent(d.label)}`;
+      });
   }
 
   // ---------- ディープリンク: ?ep=<id> で該当エピソードのモーダルを自動表示 ----------
