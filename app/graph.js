@@ -474,7 +474,7 @@ function drawGraph(data, tooltip) {
      epNode.filter(d => d.type === 'tag'), textGroup.filter(d => d.type === 'tag')]
       .forEach(sel => sel.transition().duration(450).style('opacity', op));
   }
-  const ROW_H = 64;   // 縦一列の行間
+  const ROW_H = 30;   // 縦一列の行間（コンパクト）
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
@@ -493,12 +493,14 @@ function drawGraph(data, tooltip) {
     computeColumn();
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
+    epOnly().select('circle').transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('r', 9);
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
     // 等倍・中央に縦一列。上に少し余白を取り、続きは縦スクロール/パンで
     svg.transition().duration(850).call(zoomBehavior.transform,
-      d3.zoomIdentity.translate(width / 2, 64).scale(1));
+      d3.zoomIdentity.translate(width / 2, 40).scale(1));
     applyEpStyle(); applyTitleStyle();
   }
   function enterNetwork() {
@@ -508,6 +510,8 @@ function drawGraph(data, tooltip) {
     fadeOthers(1);
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
+    epOnly().select('circle').transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('r', d => nodeR(d));
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._nx; d.y = d._ny; } });
@@ -599,7 +603,7 @@ function drawGraph(data, tooltip) {
   // ============================================================
   function applyEpStyle() {
     g.selectAll('.node-ep')
-      .style('font-size', `${epFontPx}px`)
+      .style('font-size', d => tableMode && d.type === 'episode' ? '8px' : `${epFontPx}px`)
       .attr('transform', `rotate(${-rotAngle})`);
   }
 
@@ -608,8 +612,9 @@ function drawGraph(data, tooltip) {
     const sinA   = Math.sin(a);
     const cosA   = Math.cos(a);
     g.selectAll('.node-title')
-      .style('font-size', `${titleFontPx / currentK}px`)
+      .style('font-size', d => tableMode && d.type === 'episode' ? '11px' : `${titleFontPx / currentK}px`)
       .attr('transform', d => {
+        if (tableMode && d.type === 'episode') return `translate(${nodeR(d) + 10}, 4)`;
         const ty = nodeR(d) + TITLE_OFFSET_PX / currentK;
         return `translate(${ty * sinA}, ${ty * cosA}) rotate(${-rotAngle})`;
       });
