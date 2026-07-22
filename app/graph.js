@@ -331,6 +331,7 @@ function drawGraph(data, tooltip) {
     .style('pointer-events', 'none');
 
   epNode.append('circle')
+    .attr('class', 'node-circle')
     .attr('r', d => nodeR(d))
     .style('fill', d => d.type === 'tag' ? COLORS.tag : COLORS.episode)
     .style('stroke', 'none')
@@ -512,7 +513,7 @@ function drawGraph(data, tooltip) {
     computeColumn();
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
-    epOnly().select('circle').transition().duration(850).ease(d3.easeCubicInOut)
+    epOnly().select('circle.node-circle').transition().duration(850).ease(d3.easeCubicInOut)
       .attr('r', 9);
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
@@ -533,7 +534,7 @@ function drawGraph(data, tooltip) {
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
-    epOnly().select('circle').transition().duration(850).ease(d3.easeCubicInOut)
+    epOnly().select('circle.node-circle').transition().duration(850).ease(d3.easeCubicInOut)
       .attr('r', d => nodeR(d));
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
