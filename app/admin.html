@@ -2,49 +2,70 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>管理 — リンク編集</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>リンク登録 — 管理</title>
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-  <header class="topbar">
-    <span class="brand">リンク編集（管理者）</span>
-    <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+  <header class="abar">
+    <span class="abrand">リンク登録</span>
+    <div class="aright">
       <span id="who" class="who"></span>
-      <button id="login" class="tab">GitHubでログイン</button>
-      <button id="logout" class="tab hidden">ログアウト</button>
-      <a class="adminlink" href="index.html">← 星図へ</a>
+      <button id="logout" class="btn ghost hidden">ログアウト</button>
+      <a class="tostar" href="index.html">← 星図</a>
     </div>
   </header>
 
-  <main class="admin-main">
-    <div id="gate" class="gate">
-      <p>リンク（エピソード同士のつながり）を編集します。</p>
-      <p class="muted">保存にはこのリポジトリのコラボレーター権限が要ります。権限の無いアカウントは保存が拒否されます。</p>
+  <!-- ログイン前 -->
+  <section id="gate" class="gate">
+    <h2>管理者ログイン</h2>
+    <p class="muted">エピソード同士のつながり（リンク）を編集します。保存にはこのリポジトリへの書き込み権限が必要です。</p>
+    <ol class="steps">
+      <li>GitHubで <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b> を開く</li>
+      <li><b>Generate new token</b> → Repository access で <b>podcast-graph</b> を選択</li>
+      <li>Permissions → <b>Contents</b> を <b>Read and write</b> に</li>
+      <li>発行された <code>github_pat_…</code> を下に貼って「入る」</li>
+    </ol>
+    <div class="tokrow">
+      <input id="tok" type="password" placeholder="github_pat_..." autocomplete="off" />
+      <button id="enter" class="btn primary">入る</button>
     </div>
+    <p id="gate-msg" class="err"></p>
+    <p class="muted small">トークンはこの端末のブラウザにのみ保存され、外部には送られません（GitHub APIの認証にだけ使用）。</p>
+  </section>
 
-    <section id="editor" class="editor hidden">
-      <h3>リンク一覧</h3>
-      <table class="grid" id="link-table">
-        <thead><tr><th>起点(話数)</th><th>終点(話数)</th><th>理由</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-
-      <h3>新規追加</h3>
-      <div class="addrow">
-        <select id="add-source"></select>
-        <span>→</span>
-        <select id="add-target"></select>
-        <input id="add-reason" type="text" placeholder="つながる理由" />
-        <button id="add-btn" class="tab">追加</button>
+  <!-- ログイン後 -->
+  <main id="editor" class="editor hidden">
+    <div class="toolbar">
+      <div class="counts"><span id="cnt-links">0</span> 本のリンク / <span id="cnt-eps">0</span> エピソード</div>
+      <div class="tbtns">
+        <input id="filter" class="filter" type="search" placeholder="リンクを絞り込み（タイトル・理由）" />
+        <button id="save" class="btn primary" disabled>保存（コミット）</button>
       </div>
+    </div>
+    <p id="save-msg" class="muted"></p>
 
-      <div class="saverow">
-        <button id="save-btn" class="tab active">GitHubに保存（コミット）</button>
-        <span id="save-status" class="muted"></span>
+    <section class="addcard">
+      <h3>新しいリンクを追加</h3>
+      <div class="addgrid">
+        <label>起点
+          <input id="add-source" list="ep-list" class="eppick" placeholder="話数かタイトルで検索" />
+        </label>
+        <span class="arrow">—</span>
+        <label>終点
+          <input id="add-target" list="ep-list" class="eppick" placeholder="話数かタイトルで検索" />
+        </label>
+        <label class="reasonlab">理由（任意）
+          <input id="add-reason" type="text" placeholder="なぜつながるか" />
+        </label>
+        <button id="add" class="btn">追加</button>
       </div>
+      <p id="add-msg" class="err"></p>
+      <datalist id="ep-list"></datalist>
     </section>
+
+    <h3 class="lh">登録済みリンク</h3>
+    <div id="link-list" class="link-list"></div>
   </main>
 
   <script src="data.js"></script>
