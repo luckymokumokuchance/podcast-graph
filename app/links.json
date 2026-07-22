@@ -1,14 +1,5 @@
 {
   "links": [
-    {
-      "source": 1,
-      "target": 20,
-      "reason": "コンセプトの話が第1回の問題意識に接続"
-    },
-    {
-      "source": 1,
-      "target": 7,
-      "reason": "テスト"
-    }
+    { "source": 1, "target": 20, "reason": "コンセプトの話が第1回の問題意識に接続" }
   ]
 }

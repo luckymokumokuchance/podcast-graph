@@ -1,19 +1,20 @@
 /* 上部トグルと管理リンク、テーブルオーバーレイ（ネットワークの graph.css と衝突しない範囲だけ） */
 .viewtoggle {
-  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 4px; z-index: 60;
-  background: rgba(255,255,255,.85); backdrop-filter: blur(4px);
-  border-radius: 999px; padding: 3px; box-shadow: 0 1px 6px rgba(0,0,0,.12);
+  position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 2px; z-index: 60;
+  background: rgba(120,120,120,.16); backdrop-filter: blur(4px);
+  border-radius: 999px; padding: 2px;
 }
 .vtab {
-  border: none; background: transparent; padding: 7px 16px; border-radius: 999px;
-  cursor: pointer; font-size: 13px; color: #555; font-family: inherit;
+  border: none; background: transparent; border-radius: 999px;
+  width: 30px; height: 24px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #888; padding: 0;
 }
-.vtab.active { background: #089900; color: #fff; }
+.vtab.active { background: rgba(255,255,255,.9); color: #555; }
 
 .adminlink {
-  position: fixed; top: 16px; right: 16px; z-index: 60;
-  color: #aaa; font-size: 12px; text-decoration: none;
+  position: fixed; top: 12px; right: 14px; z-index: 60;
+  color: #bbb; font-size: 10px; line-height: 1; text-decoration: none;
 }
 
 /* テーブルオーバーレイ */
