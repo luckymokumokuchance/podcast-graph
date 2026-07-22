@@ -18,7 +18,10 @@
 }
 
 /* テーブル整列モードでは、低ズームでもエピソードのタイトルを必ず表示 */
-#graph.table-mode .node-title { opacity: 1 !important; pointer-events: auto !important; }
+#graph.table-mode .node-title {
+  opacity: 1 !important; pointer-events: auto !important;
+  text-anchor: start !important; /* 頭揃え: グラフ標準の中央揃えを上書き */
+}
 
 /* テーブル整列モード: パン/ピンチではなく縦スクロールで見る */
 #graph-container.table-scroll {
