@@ -398,6 +398,15 @@ function drawGraph(data, tooltip) {
     .attr('x', 0).attr('y', 0)
     .text(d => d.label || '');
 
+  // テーブル整列モード専用: タイトル（省略せず、横に長ければ横スクロール）
+  const rowTitleFO = textGroup.filter(d => d.type === 'episode')
+    .append('foreignObject')
+    .attr('class', 'node-title-fo')
+    .attr('height', 18)
+    .style('opacity', 0)
+    .style('pointer-events', 'auto');
+  rowTitleFO.append('xhtml:div').attr('class', 'row-title');
+
   // テーブル整列モード専用: タイトル下のタグ一覧（横並び・グレー）
   const rowTagsFO = textGroup.filter(d => d.type === 'episode')
     .append('foreignObject')
@@ -488,15 +497,23 @@ function drawGraph(data, tooltip) {
   const ROW_H     = 60;  // 縦一列の行間（タイトル+タグの2段が収まる高さ）
   const LEFT_X    = 64;  // 星の列を画面左に寄せる位置（丸が画面端で切れないよう余白を確保）
   const TABLE_R   = 10;  // テーブル整列モード中の丸の固定半径
-  const TABLE_TITLE_X    = 20; // 丸の中心からタイトル1文字目の左端までの距離
-  const TABLE_TITLE_FONT = 17; // タイトルフォントサイズ（元11pxの約1.5倍）
-  const TABLE_TITLE_Y    = -2; // 丸の中心とタイトルの上下中心を合わせるオフセット（フォント高さの約1/3上）
+  const TABLE_TITLE_X    = 20; // 丸の中心からタイトルの左端までの距離
+  const TABLE_TITLE_H    = 18; // タイトル行(foreignObject)の高さ
+  const TABLE_TITLE_Y    = -Math.round(TABLE_TITLE_H / 2); // 丸の中心とタイトルの上下中心を合わせる
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
     eps.forEach((d, i) => { d._tx = 0; d._ty = i * ROW_H + ROW_H / 2; });
   }
   function renderRowTags() {
+    const rightMargin = 12;
+    const titleW = Math.max(80, width - LEFT_X - TABLE_TITLE_X - rightMargin);
+    textGroup.filter(d => d.type === 'episode').select('.node-title-fo')
+      .attr('x', TABLE_TITLE_X)
+      .attr('y', TABLE_TITLE_Y)
+      .attr('width', titleW)
+      .select('div.row-title')
+      .text(d => d.title || '');
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
       .attr('x', TABLE_TITLE_X)
       .attr('y', 18)
@@ -522,6 +539,7 @@ function drawGraph(data, tooltip) {
       .attr('r', TABLE_R);
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
+    epTxt().select('.node-title-fo').transition().delay(400).duration(450).style('opacity', 1);
     epTxt().select('.node-tags-fo').transition().delay(400).duration(450).style('opacity', 1);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
     // 等倍・画面左寄せの縦一列。svgの高さを内容分に広げ、コンテナのネイティブ縦スクロールに任せる
@@ -538,6 +556,7 @@ function drawGraph(data, tooltip) {
     tableMode = false;
     d3.select('#graph').classed('table-mode', false);
     document.getElementById('graph-container').classList.remove('table-scroll');
+    epTxt().select('.node-title-fo').transition().duration(250).style('opacity', 0);
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);

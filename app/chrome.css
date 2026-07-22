@@ -17,11 +17,20 @@
   color: #bbb; font-size: 10px; line-height: 1; text-decoration: none;
 }
 
-/* テーブル整列モードでは、低ズームでもエピソードのタイトルを必ず表示 */
-#graph.table-mode .node-title {
-  opacity: 1 !important; pointer-events: auto !important;
-  text-anchor: start !important; /* 頭揃え: グラフ標準の中央揃えを上書き */
+/* テーブル整列モードでは、SVGテキストのタイトル（省略表示）は隠し、
+   下のforeignObject版（.row-title / 省略なし・横スクロール可）に差し替える */
+#graph.table-mode .node-title { display: none !important; }
+
+/* テーブル整列モード: タイトル（省略せず、はみ出す分は横スクロール） */
+.row-title {
+  font-size: 12px; color: #000; white-space: nowrap;
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; touch-action: pan-x;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+  line-height: 18px;
+  scrollbar-width: none;
 }
+.row-title::-webkit-scrollbar { display: none; }
 
 /* テーブル整列モード: パン/ピンチではなく縦スクロールで見る */
 #graph-container.table-scroll {
