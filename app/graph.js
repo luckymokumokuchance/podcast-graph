@@ -66,6 +66,7 @@ function drawGraph(data, tooltip) {
   const height    = container.clientHeight;
 
   // ---------- 状態変数 ----------
+  let tableMode     = false;   // テーブル整列モード中は回転・力学を止める
   let currentK      = 1;
   let nodeRadius    = 21;
   let epFontPx      = parseFloat(document.getElementById('s-ep-font').value);
@@ -463,6 +464,68 @@ function drawGraph(data, tooltip) {
     if (n) openModal(n);
   };
 
+  // ============================================================
+  // ネットワーク ⇔ テーブル（星が番号順に整列してそのまま一覧になる）
+  // ============================================================
+  const epOnly   = () => epNode.filter(d => d.type === 'episode');
+  const epTxt    = () => textGroup.filter(d => d.type === 'episode');
+  function fadeOthers(op) {
+    [link, linkHandle, decoCircle, logoImage,
+     epNode.filter(d => d.type === 'tag'), textGroup.filter(d => d.type === 'tag')]
+      .forEach(sel => sel.transition().duration(450).style('opacity', op));
+  }
+  function computeGrid() {
+    const eps = data.nodes.filter(d => d.type === 'episode')
+      .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
+    const n = eps.length;
+    const cols = Math.max(2, Math.round(Math.sqrt(n)));
+    const rows = Math.ceil(n / cols);
+    const cw = 150, ch = 82;
+    eps.forEach((d, i) => {
+      d._tx = (i % cols) * cw + cw / 2;
+      d._ty = Math.floor(i / cols) * ch + ch / 2;
+    });
+    return { bboxW: cols * cw, bboxH: rows * ch };
+  }
+  function enterTable() {
+    if (tableMode) return;
+    tableMode = true;
+    simulation.stop();
+    data.nodes.forEach(d => { if (d.type === 'episode') { d._nx = d.x; d._ny = d.y; } });
+    rotAngle = 0;
+    rotG.attr('transform', `rotate(0, ${width / 2}, ${height / 2})`);
+    d3.select('#graph').classed('table-mode', true);
+    epOnly().on('.drag', null);              // 整列中はドラッグ無効
+    fadeOthers(0);
+    const { bboxW, bboxH } = computeGrid();
+    epOnly().transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('transform', d => `translate(${d._tx},${d._ty})`);
+    epTxt().transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('transform', d => `translate(${d._tx},${d._ty})`);
+    data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
+    const k = Math.min(width / bboxW, height / bboxH) * 0.86;
+    svg.transition().duration(850).call(zoomBehavior.transform,
+      d3.zoomIdentity.translate((width - bboxW * k) / 2, (height - bboxH * k) / 2).scale(k));
+    applyEpStyle(); applyTitleStyle();
+  }
+  function enterNetwork() {
+    if (!tableMode) return;
+    tableMode = false;
+    d3.select('#graph').classed('table-mode', false);
+    fadeOthers(1);
+    epOnly().transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('transform', d => `translate(${d._nx},${d._ny})`);
+    epTxt().transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('transform', d => `translate(${d._nx},${d._ny})`);
+    data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._nx; d.y = d._ny; } });
+    epOnly().call(makeDrag(simulation));     // ドラッグ復活
+    svg.transition().duration(850).call(zoomBehavior.transform,
+      d3.zoomIdentity.translate(width / 2 * (1 - initScale), height / 2 * (1 - initScale)).scale(initScale));
+    simulation.alpha(0.3).restart();
+  }
+  window.__viewTable   = enterTable;
+  window.__viewNetwork = enterNetwork;
+
   if (isTouch) {
     epNode.filter(d => d.type === 'episode')
       .on('click', (event, d) => openModal(d));
@@ -513,7 +576,7 @@ function drawGraph(data, tooltip) {
   // ---------- 回転アニメーション ----------
   let lastTime = null;
   function rotateLoop(time) {
-    if (lastTime !== null && rotSpeed !== 0) {
+    if (lastTime !== null && rotSpeed !== 0 && !tableMode) {
       rotAngle += rotSpeed * (time - lastTime) / 1000;
       rotG.attr('transform', `rotate(${rotAngle}, ${width / 2}, ${height / 2})`);
       applyEpStyle();

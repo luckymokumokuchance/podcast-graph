@@ -17,6 +17,9 @@
   color: #bbb; font-size: 10px; line-height: 1; text-decoration: none;
 }
 
+/* テーブル整列モードでは、低ズームでもエピソードのタイトルを必ず表示 */
+#graph.table-mode .node-title { opacity: 1 !important; pointer-events: auto !important; }
+
 /* テーブルオーバーレイ */
 .view-table {
   position: fixed; inset: 0; z-index: 40; background: #fff;
