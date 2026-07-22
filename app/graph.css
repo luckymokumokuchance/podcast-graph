@@ -1,0 +1,456 @@
+/* ============================================================
+   ラッキーもくもくチャンス - スタイル
+   ============================================================ */
+
+/* デフォルト値（graph.jsのCOLORSで上書きされます） */
+:root {
+  --c-episode:       #999999;
+  --c-episode-hover: #bbbbbb;
+  --c-episode-click: #ffbba3;
+  --c-tag:           #4a8c3a;
+  --c-tag-hover:     #2d6b20;
+  --c-deco:          #dedede;
+  --c-link-tag:      #4a8c3a;
+  --c-link-manual:   #888888;
+  --c-label-inner:   #ffffff;
+  --c-label-title:   #000000;
+  --c-label-tag:     #2d6b20;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: transparent;
+  color: #333333;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* グラフ領域 */
+#graph-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+#graph {
+  width: 100%;
+  height: 100%;
+}
+
+/* エピソードノード */
+.node.episode circle {
+  fill: var(--c-episode);
+  stroke: none;
+  cursor: pointer;
+  transition: fill 0.2s;
+}
+
+/* タグノード */
+.node.tag circle {
+  fill: var(--c-tag);
+  stroke: none;
+  cursor: default;
+  transition: fill 0.2s;
+}
+
+/* 円の中のラベル（番号 or #） */
+.node-ep {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--c-label-inner);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+  alignment-baseline: central;
+  user-select: none;
+}
+
+.node.episode .node-ep {
+  font-weight: 400;
+}
+
+/* 円の下：エピソードタイトル */
+.node-title {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--c-label-title);
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+  user-select: none;
+  transition: opacity 0.2s;
+}
+
+/* 円の下：タグラベル */
+.node-tag-label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--c-label-tag);
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+  user-select: none;
+  transition: opacity 0.2s;
+}
+
+/* ズームアウト時はタイトル・タグラベルを非表示 */
+.hide-text .node-title,
+.hide-text .node-tag-label {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* リンク */
+.link {
+  fill: none;
+  cursor: default;
+}
+
+/* ツールチップ */
+.tooltip {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.65;
+  max-width: 240px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: 10;
+  word-break: break-all;
+  color: #333333;
+}
+
+.tooltip.hidden {
+  display: none;
+}
+
+.tooltip .tip-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #222222;
+}
+
+.tooltip .tip-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  background: #d8edd0;
+  border-radius: 3px;
+  padding: 1px 6px;
+  margin-bottom: 4px;
+  color: #2a5a18;
+}
+
+/* ローディング */
+#loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #666666;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+#loading.hidden {
+  display: none;
+}
+
+/* 凡例 */
+#legend {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #444444;
+  pointer-events: none;
+}
+
+#legend.hidden {
+  display: none;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-swatch {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* スマホ用モーダル */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+#modal-box {
+  background: #ffffff;
+  border-radius: 16px 16px 12px 12px;
+  padding: 20px 20px 28px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  position: relative;
+  scrollbar-width: none; /* Firefox: スクロールバー非表示 */
+}
+#modal-box::-webkit-scrollbar { display: none; } /* Safari/Chrome */
+
+#modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+}
+
+#modal-ep {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+#modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+#modal-summary {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.7;
+  margin-top: 18px;
+  margin-bottom: 12px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+#modal-summary p     { margin: 0 0 10px; }
+#modal-summary p:last-child { margin-bottom: 0; }
+#modal-summary a     { color: #1db954; text-decoration: underline; word-break: break-all; }
+#modal-summary h1,
+#modal-summary h2,
+#modal-summary h3    { font-size: 14px; margin: 14px 0 6px; font-weight: 700; color: #1a1a1a; }
+#modal-summary ul,
+#modal-summary ol    { margin: 0 0 10px; padding-left: 20px; }
+#modal-summary li    { margin-bottom: 2px; }
+#modal-summary code  { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+#modal-summary strong { color: #1a1a1a; }
+
+.shownote-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
+#modal-link {
+  display: block;
+  text-align: center;
+  background: #1db954;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 50px;
+  text-decoration: none;
+}
+#modal-link.coming-soon {
+  background: #cccccc;
+  color: #ffffff;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* カラーパネル */
+#color-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #555555;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.color-row {
+  display: grid;
+  grid-template-columns: auto 20px 5.5em;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-label {
+  font-size: 11px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+
+.color-text {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  padding: 2px 4px;
+  width: 100%;
+  color: #444;
+}
+
+.color-text.invalid {
+  border-color: #e05;
+  color: #e05;
+}
+
+/* コントロールパネル */
+#controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #555555;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.ctrl-row {
+  display: grid;
+  grid-template-columns: 6.5em 1fr 2.8em;
+  align-items: center;
+  gap: 6px;
+}
+
+.ctrl-label {
+  font-size: 11px;
+  color: #444;
+  white-space: nowrap;
+}
+
+.ctrl-slider {
+  accent-color: var(--c-tag);
+  cursor: pointer;
+  width: 100%;
+}
+
+.ctrl-val {
+  font-size: 10px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #666;
+}
+
+/* バージョン番号 */
+#version {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 200;
+}
+
+/* スマホ対応 */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 16px;
+  }
+  .tooltip {
+    max-width: 180px;
+    font-size: 11px;
+  }
+  #controls {
+    bottom: 8px;
+    right: 8px;
+    padding: 6px 10px;
+  }
+}
+
+
+/* ------------------------------------------------------------
+   脈打つ輪 = 直近30日のエピソード (FORCE_MAP_SPEC §2-3)
+   内リング(太め・強い明滅)＋外リング(半周期ずらして波紋のように)の
+   二重構成で、ぱっと見て分かりやすくする。
+   opacityのみをアニメ(transformに触れない=60fps・レイアウト非破壊)
+------------------------------------------------------------ */
+@keyframes pulse-inner { 0% { opacity: .85; } 50% { opacity: .15; } 100% { opacity: .85; } }
+@keyframes pulse-outer { 0% { opacity: .45; } 50% { opacity: .05; } 100% { opacity: .45; } }
+
+.pulse-ring-inner {
+  animation: pulse-inner 2.6s ease-in-out infinite;
+}
+.pulse-ring-outer {
+  animation: pulse-outer 2.6s ease-in-out infinite;
+  animation-delay: -1.3s; /* 内リングと半周期ずらして波紋のように広がって見せる */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring-inner, .pulse-ring-outer { animation: none; }
+  .pulse-ring-inner { opacity: .4; }
+  .pulse-ring-outer { opacity: .18; }
+}

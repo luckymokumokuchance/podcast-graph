@@ -1,0 +1,41 @@
+/* 上部トグルと管理リンク、テーブルオーバーレイ（ネットワークの graph.css と衝突しない範囲だけ） */
+.viewtoggle {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 4px; z-index: 60;
+  background: rgba(255,255,255,.85); backdrop-filter: blur(4px);
+  border-radius: 999px; padding: 3px; box-shadow: 0 1px 6px rgba(0,0,0,.12);
+}
+.vtab {
+  border: none; background: transparent; padding: 7px 16px; border-radius: 999px;
+  cursor: pointer; font-size: 13px; color: #555; font-family: inherit;
+}
+.vtab.active { background: #089900; color: #fff; }
+
+.adminlink {
+  position: fixed; top: 16px; right: 16px; z-index: 60;
+  color: #aaa; font-size: 12px; text-decoration: none;
+}
+
+/* テーブルオーバーレイ */
+.view-table {
+  position: fixed; inset: 0; z-index: 40; background: #fff;
+  padding-top: 56px; overflow: hidden;
+}
+.view-table.hidden { display: none; }
+#table-wrap { height: 100%; overflow: auto; padding: 12px 12px 40px; -webkit-overflow-scrolling: touch; }
+
+table.grid { border-collapse: collapse; width: 100%; font-size: 13px; font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif; }
+table.grid th, table.grid td { border: 1px solid #e5e5e5; padding: 8px 10px; text-align: left; vertical-align: top; }
+table.grid th { position: sticky; top: 0; background: #f6f6f6; cursor: pointer; user-select: none; white-space: nowrap; }
+table.grid tr[data-id] { cursor: pointer; }
+table.grid tr[data-id]:hover { background: #f0faf0; }
+.c-num { font-variant-numeric: tabular-nums; color: #089900; font-weight: 600; }
+.c-title { min-width: 200px; }
+.c-links { text-align: center; }
+.chip { display: inline-block; background: #eee; color: #555; border-radius: 999px; padding: 1px 8px; font-size: 11px; margin: 1px 0; }
+
+@media (max-width: 640px) {
+  table.grid { font-size: 12px; }
+  table.grid th, table.grid td { padding: 6px 8px; }
+  .c-title { min-width: 130px; }
+}

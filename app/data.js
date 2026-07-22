@@ -126,5 +126,9 @@
     return { episodes, manualLinks, ...g };
   }
 
-  window.PodcastData = { load, RSS_URL, LINKS_URL };
+  // ネットワークとテーブルで二重fetchしないようキャッシュ
+  let _cache = null;
+  function loadCached() { return _cache || (_cache = load()); }
+
+  window.PodcastData = { load: loadCached, reload: load, RSS_URL, LINKS_URL };
 })();
