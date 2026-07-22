@@ -18,20 +18,13 @@
 
   <!-- ログイン前 -->
   <section id="gate" class="gate">
-    <h2>管理者ログイン</h2>
-    <p class="muted">エピソード同士のつながり（リンク）を編集します。保存にはこのリポジトリへの書き込み権限が必要です。</p>
-    <ol class="steps">
-      <li>GitHubで <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b> を開く</li>
-      <li><b>Generate new token</b> → Repository access で <b>podcast-graph</b> を選択</li>
-      <li>Permissions → <b>Contents</b> を <b>Read and write</b> に</li>
-      <li>発行された <code>github_pat_…</code> を下に貼って「入る」</li>
-    </ol>
+    <h2>合言葉を入力</h2>
+    <p class="muted">管理者だけが知っている合言葉を入れてください。</p>
     <div class="tokrow">
-      <input id="tok" type="password" placeholder="github_pat_..." autocomplete="off" />
+      <input id="tok" type="password" placeholder="合言葉" autocomplete="off" />
       <button id="enter" class="btn primary">入る</button>
     </div>
     <p id="gate-msg" class="err"></p>
-    <p class="muted small">トークンはこの端末のブラウザにのみ保存され、外部には送られません（GitHub APIの認証にだけ使用）。</p>
   </section>
 
   <!-- ログイン後 -->

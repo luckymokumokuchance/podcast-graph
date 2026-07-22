@@ -6,10 +6,26 @@ const REPO_OWNER = 'luckymokumokuchance';
 const REPO_NAME  = 'podcast-graph';
 const FILE_PATH  = 'app/links.json';
 const BRANCH     = 'feature/logo-deco';
-const TOKEN_KEY  = 'lmc_gh_token';
+const PASS_KEY   = 'lmc_pass';
 const GH = 'https://api.github.com';
 
-let token    = localStorage.getItem(TOKEN_KEY) || '';
+// 合言葉で復号する書き込みトークン（暗号化済み。平文トークンはコードに存在しない）
+// ※あくまで簡易。Cloudflare Worker方式に切り替えれば本当に安全になる（PLAN.md参照）
+const TOKEN_BLOB = 'FnDFsqu+YNBtW0017eIRG01/IC0PGiZ78a8hyHBaWqu8OCXHZ7O1ItCqYTa7YNLE2ww7GkG0itXtvvCy+CO9YctD5r4wSZqCRWmJJztavcS5uj1bh4f/GkRtHUlHcSbnw9idewO5QBpmHW98bubT2f7wrnog3rvcoR1niVi5aT5YKQl4eCQY82A=';
+
+// 合言葉→トークン（AES-GCM / PBKDF2、生成側と同一パラメータ）
+async function decryptToken(passphrase) {
+  const raw = Uint8Array.from(atob(TOKEN_BLOB), (c) => c.charCodeAt(0));
+  const salt = raw.slice(0, 16), iv = raw.slice(16, 28), ct = raw.slice(28);
+  const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  return new TextDecoder().decode(pt);
+}
+
+let token    = '';
 let episodes = [];
 let epById   = {};
 let links    = [];        // 作業中 [{source,target,reason}]
@@ -121,13 +137,15 @@ function addLink() {
   renderLinks();
 }
 
-// ---------- ログイン ----------
-async function enter(tok) {
-  const msg = $('gate-msg'); msg.textContent = '確認中…';
-  token = tok.trim();
+// ---------- ログイン（合言葉） ----------
+async function enter(passphrase, silent) {
+  const msg = $('gate-msg'); if (!silent) msg.textContent = '確認中…';
+  const pass = (passphrase || '').trim();
+  try { token = await decryptToken(pass); }
+  catch (e) { token = ''; if (!silent) msg.textContent = '合言葉が違います'; localStorage.removeItem(PASS_KEY); return; }
   const user = await ghUser();
-  if (!user) { token = ''; msg.textContent = 'トークンが無効です。もう一度確認してください。'; return; }
-  localStorage.setItem(TOKEN_KEY, token);
+  if (!user) { token = ''; if (!silent) msg.textContent = 'ログインできませんでした（キーの期限切れかもしれません）'; return; }
+  localStorage.setItem(PASS_KEY, pass);   // 次回から自動で開く
   $('who').textContent = '@' + user.login;
   $('gate').classList.add('hidden');
   $('editor').classList.remove('hidden');
@@ -136,7 +154,7 @@ async function enter(tok) {
   fillDatalist();
   renderLinks();
 }
-function logout() { localStorage.removeItem(TOKEN_KEY); location.reload(); }
+function logout() { localStorage.removeItem(PASS_KEY); location.reload(); }
 
 // ---------- 起動 ----------
 async function init() {
@@ -150,6 +168,7 @@ async function init() {
   $('save').onclick = saveFile;
   $('filter').oninput = renderLinks;
 
-  if (token) enter(token);   // 保存済みトークンで自動ログイン
+  const saved = localStorage.getItem(PASS_KEY);
+  if (saved) enter(saved, true);   // 保存済みの合言葉で自動ログイン
 }
 init();
