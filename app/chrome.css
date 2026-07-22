@@ -39,26 +39,15 @@
 }
 .row-tags span { white-space: nowrap; }
 
-/* テーブルオーバーレイ */
-.view-table {
-  position: fixed; inset: 0; z-index: 40; background: #fff;
-  padding-top: 56px; overflow: hidden;
-}
-.view-table.hidden { display: none; }
-#table-wrap { height: 100%; overflow: auto; padding: 12px 12px 40px; -webkit-overflow-scrolling: touch; }
-
-table.grid { border-collapse: collapse; width: 100%; font-size: 13px; font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif; }
-table.grid th, table.grid td { border: 1px solid #e5e5e5; padding: 8px 10px; text-align: left; vertical-align: top; }
-table.grid th { position: sticky; top: 0; background: #f6f6f6; cursor: pointer; user-select: none; white-space: nowrap; }
-table.grid tr[data-id] { cursor: pointer; }
-table.grid tr[data-id]:hover { background: #f0faf0; }
-.c-num { font-variant-numeric: tabular-nums; color: #089900; font-weight: 600; }
-.c-title { min-width: 200px; }
-.c-links { text-align: center; }
-.chip { display: inline-block; background: #eee; color: #555; border-radius: 999px; padding: 1px 8px; font-size: 11px; margin: 1px 0; }
-
-@media (max-width: 640px) {
-  table.grid { font-size: 12px; }
-  table.grid th, table.grid td { padding: 6px 8px; }
-  .c-title { min-width: 130px; }
+/* テーブル整列モード: ネットワーク専用の層を丸ごと非表示にする
+   （opacityではなくdisplay:noneで切り離すことで、シミュレーションが
+    止まっていても再描画・アニメーションが一切残らないようにする） */
+#graph.table-mode .links,
+#graph.table-mode .link-handles,
+#graph.table-mode .deco-layer,
+#graph.table-mode .logo-layer,
+#graph.table-mode .node.tag,
+#graph.table-mode .text-node.tag,
+#graph.table-mode .pulse-ring {
+  display: none !important;
 }

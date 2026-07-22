@@ -378,7 +378,8 @@ function drawGraph(data, tooltip) {
   const textLayer = rotG.append('g').attr('class', 'text-layer');
   const textGroup = textLayer.selectAll('g')
     .data(epTagNodeData)
-    .join('g');
+    .join('g')
+    .attr('class', d => `text-node ${d.type}`);
 
   textGroup.append('text')
     .attr('class', 'node-ep')
@@ -480,11 +481,10 @@ function drawGraph(data, tooltip) {
   // ============================================================
   const epOnly   = () => epNode.filter(d => d.type === 'episode');
   const epTxt    = () => textGroup.filter(d => d.type === 'episode');
-  function fadeOthers(op) {
-    [link, linkHandle, decoCircle, logoImage,
-     epNode.filter(d => d.type === 'tag'), textGroup.filter(d => d.type === 'tag')]
-      .forEach(sel => sel.transition().duration(450).style('opacity', op));
-  }
+  // ネットワーク専用の要素（線・デコ星・ロゴ・タグ・脈打つ輪）は
+  // JSでの毎フレームopacity制御ではなく、#graph.table-modeクラスによる
+  // display:none（chrome.css側）で丸ごと非表示にする。
+  // → シミュレーションが止まっていても層として完全に切り離され、ふわふわ動く要素が一切残らない。
   const ROW_H     = 42;  // 縦一列の行間（タイトル+タグの2段が収まる高さ）
   const LEFT_X    = 64;  // 星の列を画面左に寄せる位置（丸が画面端で切れないよう余白を確保）
   const TABLE_R   = 9;   // テーブル整列モード中の丸の固定半径
@@ -511,8 +511,6 @@ function drawGraph(data, tooltip) {
     d3.select('#graph').classed('table-mode', true);
     epOnly().on('.drag', null);              // 整列中はドラッグ無効
     svg.on('.zoom', null);                   // パン/ピンチ無効化。縦スクロールのみで見る
-    fadeOthers(0);
-    recentEp.selectAll('.pulse-ring').transition().duration(300).style('opacity', 0); // 最新回の強調は表なし
     computeColumn();
     const epCount = data.nodes.filter(d => d.type === 'episode').length;
     const contentH = epCount * ROW_H + 80;
@@ -538,8 +536,6 @@ function drawGraph(data, tooltip) {
     tableMode = false;
     d3.select('#graph').classed('table-mode', false);
     document.getElementById('graph-container').classList.remove('table-scroll');
-    fadeOthers(1);
-    recentEp.selectAll('.pulse-ring').transition().duration(300).style('opacity', 1);
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
