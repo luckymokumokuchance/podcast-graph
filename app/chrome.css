@@ -20,6 +20,14 @@
 /* テーブル整列モードでは、低ズームでもエピソードのタイトルを必ず表示 */
 #graph.table-mode .node-title { opacity: 1 !important; pointer-events: auto !important; }
 
+/* テーブル整列モード: パン/ピンチではなく縦スクロールで見る */
+#graph-container.table-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+#graph-container.table-scroll #graph { touch-action: pan-y; }
+
 /* テーブル整列モード: タイトル下のタグ（横並び・グレー） */
 .row-tags {
   display: flex; flex-wrap: wrap; gap: 5px;

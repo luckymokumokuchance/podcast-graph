@@ -495,7 +495,7 @@ function drawGraph(data, tooltip) {
   function renderRowTags() {
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
       .attr('x', d => nodeR(d) + 12)
-      .attr('y', 2)
+      .attr('y', 12)
       .select('div.row-tags')
       .html(d => (d.tags || []).map(t => `<span>#${t}</span>`).join(''));
   }
@@ -508,9 +508,12 @@ function drawGraph(data, tooltip) {
     rotG.attr('transform', `rotate(0, ${width / 2}, ${height / 2})`);
     d3.select('#graph').classed('table-mode', true);
     epOnly().on('.drag', null);              // 整列中はドラッグ無効
+    svg.on('.zoom', null);                   // パン/ピンチ無効化。縦スクロールのみで見る
     fadeOthers(0);
     recentEp.selectAll('.pulse-ring').transition().duration(300).style('opacity', 0); // 最新回の強調は表なし
     computeColumn();
+    const epCount = data.nodes.filter(d => d.type === 'episode').length;
+    const contentH = epCount * ROW_H + 80;
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     epOnly().select('circle.node-circle').transition().duration(850).ease(d3.easeCubicInOut)
@@ -519,9 +522,12 @@ function drawGraph(data, tooltip) {
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     epTxt().select('.node-tags-fo').transition().delay(400).duration(450).style('opacity', 1);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
-    // 等倍・画面左寄せの縦一列。上に少し余白を取り、続きは縦スクロール/パンで
-    svg.transition().duration(850).call(zoomBehavior.transform,
-      d3.zoomIdentity.translate(LEFT_X, 40).scale(1));
+    // 等倍・画面左寄せの縦一列。svgの高さを内容分に広げ、コンテナのネイティブ縦スクロールに任せる
+    document.getElementById('graph-container').classList.add('table-scroll');
+    svg.style('height', `${contentH}px`);
+    svg.attr('viewBox', `0 0 ${width} ${contentH}`);
+    g.transition().duration(850).ease(d3.easeCubicInOut)
+      .attr('transform', `translate(${LEFT_X},40)`);
     renderRowTags();
     applyEpStyle(); applyTitleStyle();
   }
@@ -529,6 +535,7 @@ function drawGraph(data, tooltip) {
     if (!tableMode) return;
     tableMode = false;
     d3.select('#graph').classed('table-mode', false);
+    document.getElementById('graph-container').classList.remove('table-scroll');
     fadeOthers(1);
     recentEp.selectAll('.pulse-ring').transition().duration(300).style('opacity', 1);
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
@@ -540,6 +547,9 @@ function drawGraph(data, tooltip) {
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._nx; d.y = d._ny; } });
     epOnly().call(makeDrag(simulation));     // ドラッグ復活
+    svg.style('height', null);
+    svg.attr('viewBox', `0 0 ${width} ${height}`);
+    svg.call(zoomBehavior);                  // パン/ズーム復活
     svg.transition().duration(850).call(zoomBehavior.transform,
       d3.zoomIdentity.translate(width / 2 * (1 - initScale), height / 2 * (1 - initScale)).scale(initScale));
     simulation.alpha(0.3).restart();
@@ -638,7 +648,7 @@ function drawGraph(data, tooltip) {
     g.selectAll('.node-title')
       .style('font-size', d => tableMode && d.type === 'episode' ? '11px' : `${titleFontPx / currentK}px`)
       .attr('transform', d => {
-        if (tableMode && d.type === 'episode') return `translate(${nodeR(d) + 12}, -8)`;
+        if (tableMode && d.type === 'episode') return `translate(${nodeR(d) + 12}, 4)`;
         const ty = nodeR(d) + TITLE_OFFSET_PX / currentK;
         return `translate(${ty * sinA}, ${ty * cosA}) rotate(${-rotAngle})`;
       });
