@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ラッキーもくもくチャンス — 星図（新）</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">ラッキーもくもくチャンス</span>
+    <div class="viewtabs" role="tablist">
+      <button id="tab-network" class="tab active" role="tab">ネットワーク</button>
+      <button id="tab-table"   class="tab"        role="tab">テーブル</button>
+    </div>
+    <a class="adminlink" href="admin.html">管理</a>
+  </header>
+
+  <div id="loading" class="loading">読み込み中…</div>
+
+  <main>
+    <section id="view-network" class="view">
+      <div id="graph-container"></div>
+    </section>
+    <section id="view-table" class="view hidden">
+      <div id="table-wrap"></div>
+    </section>
+  </main>
+
+  <!-- 詳細モーダル -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button id="modal-close" class="modal-close">×</button>
+      <h2 id="modal-title"></h2>
+      <div id="modal-meta" class="modal-meta"></div>
+      <audio id="modal-audio" controls preload="none" class="modal-audio"></audio>
+      <div id="modal-body" class="modal-body"></div>
+      <a id="modal-link" href="#" target="_blank" rel="noopener">配信ページで聴く →</a>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

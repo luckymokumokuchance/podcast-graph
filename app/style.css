@@ -1,0 +1,66 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif; color: #222; }
+body { display: flex; flex-direction: column; }
+
+.topbar {
+  height: 52px; display: flex; align-items: center; gap: 16px;
+  padding: 0 16px; border-bottom: 1px solid #e5e5e5; background: #fff; flex: 0 0 auto;
+}
+.brand { font-weight: 700; color: #089900; }
+.viewtabs { display: flex; gap: 4px; margin-left: auto; }
+.tab { border: 1px solid #cfcfcf; background: #fff; padding: 6px 14px; border-radius: 999px; cursor: pointer; font-size: 13px; }
+.tab.active { background: #089900; color: #fff; border-color: #089900; }
+.adminlink { color: #888; font-size: 12px; text-decoration: none; }
+
+main { flex: 1 1 auto; position: relative; overflow: hidden; }
+.view { position: absolute; inset: 0; }
+.view.hidden { display: none; }
+.hidden { display: none !important; }
+
+#graph-container { width: 100%; height: 100%; }
+.loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #888; }
+
+/* テーブル */
+#table-wrap { height: 100%; overflow: auto; padding: 12px; }
+table.grid { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.grid th, table.grid td { border: 1px solid #e5e5e5; padding: 8px 10px; text-align: left; vertical-align: top; }
+table.grid th { position: sticky; top: 0; background: #f6f6f6; cursor: pointer; user-select: none; white-space: nowrap; }
+table.grid tr[data-id] { cursor: pointer; }
+table.grid tr[data-id]:hover { background: #f0faf0; }
+.c-num { font-variant-numeric: tabular-nums; color: #089900; font-weight: 600; }
+.c-title { min-width: 220px; }
+.c-links { text-align: center; }
+.chip { display: inline-block; background: #eee; color: #555; border-radius: 999px; padding: 1px 8px; font-size: 11px; margin: 1px 0; }
+
+/* モーダル */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.modal-card { background: #fff; border-radius: 14px; max-width: 640px; width: 100%; max-height: 86vh; overflow: auto; padding: 24px; position: relative; }
+.modal-close { position: absolute; top: 10px; right: 14px; border: none; background: none; font-size: 24px; cursor: pointer; color: #999; }
+.modal-meta { color: #888; font-size: 13px; margin: 4px 0 12px; }
+.modal-audio { width: 100%; margin-bottom: 12px; }
+.modal-body { font-size: 14px; line-height: 1.7; }
+.modal-body p { margin: 0 0 8px; }
+.modal-link, #modal-link { display: inline-block; margin-top: 12px; color: #089900; }
+
+/* ---------- スマホ ---------- */
+@media (max-width: 640px) {
+  .topbar { height: auto; min-height: 52px; flex-wrap: wrap; gap: 8px 10px; padding: 8px 12px; }
+  .brand { font-size: 14px; width: 100%; order: -1; }
+  .viewtabs { margin-left: 0; }
+  .tab { padding: 8px 16px; font-size: 14px; }      /* タップしやすく */
+  .adminlink { margin-left: auto; }
+
+  #table-wrap { padding: 8px; -webkit-overflow-scrolling: touch; }
+  table.grid { font-size: 12px; }
+  table.grid th, table.grid td { padding: 6px 8px; }
+  .c-title { min-width: 140px; }
+
+  .modal { padding: 0; align-items: flex-end; }      /* 下からシート風に */
+  .modal-card { max-width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0; padding: 20px 18px 32px; }
+  .modal-close { font-size: 30px; top: 6px; right: 16px; }
+}
+
+/* iOSのSafariでアドレスバー開閉しても背景/高さが暴れないよう svh を併用 */
+@supports (height: 100svh) {
+  html, body { height: 100svh; }
+}
