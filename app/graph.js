@@ -621,6 +621,9 @@ function drawGraph(data, tooltip) {
 
   // ---------- リサイズ ----------
   window.addEventListener('resize', () => {
+    // テーブル整列モード中はスマホのアドレスバー開閉などでもresizeが飛んでくるが、
+    // ここでシミュレーションを再始動すると整列した行が力学で動いて崩れてしまうので無視する。
+    if (tableMode) return;
     const w = container.clientWidth;
     const h = container.clientHeight;
     svg.attr('viewBox', `0 0 ${w} ${h}`);
