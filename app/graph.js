@@ -485,8 +485,10 @@ function drawGraph(data, tooltip) {
      epNode.filter(d => d.type === 'tag'), textGroup.filter(d => d.type === 'tag')]
       .forEach(sel => sel.transition().duration(450).style('opacity', op));
   }
-  const ROW_H  = 42;  // 縦一列の行間（タイトル+タグの2段が収まる高さ）
-  const LEFT_X = 46;  // 星の列を画面左に寄せる位置
+  const ROW_H     = 42;  // 縦一列の行間（タイトル+タグの2段が収まる高さ）
+  const LEFT_X    = 64;  // 星の列を画面左に寄せる位置（丸が画面端で切れないよう余白を確保）
+  const TABLE_R   = 9;   // テーブル整列モード中の丸の固定半径
+  const TABLE_GAP = 16;  // 丸の右端〜タイトルの隙間
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
@@ -494,7 +496,7 @@ function drawGraph(data, tooltip) {
   }
   function renderRowTags() {
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
-      .attr('x', d => nodeR(d) + 12)
+      .attr('x', TABLE_R + TABLE_GAP)
       .attr('y', 12)
       .select('div.row-tags')
       .html(d => (d.tags || []).map(t => `<span>#${t}</span>`).join(''));
@@ -517,7 +519,7 @@ function drawGraph(data, tooltip) {
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     epOnly().select('circle.node-circle').transition().duration(850).ease(d3.easeCubicInOut)
-      .attr('r', 9);
+      .attr('r', TABLE_R);
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     epTxt().select('.node-tags-fo').transition().delay(400).duration(450).style('opacity', 1);
@@ -648,7 +650,7 @@ function drawGraph(data, tooltip) {
     g.selectAll('.node-title')
       .style('font-size', d => tableMode && d.type === 'episode' ? '11px' : `${titleFontPx / currentK}px`)
       .attr('transform', d => {
-        if (tableMode && d.type === 'episode') return `translate(${nodeR(d) + 12}, 4)`;
+        if (tableMode && d.type === 'episode') return `translate(${TABLE_R + TABLE_GAP}, 4)`;
         const ty = nodeR(d) + TITLE_OFFSET_PX / currentK;
         return `translate(${ty * sinA}, ${ty * cosA}) rotate(${-rotAngle})`;
       });
