@@ -54,14 +54,35 @@ async function main() {
     return;
   }
 
+  const tableLayout = await loadTableLayout();
+
   loadingEl.classList.add('hidden');
-  drawGraph(data, tooltip);
+  drawGraph(data, tooltip, tableLayout);
+}
+
+// ------------------------------------------------------------
+// テーブル整列モードのレイアウト調整値（調整ページで保存したJSONがあれば反映）
+// ------------------------------------------------------------
+const TABLE_LAYOUT_DEFAULTS = {
+  rowH: 60, leftX: 64, tableR: 10,
+  titleX: 20, titleH: 18, titleFont: 12,
+  tagsFont: 9, tagsGap: 5,
+};
+async function loadTableLayout() {
+  try {
+    const r = await fetch('table-layout.json', { cache: 'no-store' });
+    if (!r.ok) return { ...TABLE_LAYOUT_DEFAULTS };
+    const j = await r.json();
+    return { ...TABLE_LAYOUT_DEFAULTS, ...j };
+  } catch (e) {
+    return { ...TABLE_LAYOUT_DEFAULTS };
+  }
 }
 
 // ------------------------------------------------------------
 // D3 グラフ描画
 // ------------------------------------------------------------
-function drawGraph(data, tooltip) {
+function drawGraph(data, tooltip, tableLayout) {
   const container = document.getElementById('graph-container');
   const width     = container.clientWidth;
   const height    = container.clientHeight;
@@ -494,12 +515,17 @@ function drawGraph(data, tooltip) {
   // JSでの毎フレームopacity制御ではなく、#graph.table-modeクラスによる
   // display:none（chrome.css側）で丸ごと非表示にする。
   // → シミュレーションが止まっていても層として完全に切り離され、ふわふわ動く要素が一切残らない。
-  const ROW_H     = 60;  // 縦一列の行間（タイトル+タグの2段が収まる高さ）
-  const LEFT_X    = 64;  // 星の列を画面左に寄せる位置（丸が画面端で切れないよう余白を確保）
-  const TABLE_R   = 10;  // テーブル整列モード中の丸の固定半径
-  const TABLE_TITLE_X    = 20; // 丸の中心からタイトルの左端までの距離
-  const TABLE_TITLE_H    = 18; // タイトル行(foreignObject)の高さ
-  const TABLE_TITLE_Y    = -Math.round(TABLE_TITLE_H / 2); // 丸の中心とタイトルの上下中心を合わせる
+  // 数値は table-layout.json（調整ページのスライダーで保存）から読み込む。
+  // 未取得時はTABLE_LAYOUT_DEFAULTSにフォールバック。
+  let ROW_H          = tableLayout.rowH;    // 縦一列の行間（タイトル+タグの2段が収まる高さ）
+  let LEFT_X         = tableLayout.leftX;   // 星の列を画面左に寄せる位置（丸が画面端で切れないよう余白を確保）
+  let TABLE_R        = tableLayout.tableR;  // テーブル整列モード中の丸の固定半径
+  let TABLE_TITLE_X  = tableLayout.titleX;  // 丸の中心からタイトルの左端までの距離
+  let TABLE_TITLE_H  = tableLayout.titleH;  // タイトル行(foreignObject)の高さ
+  let TABLE_TITLE_Y  = -Math.round(TABLE_TITLE_H / 2); // 丸の中心とタイトルの上下中心を合わせる
+  let TABLE_TITLE_FONT = tableLayout.titleFont;
+  let TABLE_TAGS_FONT  = tableLayout.tagsFont;
+  let TABLE_TAGS_GAP   = tableLayout.tagsGap;
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
@@ -513,13 +539,50 @@ function drawGraph(data, tooltip) {
       .attr('y', TABLE_TITLE_Y)
       .attr('width', titleW)
       .select('div.row-title')
+      .style('font-size', `${TABLE_TITLE_FONT}px`)
       .text(d => d.title || '');
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
       .attr('x', TABLE_TITLE_X)
-      .attr('y', 18)
+      .attr('y', TABLE_TITLE_H)
       .select('div.row-tags')
+      .style('font-size', `${TABLE_TAGS_FONT}px`)
+      .style('gap', `${TABLE_TAGS_GAP}px`)
       .html(d => (d.tags || []).map(t => `<span>#${t}</span>`).join(''));
   }
+  // 整列済みの行に対し、現在のROW_H/LEFT_X/TABLE_R等を再適用する
+  // （調整ページのスライダーからのライブプレビュー用。ネットワーク⇔テーブルの
+  //  切替アニメーションは使わず、即座に位置・半径・svg高さを更新するだけ）
+  function relayoutTable() {
+    if (!tableMode) return;
+    computeColumn();
+    const epCount = data.nodes.filter(d => d.type === 'episode').length;
+    const contentH = epCount * ROW_H + 80;
+    epOnly().attr('transform', d => `translate(${d._tx},${d._ty})`);
+    epOnly().select('circle.node-circle').attr('r', TABLE_R);
+    epTxt().attr('transform', d => `translate(${d._tx},${d._ty})`);
+    data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
+    svg.style('height', `${contentH}px`);
+    svg.attr('viewBox', `0 0 ${width} ${contentH}`);
+    g.attr('transform', `translate(${LEFT_X},40)`);
+    renderRowTags();
+  }
+  // 調整ページ(layout.html)からのライブプレビュー用に公開
+  window.__getTableLayout = () => ({
+    rowH: ROW_H, leftX: LEFT_X, tableR: TABLE_R,
+    titleX: TABLE_TITLE_X, titleH: TABLE_TITLE_H,
+    titleFont: TABLE_TITLE_FONT, tagsFont: TABLE_TAGS_FONT, tagsGap: TABLE_TAGS_GAP,
+  });
+  window.__setTableLayout = (cfg) => {
+    if (cfg.rowH != null)     ROW_H = cfg.rowH;
+    if (cfg.leftX != null)    LEFT_X = cfg.leftX;
+    if (cfg.tableR != null)   TABLE_R = cfg.tableR;
+    if (cfg.titleX != null)   TABLE_TITLE_X = cfg.titleX;
+    if (cfg.titleH != null)   { TABLE_TITLE_H = cfg.titleH; TABLE_TITLE_Y = -Math.round(TABLE_TITLE_H / 2); }
+    if (cfg.titleFont != null) TABLE_TITLE_FONT = cfg.titleFont;
+    if (cfg.tagsFont != null)  TABLE_TAGS_FONT = cfg.tagsFont;
+    if (cfg.tagsGap != null)   TABLE_TAGS_GAP = cfg.tagsGap;
+    relayoutTable();
+  };
   function enterTable() {
     if (tableMode) return;
     tableMode = true;

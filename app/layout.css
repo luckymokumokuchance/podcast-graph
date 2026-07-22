@@ -1,0 +1,47 @@
+.hidden { display: none !important; }
+.muted { color: #888; font-size: 13px; }
+.err { color: #c0392b; font-size: 13px; min-height: 1em; }
+.btn { border: 1px solid #cfcfcf; background: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  font-size: 14px; font-family: inherit; }
+.btn.primary { background: #089900; color: #fff; border-color: #089900; }
+.btn.primary:disabled { background: #b9d8b5; border-color: #b9d8b5; cursor: default; }
+
+/* ログイン画面 */
+.lgate { max-width: 480px; margin: 24px auto; padding: 0 16px; font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif; }
+.lgate h2 { margin: 8px 0; }
+.tokrow { display: flex; gap: 8px; margin: 12px 0 6px; }
+.tokrow input { flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-size: 14px; }
+
+/* 上部バー（星図と同じ位置に浮かせる） */
+.lbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; background: rgba(255,255,255,.92); backdrop-filter: blur(4px);
+  border-bottom: 1px solid #e8e8e8;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+}
+.lbrand { font-weight: 700; color: #089900; font-size: 14px; }
+.lright { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.who { font-size: 12px; color: #089900; }
+.tostar { color: #888; font-size: 13px; text-decoration: none; }
+.savemsg {
+  position: fixed; top: 46px; left: 14px; z-index: 70;
+  background: rgba(255,255,255,.92); padding: 2px 6px; border-radius: 6px;
+}
+
+/* 下部固定のスライダーパネル */
+.sliders {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+  max-height: 46vh; overflow-y: auto;
+  background: rgba(255,255,255,.96); backdrop-filter: blur(6px);
+  border-top: 1px solid #e0e0e0;
+  padding: 10px 14px 16px;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+}
+.srow { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+.slabel { width: 130px; font-size: 12px; color: #555; flex-shrink: 0; }
+.srow input[type="range"] { flex: 1; }
+.sval { width: 34px; text-align: right; font-size: 12px; color: #089900; flex-shrink: 0; }
+
+/* グラフ本体はバー・パネル分の余白をあける */
+#graph-container.table-scroll { padding-top: 40px; padding-bottom: 46vh; }
