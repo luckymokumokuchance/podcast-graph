@@ -1,10 +1,10 @@
 {
   "rowH": 60,
-  "leftX": 64,
-  "tableR": 10,
-  "titleX": 20,
-  "titleH": 18,
-  "titleFont": 12,
-  "tagsFont": 9,
-  "tagsGap": 5
+  "leftX": 41,
+  "tableR": 17,
+  "titleX": 30,
+  "titleH": 20,
+  "titleFont": 16,
+  "tagsFont": 10,
+  "tagsGap": 13
 }
