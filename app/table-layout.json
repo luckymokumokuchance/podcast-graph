@@ -13,5 +13,8 @@
   "tagsFont": 10,
   "tagsGap": 13,
   "titleTagsGap": -3,
-  "summaryTagsGap": 27
+  "summaryTagsGap": 27,
+  "topPad": 40,
+  "rightPad": 30,
+  "bottomPad": 80
 }
