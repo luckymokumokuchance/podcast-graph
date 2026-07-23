@@ -675,7 +675,14 @@ function drawGraph(data, tooltip, tableLayout) {
     if (!tableMode) return;
     tableMode = false;
     d3.select('#graph').classed('table-mode', false);
-    document.getElementById('graph-container').classList.remove('table-scroll');
+    const graphContainerEl = document.getElementById('graph-container');
+    graphContainerEl.classList.remove('table-scroll');
+    // テーブル整列モードで一覧をスクロールした状態のまま戻ると、iOSのSafariが
+    // -webkit-overflow-scrolling:touch 用のスクロールジェスチャーを引きずったままになり、
+    // 星をドラッグしようとしても画面全体がパン/スワイプされてしまう不具合があったため、
+    // scrollTopを明示的に0へ戻し、同期的なリフローでスタイル変更を即座に確定させる。
+    graphContainerEl.scrollTop = 0;
+    void graphContainerEl.offsetHeight;
     epTxt().select('.node-title-fo').transition().duration(250).style('opacity', 0);
     epTxt().select('.node-summary-fo').transition().duration(250).style('opacity', 0);
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
