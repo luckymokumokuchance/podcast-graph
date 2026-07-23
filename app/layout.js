@@ -97,6 +97,25 @@ function wireSliders() {
   });
 }
 
+// ---------- graph.js の初期描画完了イベント ----------
+// ログイン処理（GitHub APIへの往復）と星図の初期化（RSS取得など）は並行に進むため、
+// どちらが先に終わるかは実行毎に変わる。'graph-ready' は一度きりのイベントなので
+// ページ読み込み直後（ログイン前）にリスナーを登録しておき、フラグで到達済みかを覚えておく。
+let graphReady  = false;
+let loggedIn    = false;
+window.addEventListener('graph-ready', () => {
+  graphReady = true;
+  onBothReady();
+}, { once: true });
+
+function onBothReady() {
+  if (!graphReady || !loggedIn) return;
+  if (window.__viewTable) window.__viewTable();
+  fillSliders();
+  wireSliders();
+  refreshDirty();
+}
+
 // ---------- ログイン（合言葉） ----------
 async function enter(passphrase, silent) {
   const msg = $('gate-msg'); if (!silent) msg.textContent = '確認中…';
@@ -110,12 +129,8 @@ async function enter(passphrase, silent) {
   $('gate').classList.add('hidden');
   $('app').classList.remove('hidden');
   await loadFile();
-  window.addEventListener('graph-ready', () => {
-    if (window.__viewTable) window.__viewTable();
-    fillSliders();
-    wireSliders();
-    refreshDirty();
-  }, { once: true });
+  loggedIn = true;
+  onBothReady();
 }
 
 // ---------- 起動 ----------

@@ -6,10 +6,17 @@
 .btn.primary { background: #089900; color: #fff; border-color: #089900; }
 .btn.primary:disabled { background: #b9d8b5; border-color: #b9d8b5; cursor: default; }
 
-/* ログイン画面 */
-.lgate { max-width: 480px; margin: 24px auto; padding: 0 16px; font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif; }
+/* ログイン画面（星図の上に被せるオーバーレイ。背後の星図はdisplay:noneにせず
+   常時描画させたまま隠す＝graph.jsがコンテナの幅/高さを正しく測れるようにするため） */
+.lgate {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 16px;
+  background: #fafafa;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+}
 .lgate h2 { margin: 8px 0; }
-.tokrow { display: flex; gap: 8px; margin: 12px 0 6px; }
+.tokrow { display: flex; gap: 8px; margin: 12px 0 6px; width: 100%; max-width: 380px; }
 .tokrow input { flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-size: 14px; }
 
 /* 上部バー（星図と同じ位置に浮かせる） */
