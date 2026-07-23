@@ -66,7 +66,7 @@ async function main() {
 const TABLE_LAYOUT_DEFAULTS = {
   rowH: 60, leftX: 64, tableR: 10,
   titleX: 20, titleH: 18, titleFont: 12,
-  tagsFont: 9, tagsGap: 5,
+  tagsFont: 9, tagsGap: 5, titleTagsGap: 9,
 };
 async function loadTableLayout() {
   try {
@@ -529,6 +529,7 @@ function drawGraph(data, tooltip, tableLayout) {
   let TABLE_TITLE_FONT = tableLayout.titleFont;
   let TABLE_TAGS_FONT  = tableLayout.tagsFont;
   let TABLE_TAGS_GAP   = tableLayout.tagsGap;
+  let TABLE_TITLE_TAGS_GAP = tableLayout.titleTagsGap; // タイトル行とタグ行の縦の間隔
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
@@ -546,7 +547,7 @@ function drawGraph(data, tooltip, tableLayout) {
       .text(d => d.title || '');
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
       .attr('x', TABLE_TITLE_X)
-      .attr('y', TABLE_TITLE_H)
+      .attr('y', TABLE_TITLE_Y + TABLE_TITLE_H + TABLE_TITLE_TAGS_GAP)
       .select('div.row-tags')
       .style('font-size', `${TABLE_TAGS_FONT}px`)
       .style('gap', `${TABLE_TAGS_GAP}px`)
@@ -574,6 +575,7 @@ function drawGraph(data, tooltip, tableLayout) {
     rowH: ROW_H, leftX: LEFT_X, tableR: TABLE_R,
     titleX: TABLE_TITLE_X, titleH: TABLE_TITLE_H,
     titleFont: TABLE_TITLE_FONT, tagsFont: TABLE_TAGS_FONT, tagsGap: TABLE_TAGS_GAP,
+    titleTagsGap: TABLE_TITLE_TAGS_GAP,
   });
   window.__setTableLayout = (cfg) => {
     if (cfg.rowH != null)     ROW_H = cfg.rowH;
@@ -584,6 +586,7 @@ function drawGraph(data, tooltip, tableLayout) {
     if (cfg.titleFont != null) TABLE_TITLE_FONT = cfg.titleFont;
     if (cfg.tagsFont != null)  TABLE_TAGS_FONT = cfg.tagsFont;
     if (cfg.tagsGap != null)   TABLE_TAGS_GAP = cfg.tagsGap;
+    if (cfg.titleTagsGap != null) TABLE_TITLE_TAGS_GAP = cfg.titleTagsGap;
     relayoutTable();
   };
   function enterTable() {

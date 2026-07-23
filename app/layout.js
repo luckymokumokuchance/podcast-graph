@@ -24,7 +24,7 @@ async function decryptToken(passphrase) {
   return new TextDecoder().decode(pt);
 }
 
-const FIELDS = ['rowH', 'leftX', 'tableR', 'titleX', 'titleH', 'titleFont', 'tagsFont', 'tagsGap'];
+const FIELDS = ['rowH', 'leftX', 'tableR', 'titleX', 'titleH', 'titleFont', 'titleTagsGap', 'tagsFont', 'tagsGap'];
 
 let token   = '';
 let fileSha = null;

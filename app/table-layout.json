@@ -6,5 +6,6 @@
   "titleH": 20,
   "titleFont": 16,
   "tagsFont": 10,
-  "tagsGap": 13
+  "tagsGap": 13,
+  "titleTagsGap": 10
 }
