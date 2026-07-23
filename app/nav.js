@@ -11,8 +11,10 @@
   'use strict';
 
   // ── ページ一覧（ここを編集すればメニューが増える）────────────────
+  // TOPは他ページに飛ばず、このページ内のネットワークビュー（#tab-network）を
+  // 開く特殊項目（EP LISTと同じ仕組み）。GAS離れ改修が全体に及ぶまでの暫定。
   var PAGES = [
-    { href: '../index.html',    label: 'TOP',      match: ['index.html', '', '/'] },
+    { href: '#',                label: 'TOP',      action: 'network' },
     { href: '../about.html',    label: 'ABOUT',    match: ['about.html'] },
     { href: '#',                label: 'EP LIST',  action: 'table' },
     { href: '../concepts.html', label: 'CONCEPTS', match: ['concepts.html', 'concept.html'] },
@@ -113,6 +115,7 @@
   list.id = 'lm-nav-list';
 
   var epListLink = null;
+  var topLink = null;
 
   PAGES.forEach(function (page) {
     var li = document.createElement('li');
@@ -126,6 +129,15 @@
         e.preventDefault();
         var tabT = document.getElementById('tab-table');
         if (tabT) tabT.click();
+        setOpen(false);
+      });
+    }
+    if (page.action === 'network') {
+      topLink = a;
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var tabN = document.getElementById('tab-network');
+        if (tabN) tabN.click();
         setOpen(false);
       });
     }
@@ -170,20 +182,25 @@
     if (!nav.contains(e.target)) setOpen(false);
   });
 
-  // ── EP LISTのハイライトを、テーブルビューの開閉状態に合わせる ──────
+  // ── TOP/EP LISTのハイライトを、ネットワーク／テーブルビューの
+  //    切り替え状態に合わせる ────────────────────────────
   function syncEpListCurrent() {
-    if (!epListLink) return;
     var tabT = document.getElementById('tab-table');
-    if (tabT && tabT.classList.contains('active')) {
-      epListLink.setAttribute('aria-current', 'page');
-    } else {
-      epListLink.removeAttribute('aria-current');
+    var tableActive = !!(tabT && tabT.classList.contains('active'));
+    if (epListLink) {
+      if (tableActive) epListLink.setAttribute('aria-current', 'page');
+      else epListLink.removeAttribute('aria-current');
+    }
+    if (topLink) {
+      if (tableActive) topLink.removeAttribute('aria-current');
+      else topLink.setAttribute('aria-current', 'page');
     }
   }
   var tabN = document.getElementById('tab-network');
   var tabT = document.getElementById('tab-table');
   if (tabN) tabN.addEventListener('click', syncEpListCurrent);
   if (tabT) tabT.addEventListener('click', syncEpListCurrent);
+  syncEpListCurrent();
 
   function mount() { document.body.appendChild(nav); }
   if (document.readyState === 'loading') {
