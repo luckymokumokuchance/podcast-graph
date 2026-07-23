@@ -166,36 +166,6 @@ function drawGraph(data, tooltip, tableLayout) {
 
   const initScale = 2.0;
 
-  // ロゴノード（3分割PNG、最初は画面中央に整列）
-  const LOGO_W = 110;
-  const GAP    = 6;
-  const logoParts = [
-    { src: ASSET_BASE + 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_ラッキー.png'),  origW: 2130, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
-    { src: ASSET_BASE + 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_もくもく.png'), origW: 1965, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
-    { src: ASSET_BASE + 'image/' + encodeURIComponent('ラキモクチャン_ロゴ_チャンス.png'), origW: 2114, origH: 827, url: 'https://lucky-mokumoku-chance.studio.site/' },
-  ];
-  const logoHeights  = logoParts.map(p => Math.round(LOGO_W * p.origH / p.origW));
-  const totalLogoH   = logoHeights.reduce((a, b) => a + b, 0) + GAP * (logoParts.length - 1);
-  let   logoTopY     = height / 2 - totalLogoH / 2;
-  const logoNodes = logoParts.map((p, i) => {
-    const h  = logoHeights[i];
-    const cy = logoTopY + h / 2;
-    logoTopY += h + GAP;
-    return {
-      id:   `logo_${i}`,
-      type: 'logo',
-      src:  p.src,
-      url:  p.url,
-      w:    LOGO_W,
-      h:    h,
-      x:    width / 2,
-      y:    cy,
-      fx:   width / 2,
-      fy:   cy,
-    };
-  });
-  data.nodes.push(...logoNodes);
-
   // ---------- SVG ----------
   const svg = d3.select('#graph')
     .attr('viewBox', `0 0 ${width} ${height}`)
@@ -236,22 +206,19 @@ function drawGraph(data, tooltip, tableLayout) {
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id)
                           .distance(getLinkDistance).strength(getLinkStrength))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'logo' ? 0 : d.type === 'deco' ? -8 : -chargeStrength))
-    .force('x',         d3.forceX(width / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => (d.type === 'deco' || d.type === 'logo') ? 0 : 0.08))
-    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco' && d.type !== 'logo', d => nodeR(d) + 20))
+    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -chargeStrength))
+    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => nodeR(d) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
-    .force('collision-logo', makeSubsetCollide(d => d.type === 'logo', d => Math.hypot(d.w / 2, d.h / 2) + 4))
     .force('deco-ep-repel',  makeDecoEpRepel(data.nodes, nodeR, () => decoR, DECO_MARGIN))
-    .force('logo-ep-repel',  makeLogoEpRepel(data.nodes, nodeR))
     .force('wander', () => {
       data.nodes.forEach(d => {
-        if (d.type !== 'deco' && d.type !== 'logo') return;
+        if (d.type !== 'deco') return;
         d.vx = (d.vx || 0) + (Math.random() - 0.5) * 0.2;
         d.vy = (d.vy || 0) + (Math.random() - 0.5) * 0.2;
-        // 中心引力（デコ星はスライダー連動、ロゴは固定値で ep/tag の反発フィールドに打ち勝つ）
-        const gravK = d.type === 'logo' ? 0.0008 : decoGravStrength * 0.015;
+        const gravK = decoGravStrength * 0.015;
         d.vx += (width  / 2 - d.x) * gravK;
         d.vy += (height / 2 - d.y) * gravK;
         // 円形境界で跳ね返す
@@ -281,39 +248,6 @@ function drawGraph(data, tooltip, tableLayout) {
     .style('fill', COLORS.deco)
     .style('stroke', 'none');
 
-  // 1b. ロゴレイヤー（デコ星の前面・リンクの背面）
-  const logoLayer = rotG.append('g').attr('class', 'logo-layer');
-  const logoImage = logoLayer.selectAll('image')
-    .data(logoNodes)
-    .join('image')
-    .attr('href',   d => d.src)
-    .attr('width',  d => d.w)
-    .attr('height', d => d.h)
-    .attr('x',      d => d.x - d.w / 2)
-    .attr('y',      d => d.y - d.h / 2)
-    .style('opacity', 1)
-    .style('cursor', 'grab')
-    .call(makeDrag(simulation))
-    .on('click', (event, d) => {
-      if (d.url && !event.defaultPrevented) window.open(d.url, '_blank');
-    });
-
-  // 2.5秒後に解放 → α値を二次曲線でランプアップして滑らかに演算開始
-  setTimeout(() => {
-    logoNodes.forEach(d => { d.fx = null; d.fy = null; });
-    simulation.force('logo-ep-repel', null); // 解放後は押しのけ不要
-    simulation.alphaDecay(0).restart(); // 自然減衰を一時停止して自前でαを制御
-    const RAMP_MS   = 1500;
-    const rampStart = performance.now();
-    (function ramp(now) {
-      const t      = Math.min((now - rampStart) / RAMP_MS, 1);
-      const eased  = t * t; // 二次曲線（ゆっくり→加速）
-      simulation.alpha(eased * 0.3);
-      if (t < 1) requestAnimationFrame(ramp);
-      else        simulation.alphaDecay(0.02); // 自然減衰を再開
-    })(rampStart);
-  }, 2500);
-
   // 2. リンク
   const link = rotG.append('g').attr('class', 'links')
     .selectAll('line')
@@ -326,7 +260,7 @@ function drawGraph(data, tooltip, tableLayout) {
 
 
   // 3. Episode / tag ノード（円のみ、テキストなし）
-  const epTagNodeData = data.nodes.filter(d => d.type !== 'deco' && d.type !== 'logo');
+  const epTagNodeData = data.nodes.filter(d => d.type !== 'deco');
   const epNode = rotG.append('g').attr('class', 'ep-nodes')
     .selectAll('g')
     .data(epTagNodeData)
@@ -743,10 +677,6 @@ function drawGraph(data, tooltip, tableLayout) {
       .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
       .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     decoCircle.attr('cx', d => d.x).attr('cy', d => d.y);
-    logoImage.attr('x', d => d.x - d.w / 2).attr('y', d => d.y - d.h / 2);
-    // テーブル整列モード中は、ロゴ解放タイマー(2.5秒後)などでシミュレーションが
-    // 再始動しても、星・テキストの位置は d._tx/d._ty 基準の整列を保ったまま動かさない。
-    // ここでd.x/d.yに追従させると、力学計算で位置がずれてテーブルの整列が崩れる。
     if (!tableMode) {
       epNode.attr('transform', d => `translate(${d.x},${d.y})`);
       textGroup.attr('transform', d => `translate(${d.x},${d.y})`);
@@ -764,7 +694,6 @@ function drawGraph(data, tooltip, tableLayout) {
       rotG.attr('transform', `rotate(${rotAngle}, ${width / 2}, ${height / 2})`);
       applyEpStyle();
       applyTitleStyle();
-      applyLogoStyle();
     }
     lastTime = time;
     requestAnimationFrame(rotateLoop);
@@ -815,10 +744,6 @@ function drawGraph(data, tooltip, tableLayout) {
       });
   }
 
-  function applyLogoStyle() {
-    logoImage.attr('transform', d => `rotate(${-rotAngle}, ${d.x}, ${d.y})`);
-  }
-
   // ============================================================
   // スライダー
   // ============================================================
@@ -846,7 +771,7 @@ function drawGraph(data, tooltip, tableLayout) {
     chargeStrength = val('s-charge');
     setVal('v-charge', chargeStrength);
     simulation.force('charge',
-      d3.forceManyBody().strength(d => d.type === 'logo' ? 0 : d.type === 'deco' ? -8 : -chargeStrength));
+      d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -chargeStrength));
     simulation.alpha(0.5).restart();
   });
 
@@ -995,31 +920,6 @@ function drawGraph(data, tooltip, tableLayout) {
 
   // 訪問者向け調整パネル(quickpanel.js)へ初期化完了を通知
   window.dispatchEvent(new CustomEvent('graph-ready'));
-}
-
-// ------------------------------------------------------------
-// ロゴ矩形→episode/tag 反発フォース（ep/tagノードをロゴ領域から押し出す）
-// ------------------------------------------------------------
-function makeLogoEpRepel(allNodes, getNodeRadius) {
-  const logoNds  = allNodes.filter(d => d.type === 'logo');
-  const epTagNds = allNodes.filter(d => d.type === 'episode' || d.type === 'tag');
-  return function() {
-    logoNds.forEach(logo => {
-      const logoR = Math.hypot(logo.w / 2, logo.h / 2) + 10;
-      epTagNds.forEach(ep => {
-        const dx   = ep.x - logo.x;
-        const dy   = ep.y - logo.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        const epR  = getNodeRadius(ep);
-        const minD = logoR + epR;
-        if (dist < minD) {
-          const push = (minD - dist) / dist * 0.8;
-          ep.vx += (dx / dist) * push;
-          ep.vy += (dy / dist) * push;
-        }
-      });
-    });
-  };
 }
 
 // デコ→episode/tag 一方向反発フォース（decoだけ押しのける）
