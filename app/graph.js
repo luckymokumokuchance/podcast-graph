@@ -419,14 +419,17 @@ function drawGraph(data, tooltip, tableLayout) {
     .attr('x', 0).attr('y', 0)
     .text(d => d.label || '');
 
-  // テーブル整列モード専用: タイトル（省略せず、横に長ければ横スクロール）
+  // テーブル整列モード専用: タイトル（省略せず表示。はみ出す分はクリップせず、
+  // タップで全文をモーダル表示。foreignObject内でのoverflow-x:autoスクロールは
+  // モバイルSafariで描画が壊れる既知の不具合があったため使わない）
   const rowTitleFO = textGroup.filter(d => d.type === 'episode')
     .append('foreignObject')
     .attr('class', 'node-title-fo')
     .attr('height', 18)
     .style('opacity', 0)
     .style('pointer-events', 'auto');
-  rowTitleFO.append('xhtml:div').attr('class', 'row-title');
+  rowTitleFO.append('xhtml:div').attr('class', 'row-title')
+    .on('click', (event, d) => openModal(d));
 
   // テーブル整列モード専用: タイトル下のタグ一覧（横並び・グレー）
   const rowTagsFO = textGroup.filter(d => d.type === 'episode')
