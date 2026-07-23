@@ -1,11 +1,11 @@
 {
-  "rowH": 60,
+  "rowH": 64,
   "leftX": 41,
-  "tableR": 17,
-  "titleX": 30,
-  "titleH": 20,
+  "tableR": 20,
+  "titleX": 35,
+  "titleH": 29,
   "titleFont": 16,
   "tagsFont": 10,
   "tagsGap": 13,
-  "titleTagsGap": 10
+  "titleTagsGap": 0
 }
