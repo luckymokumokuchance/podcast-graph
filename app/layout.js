@@ -29,6 +29,7 @@ const FIELDS = [
   'titleFont', 'titleWeight', 'titleTruncateLen', 'titleTagsGap',
   'summaryFont', 'summaryLen', 'summaryH', 'summaryTagsGap',
   'tagsFont', 'tagsGap',
+  'topPad', 'rightPad', 'bottomPad',
 ];
 
 let token   = '';

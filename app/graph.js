@@ -70,6 +70,7 @@ const TABLE_LAYOUT_DEFAULTS = {
   titleX: 20, titleH: 18, titleFont: 12, titleWeight: 400, titleTruncateLen: 40,
   summaryFont: 11, summaryLen: 200, summaryH: 32, summaryTagsGap: 54,
   tagsFont: 9, tagsGap: 5, titleTagsGap: 18,
+  topPad: 40, rightPad: 12, bottomPad: 80,
 };
 async function loadTableLayout() {
   try {
@@ -548,14 +549,16 @@ function drawGraph(data, tooltip, tableLayout) {
   let TABLE_TAGS_GAP   = tableLayout.tagsGap;
   let TABLE_TITLE_TAGS_GAP   = tableLayout.titleTagsGap;   // タイトル行とショーノートプレビューの縦の間隔
   let TABLE_SUMMARY_TAGS_GAP = tableLayout.summaryTagsGap; // ショーノートプレビューとタグ行の縦の間隔
+  let TABLE_TOP_PAD    = tableLayout.topPad;    // 一覧の上端の余白
+  let TABLE_RIGHT_PAD  = tableLayout.rightPad;  // 一覧の右端の余白（タイトル/ショーノートの折り返し幅に反映）
+  let TABLE_BOTTOM_PAD = tableLayout.bottomPad; // 一覧の下端の余白
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
     eps.forEach((d, i) => { d._tx = 0; d._ty = i * ROW_H + ROW_H / 2; });
   }
   function renderRowTags() {
-    const rightMargin = 12;
-    const titleW = Math.max(80, width - LEFT_X - TABLE_TITLE_X - rightMargin);
+    const titleW = Math.max(80, width - LEFT_X - TABLE_TITLE_X - TABLE_RIGHT_PAD);
     textGroup.filter(d => d.type === 'episode').select('.node-title-fo')
       .attr('x', TABLE_TITLE_X)
       .attr('y', TABLE_TITLE_Y)
@@ -595,14 +598,14 @@ function drawGraph(data, tooltip, tableLayout) {
     if (!tableMode) return;
     computeColumn();
     const epCount = data.nodes.filter(d => d.type === 'episode').length;
-    const contentH = epCount * ROW_H + 80;
+    const contentH = epCount * ROW_H + TABLE_BOTTOM_PAD;
     epOnly().attr('transform', d => `translate(${d._tx},${d._ty})`);
     epOnly().select('circle.node-circle').attr('r', TABLE_R);
     epTxt().attr('transform', d => `translate(${d._tx},${d._ty})`);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
     svg.style('height', `${contentH}px`);
     svg.attr('viewBox', `0 0 ${width} ${contentH}`);
-    g.attr('transform', `translate(${LEFT_X},40)`);
+    g.attr('transform', `translate(${LEFT_X},${TABLE_TOP_PAD})`);
     renderRowTags();
   }
   // 調整ページ(layout.html)からのライブプレビュー用に公開
@@ -613,6 +616,7 @@ function drawGraph(data, tooltip, tableLayout) {
     summaryFont: TABLE_SUMMARY_FONT, summaryLen: TABLE_SUMMARY_LEN, summaryH: TABLE_SUMMARY_H,
     tagsFont: TABLE_TAGS_FONT, tagsGap: TABLE_TAGS_GAP,
     titleTagsGap: TABLE_TITLE_TAGS_GAP, summaryTagsGap: TABLE_SUMMARY_TAGS_GAP,
+    topPad: TABLE_TOP_PAD, rightPad: TABLE_RIGHT_PAD, bottomPad: TABLE_BOTTOM_PAD,
   });
   window.__setTableLayout = (cfg) => {
     if (cfg.rowH != null)     ROW_H = cfg.rowH;
@@ -630,6 +634,9 @@ function drawGraph(data, tooltip, tableLayout) {
     if (cfg.tagsGap != null)   TABLE_TAGS_GAP = cfg.tagsGap;
     if (cfg.titleTagsGap != null)   TABLE_TITLE_TAGS_GAP = cfg.titleTagsGap;
     if (cfg.summaryTagsGap != null) TABLE_SUMMARY_TAGS_GAP = cfg.summaryTagsGap;
+    if (cfg.topPad != null)    TABLE_TOP_PAD = cfg.topPad;
+    if (cfg.rightPad != null)  TABLE_RIGHT_PAD = cfg.rightPad;
+    if (cfg.bottomPad != null) TABLE_BOTTOM_PAD = cfg.bottomPad;
     relayoutTable();
   };
   function enterTable() {
@@ -644,7 +651,7 @@ function drawGraph(data, tooltip, tableLayout) {
     svg.on('.zoom', null);                   // パン/ピンチ無効化。縦スクロールのみで見る
     computeColumn();
     const epCount = data.nodes.filter(d => d.type === 'episode').length;
-    const contentH = epCount * ROW_H + 80;
+    const contentH = epCount * ROW_H + TABLE_BOTTOM_PAD;
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     epOnly().select('circle.node-circle').transition().duration(850).ease(d3.easeCubicInOut)
@@ -660,7 +667,7 @@ function drawGraph(data, tooltip, tableLayout) {
     svg.style('height', `${contentH}px`);
     svg.attr('viewBox', `0 0 ${width} ${contentH}`);
     g.transition().duration(850).ease(d3.easeCubicInOut)
-      .attr('transform', `translate(${LEFT_X},40)`);
+      .attr('transform', `translate(${LEFT_X},${TABLE_TOP_PAD})`);
     renderRowTags();
     applyEpStyle(); applyTitleStyle();
   }
