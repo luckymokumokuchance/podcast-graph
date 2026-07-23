@@ -724,8 +724,13 @@ function drawGraph(data, tooltip, tableLayout) {
       .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     decoCircle.attr('cx', d => d.x).attr('cy', d => d.y);
     logoImage.attr('x', d => d.x - d.w / 2).attr('y', d => d.y - d.h / 2);
-    epNode.attr('transform', d => `translate(${d.x},${d.y})`);
-    textGroup.attr('transform', d => `translate(${d.x},${d.y})`);
+    // テーブル整列モード中は、ロゴ解放タイマー(2.5秒後)などでシミュレーションが
+    // 再始動しても、星・テキストの位置は d._tx/d._ty 基準の整列を保ったまま動かさない。
+    // ここでd.x/d.yに追従させると、力学計算で位置がずれてテーブルの整列が崩れる。
+    if (!tableMode) {
+      epNode.attr('transform', d => `translate(${d.x},${d.y})`);
+      textGroup.attr('transform', d => `translate(${d.x},${d.y})`);
+    }
     linkHandle
       .attr('cx', d => (d.source.x + d.target.x) / 2)
       .attr('cy', d => (d.source.y + d.target.y) / 2);
