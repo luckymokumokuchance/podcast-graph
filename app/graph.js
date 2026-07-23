@@ -365,7 +365,7 @@ function drawGraph(data, tooltip, tableLayout) {
     .attr('class', 'node-title-fo')
     .attr('height', 18)
     .style('opacity', 0)
-    .style('pointer-events', 'auto');
+    .style('pointer-events', 'none');
   rowTitleFO.append('xhtml:div').attr('class', 'row-title')
     .on('click', (event, d) => openModal(d));
 
@@ -374,7 +374,7 @@ function drawGraph(data, tooltip, tableLayout) {
     .append('foreignObject')
     .attr('class', 'node-summary-fo')
     .style('opacity', 0)
-    .style('pointer-events', 'auto');
+    .style('pointer-events', 'none');
   rowSummaryFO.append('xhtml:div').attr('class', 'row-summary')
     .on('click', (event, d) => openModal(d));
 
@@ -592,8 +592,13 @@ function drawGraph(data, tooltip, tableLayout) {
       .attr('r', TABLE_R);
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
-    epTxt().select('.node-title-fo').transition().delay(400).duration(450).style('opacity', 1);
-    epTxt().select('.node-summary-fo').transition().delay(400).duration(450).style('opacity', 1);
+    // ネットワークビューに戻った後もこのforeignObjectが透明な当たり判定として残り、
+    // 一本指タッチが星ではなくここに乗って画面パンになってしまう不具合があったため、
+    // テーブル表示中だけpointer-eventsを有効化する。
+    epTxt().select('.node-title-fo').style('pointer-events', 'auto')
+      .transition().delay(400).duration(450).style('opacity', 1);
+    epTxt().select('.node-summary-fo').style('pointer-events', 'auto')
+      .transition().delay(400).duration(450).style('opacity', 1);
     epTxt().select('.node-tags-fo').transition().delay(400).duration(450).style('opacity', 1);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
     // 等倍・画面左寄せの縦一列。svgの高さを内容分に広げ、コンテナのネイティブ縦スクロールに任せる
@@ -617,8 +622,11 @@ function drawGraph(data, tooltip, tableLayout) {
     // scrollTopを明示的に0へ戻し、同期的なリフローでスタイル変更を即座に確定させる。
     graphContainerEl.scrollTop = 0;
     void graphContainerEl.offsetHeight;
-    epTxt().select('.node-title-fo').transition().duration(250).style('opacity', 0);
-    epTxt().select('.node-summary-fo').transition().duration(250).style('opacity', 0);
+    // 透明な当たり判定として残らないよう、フェード開始と同時にpointer-eventsを切る
+    epTxt().select('.node-title-fo').style('pointer-events', 'none')
+      .transition().duration(250).style('opacity', 0);
+    epTxt().select('.node-summary-fo').style('pointer-events', 'none')
+      .transition().duration(250).style('opacity', 0);
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
