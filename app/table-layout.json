@@ -3,7 +3,7 @@
   "leftX": 42,
   "tableR": 26,
   "titleX": 39,
-  "titleH": 40,
+  "titleH": 51,
   "titleFont": 14,
   "titleWeight": 600,
   "titleTruncateLen": 23,
@@ -12,6 +12,6 @@
   "summaryH": 32,
   "tagsFont": 10,
   "tagsGap": 13,
-  "titleTagsGap": 20,
-  "summaryTagsGap": 56
+  "titleTagsGap": 0,
+  "summaryTagsGap": 30
 }
