@@ -63,11 +63,13 @@ async function main() {
 // ------------------------------------------------------------
 // テーブル整列モードのレイアウト調整値（調整ページで保存したJSONがあれば反映）
 // ------------------------------------------------------------
+// titleTagsGap/summaryTagsGapは「丸の中心からの絶対Y位置」（旧仕様からの移行値。
+// 旧: summaryY = -titleH/2 + titleH + titleTagsGap(9) = 18 / tagsY = summaryY + summaryH + summaryTagsGap(4) = 54）
 const TABLE_LAYOUT_DEFAULTS = {
   rowH: 60, leftX: 64, tableR: 10,
   titleX: 20, titleH: 18, titleFont: 12, titleWeight: 400, titleTruncateLen: 40,
-  summaryFont: 11, summaryLen: 200, summaryH: 32, summaryTagsGap: 4,
-  tagsFont: 9, tagsGap: 5, titleTagsGap: 9,
+  summaryFont: 11, summaryLen: 200, summaryH: 32, summaryTagsGap: 54,
+  tagsFont: 9, tagsGap: 5, titleTagsGap: 18,
 };
 async function loadTableLayout() {
   try {
@@ -558,12 +560,16 @@ function drawGraph(data, tooltip, tableLayout) {
       .attr('x', TABLE_TITLE_X)
       .attr('y', TABLE_TITLE_Y)
       .attr('width', titleW)
+      .attr('height', TABLE_TITLE_H)
       .select('div.row-title')
       .style('font-size', `${TABLE_TITLE_FONT}px`)
       .style('font-weight', TABLE_TITLE_WEIGHT)
       .text(d => truncate(d.title || '', TABLE_TITLE_TRUNCATE));
 
-    const summaryY = TABLE_TITLE_Y + TABLE_TITLE_H + TABLE_TITLE_TAGS_GAP;
+    // ショーノート・タグの縦位置は、丸の中心からの絶対Yオフセットとして直接指定する
+    // （以前はタイトルの高さから足し算で計算していたため、タイトル高さを動かすと
+    //  ショーノート・タグも連動してずれた。今は各スライダーの値がそのままYになる＝独立）
+    const summaryY = TABLE_TITLE_TAGS_GAP;
     textGroup.filter(d => d.type === 'episode').select('.node-summary-fo')
       .attr('x', TABLE_TITLE_X)
       .attr('y', summaryY)
@@ -573,7 +579,7 @@ function drawGraph(data, tooltip, tableLayout) {
       .style('font-size', `${TABLE_SUMMARY_FONT}px`)
       .text(d => truncate(stripHtml(d.summary || ''), TABLE_SUMMARY_LEN));
 
-    const tagsY = summaryY + TABLE_SUMMARY_H + TABLE_SUMMARY_TAGS_GAP;
+    const tagsY = TABLE_SUMMARY_TAGS_GAP;
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
       .attr('x', TABLE_TITLE_X)
       .attr('y', tagsY)

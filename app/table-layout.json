@@ -12,6 +12,6 @@
   "summaryH": 32,
   "tagsFont": 10,
   "tagsGap": 13,
-  "titleTagsGap": 0,
-  "summaryTagsGap": 4
+  "titleTagsGap": 20,
+  "summaryTagsGap": 56
 }
