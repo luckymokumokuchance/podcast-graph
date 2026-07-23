@@ -32,6 +32,15 @@
   cursor: pointer;
 }
 
+/* テーブル整列モード: タイトル下のショーノート冒頭プレビュー（複数行折り返し・高さで切り詰め） */
+.row-summary {
+  font-size: 11px; color: #666; line-height: 1.4;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+  white-space: normal;
+  overflow: hidden;
+  cursor: pointer;
+}
+
 /* テーブル整列モード: パン/ピンチではなく縦スクロールで見る */
 #graph-container.table-scroll {
   overflow-y: auto;

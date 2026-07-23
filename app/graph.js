@@ -65,7 +65,8 @@ async function main() {
 // ------------------------------------------------------------
 const TABLE_LAYOUT_DEFAULTS = {
   rowH: 60, leftX: 64, tableR: 10,
-  titleX: 20, titleH: 18, titleFont: 12,
+  titleX: 20, titleH: 18, titleFont: 12, titleWeight: 400, titleTruncateLen: 40,
+  summaryFont: 11, summaryLen: 200, summaryH: 32, summaryTagsGap: 4,
   tagsFont: 9, tagsGap: 5, titleTagsGap: 9,
 };
 async function loadTableLayout() {
@@ -431,6 +432,15 @@ function drawGraph(data, tooltip, tableLayout) {
   rowTitleFO.append('xhtml:div').attr('class', 'row-title')
     .on('click', (event, d) => openModal(d));
 
+  // テーブル整列モード専用: タイトル下のショーノート冒頭プレビュー（タップで全文モーダル）
+  const rowSummaryFO = textGroup.filter(d => d.type === 'episode')
+    .append('foreignObject')
+    .attr('class', 'node-summary-fo')
+    .style('opacity', 0)
+    .style('pointer-events', 'auto');
+  rowSummaryFO.append('xhtml:div').attr('class', 'row-summary')
+    .on('click', (event, d) => openModal(d));
+
   // テーブル整列モード専用: タイトル下のタグ一覧（横並び・グレー）
   const rowTagsFO = textGroup.filter(d => d.type === 'episode')
     .append('foreignObject')
@@ -527,9 +537,15 @@ function drawGraph(data, tooltip, tableLayout) {
   let TABLE_TITLE_H  = tableLayout.titleH;  // タイトル行(foreignObject)の高さ
   let TABLE_TITLE_Y  = -Math.round(TABLE_TITLE_H / 2); // 丸の中心とタイトルの上下中心を合わせる
   let TABLE_TITLE_FONT = tableLayout.titleFont;
+  let TABLE_TITLE_WEIGHT   = tableLayout.titleWeight;      // タイトルの文字の太さ
+  let TABLE_TITLE_TRUNCATE = tableLayout.titleTruncateLen; // タイトルを省略する文字数
+  let TABLE_SUMMARY_FONT = tableLayout.summaryFont; // ショーノートプレビューの文字サイズ
+  let TABLE_SUMMARY_LEN  = tableLayout.summaryLen;  // ショーノートプレビューの文字数
+  let TABLE_SUMMARY_H    = tableLayout.summaryH;    // ショーノートプレビューの高さ
   let TABLE_TAGS_FONT  = tableLayout.tagsFont;
   let TABLE_TAGS_GAP   = tableLayout.tagsGap;
-  let TABLE_TITLE_TAGS_GAP = tableLayout.titleTagsGap; // タイトル行とタグ行の縦の間隔
+  let TABLE_TITLE_TAGS_GAP   = tableLayout.titleTagsGap;   // タイトル行とショーノートプレビューの縦の間隔
+  let TABLE_SUMMARY_TAGS_GAP = tableLayout.summaryTagsGap; // ショーノートプレビューとタグ行の縦の間隔
   function computeColumn() {
     const eps = data.nodes.filter(d => d.type === 'episode')
       .sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10));
@@ -544,10 +560,23 @@ function drawGraph(data, tooltip, tableLayout) {
       .attr('width', titleW)
       .select('div.row-title')
       .style('font-size', `${TABLE_TITLE_FONT}px`)
-      .text(d => d.title || '');
+      .style('font-weight', TABLE_TITLE_WEIGHT)
+      .text(d => truncate(d.title || '', TABLE_TITLE_TRUNCATE));
+
+    const summaryY = TABLE_TITLE_Y + TABLE_TITLE_H + TABLE_TITLE_TAGS_GAP;
+    textGroup.filter(d => d.type === 'episode').select('.node-summary-fo')
+      .attr('x', TABLE_TITLE_X)
+      .attr('y', summaryY)
+      .attr('width', titleW)
+      .attr('height', TABLE_SUMMARY_H)
+      .select('div.row-summary')
+      .style('font-size', `${TABLE_SUMMARY_FONT}px`)
+      .text(d => truncate(stripHtml(d.summary || ''), TABLE_SUMMARY_LEN));
+
+    const tagsY = summaryY + TABLE_SUMMARY_H + TABLE_SUMMARY_TAGS_GAP;
     textGroup.filter(d => d.type === 'episode').select('.node-tags-fo')
       .attr('x', TABLE_TITLE_X)
-      .attr('y', TABLE_TITLE_Y + TABLE_TITLE_H + TABLE_TITLE_TAGS_GAP)
+      .attr('y', tagsY)
       .select('div.row-tags')
       .style('font-size', `${TABLE_TAGS_FONT}px`)
       .style('gap', `${TABLE_TAGS_GAP}px`)
@@ -574,8 +603,10 @@ function drawGraph(data, tooltip, tableLayout) {
   window.__getTableLayout = () => ({
     rowH: ROW_H, leftX: LEFT_X, tableR: TABLE_R,
     titleX: TABLE_TITLE_X, titleH: TABLE_TITLE_H,
-    titleFont: TABLE_TITLE_FONT, tagsFont: TABLE_TAGS_FONT, tagsGap: TABLE_TAGS_GAP,
-    titleTagsGap: TABLE_TITLE_TAGS_GAP,
+    titleFont: TABLE_TITLE_FONT, titleWeight: TABLE_TITLE_WEIGHT, titleTruncateLen: TABLE_TITLE_TRUNCATE,
+    summaryFont: TABLE_SUMMARY_FONT, summaryLen: TABLE_SUMMARY_LEN, summaryH: TABLE_SUMMARY_H,
+    tagsFont: TABLE_TAGS_FONT, tagsGap: TABLE_TAGS_GAP,
+    titleTagsGap: TABLE_TITLE_TAGS_GAP, summaryTagsGap: TABLE_SUMMARY_TAGS_GAP,
   });
   window.__setTableLayout = (cfg) => {
     if (cfg.rowH != null)     ROW_H = cfg.rowH;
@@ -584,9 +615,15 @@ function drawGraph(data, tooltip, tableLayout) {
     if (cfg.titleX != null)   TABLE_TITLE_X = cfg.titleX;
     if (cfg.titleH != null)   { TABLE_TITLE_H = cfg.titleH; TABLE_TITLE_Y = -Math.round(TABLE_TITLE_H / 2); }
     if (cfg.titleFont != null) TABLE_TITLE_FONT = cfg.titleFont;
+    if (cfg.titleWeight != null) TABLE_TITLE_WEIGHT = cfg.titleWeight;
+    if (cfg.titleTruncateLen != null) TABLE_TITLE_TRUNCATE = cfg.titleTruncateLen;
+    if (cfg.summaryFont != null) TABLE_SUMMARY_FONT = cfg.summaryFont;
+    if (cfg.summaryLen != null)  TABLE_SUMMARY_LEN = cfg.summaryLen;
+    if (cfg.summaryH != null)    TABLE_SUMMARY_H = cfg.summaryH;
     if (cfg.tagsFont != null)  TABLE_TAGS_FONT = cfg.tagsFont;
     if (cfg.tagsGap != null)   TABLE_TAGS_GAP = cfg.tagsGap;
-    if (cfg.titleTagsGap != null) TABLE_TITLE_TAGS_GAP = cfg.titleTagsGap;
+    if (cfg.titleTagsGap != null)   TABLE_TITLE_TAGS_GAP = cfg.titleTagsGap;
+    if (cfg.summaryTagsGap != null) TABLE_SUMMARY_TAGS_GAP = cfg.summaryTagsGap;
     relayoutTable();
   };
   function enterTable() {
@@ -609,6 +646,7 @@ function drawGraph(data, tooltip, tableLayout) {
     epTxt().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._tx},${d._ty})`);
     epTxt().select('.node-title-fo').transition().delay(400).duration(450).style('opacity', 1);
+    epTxt().select('.node-summary-fo').transition().delay(400).duration(450).style('opacity', 1);
     epTxt().select('.node-tags-fo').transition().delay(400).duration(450).style('opacity', 1);
     data.nodes.forEach(d => { if (d.type === 'episode') { d.x = d._tx; d.y = d._ty; } });
     // 等倍・画面左寄せの縦一列。svgの高さを内容分に広げ、コンテナのネイティブ縦スクロールに任せる
@@ -626,6 +664,7 @@ function drawGraph(data, tooltip, tableLayout) {
     d3.select('#graph').classed('table-mode', false);
     document.getElementById('graph-container').classList.remove('table-scroll');
     epTxt().select('.node-title-fo').transition().duration(250).style('opacity', 0);
+    epTxt().select('.node-summary-fo').transition().duration(250).style('opacity', 0);
     epTxt().select('.node-tags-fo').transition().duration(250).style('opacity', 0);
     epOnly().transition().duration(850).ease(d3.easeCubicInOut)
       .attr('transform', d => `translate(${d._nx},${d._ny})`);
@@ -1067,6 +1106,15 @@ function buildLegend() {
 // ------------------------------------------------------------
 function truncate(str, maxLen) {
   return str.length > maxLen ? str.slice(0, maxLen) + '…' : str;
+}
+
+// ------------------------------------------------------------
+// HTMLタグを除去してプレーンテキストにする（ショーノートプレビュー用）
+// ------------------------------------------------------------
+function stripHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html || '';
+  return div.textContent || '';
 }
 
 // ------------------------------------------------------------

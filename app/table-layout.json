@@ -5,7 +5,13 @@
   "titleX": 35,
   "titleH": 29,
   "titleFont": 16,
+  "titleWeight": 400,
+  "titleTruncateLen": 40,
+  "summaryFont": 11,
+  "summaryLen": 200,
+  "summaryH": 32,
   "tagsFont": 10,
   "tagsGap": 13,
-  "titleTagsGap": 0
+  "titleTagsGap": 0,
+  "summaryTagsGap": 4
 }
