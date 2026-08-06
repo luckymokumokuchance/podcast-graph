@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LOG | ラッキーもくもくチャンス</title>
+  <meta name="description" content="ラッキーもくもくチャンスの制作日誌（LOG）。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ラッキーもくもくチャンス">
+  <meta property="og:title" content="LOG | ラッキーもくもくチャンス">
+  <meta property="og:description" content="ラッキーもくもくチャンスの制作日誌（LOG）。">
+  <meta property="og:url" content="https://luckymokumokuchance.github.io/podcast-graph/app/log.html">
+  <meta property="og:image" content="https://luckymokumokuchance.github.io/podcast-graph/image/bg_mokumoku.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://luckymokumokuchance.github.io/podcast-graph/app/log.html">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../log.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <div id="search-cloud">
+    <div id="search-row">
+      <input id="search-input" type="text" placeholder="タイトル・本文から検索" autocomplete="off" />
+      <button id="search-btn" type="button">Search</button>
+    </div>
+    <div id="result-count" aria-live="polite"></div>
+  </div>
+
+  <div id="loading">よみこみ中…</div>
+  <div id="error" hidden>データの取得に失敗しました。時間をおいて再度お試しください。</div>
+  <div id="empty" hidden>まだLOGがありません。</div>
+
+  <ul id="log-list" hidden></ul>
+
+</div>
+
+<script src="../log.js"></script>
+  <script src="nav.js"></script>
+  <script src="logo.js"></script>
+</body>
+</html>

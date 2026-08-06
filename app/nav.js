@@ -2,31 +2,36 @@
  * nav.js（app/版） — ラッキーもくもくチャンス 共通ナビゲーションメニュー
  *
  * ルート直下の nav.js と見た目・挙動は同じ。app/ サブフォルダから使うため、
- * 他ページへのリンクは ../ 付き、EP LISTだけは他ページに飛ばず、
- * このページ内のテーブルビュー（#tab-table）を開く特殊項目にしてある。
+ * 他ページへのリンクは app/ 内のファイル名のみ（同じ階層）か ../ 付き（root）。
+ * TOP/EP LISTは index.html にいる間だけ、ページ内のネットワーク/テーブル
+ * ビュー（#tab-network / #tab-table）を切り替える特殊項目。index.html以外
+ * のページからは通常のリンクとして index.html（EP LISTは ?view=table 付き）
+ * へ遷移する。
  *
  * このファイルだけで完結しています（CSSも中に入っています）。
  */
 (function () {
   'use strict';
 
+  var onIndex = !!document.getElementById('tab-network');
+
   // ── ページ一覧（ここを編集すればメニューが増える）────────────────
-  // TOPは他ページに飛ばず、このページ内のネットワークビュー（#tab-network）を
-  // 開く特殊項目（EP LISTと同じ仕組み）。GAS離れ改修が全体に及ぶまでの暫定。
+  // CONCEPTS/INSPIREDはまだapp/へ移植していないためroot（../）のまま。
   var PAGES = [
-    { href: '#',                label: 'TOP',      action: 'network' },
-    { href: '../about.html',    label: 'ABOUT',    match: ['about.html'] },
-    { href: '#',                label: 'EP LIST',  action: 'table' },
+    { href: onIndex ? '#' : 'index.html',            label: 'TOP',      action: onIndex ? 'network' : null, match: ['index.html', ''] },
+    { href: 'about.html',       label: 'ABOUT',    match: ['about.html'] },
+    { href: onIndex ? '#' : 'index.html?view=table', label: 'EP LIST',  action: onIndex ? 'table' : null },
     { href: '../concepts.html', label: 'CONCEPTS', match: ['concepts.html', 'concept.html'] },
     { href: '../inspired.html', label: 'INSPIRED', match: ['inspired.html'] },
-    { href: '../log.html',      label: 'LOG',      match: ['log.html'] },
-    { href: '../contact.html',  label: 'CONTACT',  match: ['contact.html'] }
+    { href: 'log.html',         label: 'LOG',      match: ['log.html'] },
+    { href: 'contact.html',     label: 'CONTACT',  match: ['contact.html'] }
   ];
 
-  // ── 今どのページを見ているかを判定（EP LISTは判定対象外。テーブルビューの
-  //    開閉状態に合わせて別途ハイライトする） ─────────────────
+  // ── 今どのページを見ているかを判定（index.htmlのTOP/EP LISTはネットワーク/
+  //    テーブルビューの開閉状態に合わせて別途ハイライトする） ─────────
   var here = location.pathname.split('/').pop();
   function isCurrent(page) {
+    if (onIndex && (page.action === 'network' || page.action === 'table')) return false;
     return !!(page.match && page.match.indexOf(here) !== -1);
   }
 

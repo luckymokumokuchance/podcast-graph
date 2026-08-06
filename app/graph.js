@@ -58,6 +58,12 @@ async function main() {
 
   loadingEl.classList.add('hidden');
   drawGraph(data, tooltip, tableLayout);
+
+  // 他ページのnav.js「EP LIST」から ?view=table で遷移してきた場合、テーブルビューで開く
+  if (new URLSearchParams(window.location.search).get('view') === 'table') {
+    const tabT = document.getElementById('tab-table');
+    if (tabT) tabT.click();
+  }
 }
 
 // ------------------------------------------------------------
