@@ -42,7 +42,7 @@ async function main() {
       tags: e.tags || [],
     }));
     const tagNodes = d.nodes.filter(n => n.type === 'tag');
-    data = { nodes: [...episodeNodes, ...tagNodes], links: d.graphLinks, images: {} };
+    data = { nodes: [...episodeNodes, ...tagNodes], links: d.graphLinks, images: d.images || {} };
   } catch (e) {
     loadingEl.textContent = 'データの取得に失敗しました（RSS）。';
     console.error(e);

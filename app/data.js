@@ -3,13 +3,16 @@
 //   window.PodcastData.load() → { episodes, links, nodes, graphLinks, tags }
 // ============================================================
 (function () {
-  const RSS_URL   = 'https://anchor.fm/s/110637c28/podcast/rss';
-  const LINKS_URL = 'links.json';
+  const RSS_URL       = 'https://anchor.fm/s/110637c28/podcast/rss';
+  const LINKS_URL     = 'links.json';
+  const SHOWNOTES_URL = 'shownotes.json'; // スプレッドシートshownote（タグ・[img:key]込みの加筆版）のスナップショット。npm run snapshot で更新
+  const IMAGES_URL    = 'images.json';    // shownote内 [img:key] 用の key→Drive fileId マップ
 
   // 説明文の定型フッタ由来の宣伝ハッシュタグはタグノードにしない
   const TAG_DENYLIST = new Set(['ラキもくチャン', 'ラッキーもくもくチャンス']);
   // タグ境界: 空白/記号のほか [ ] / ／ ( ) でも打ち切る
-  const TAG_RE = /#([^\s#、。！？…「」『』【】（）\[\]／\/()]+)/g;
+  // 先頭の#の連続数を捕捉: "#tag"=採用（グラフに表示）, "##tag"以上=未タグ候補として除外
+  const TAG_RE = /#+([^\s#、。！？…「」『』【】（）\[\]／\/()]+)/g;
 
   function textOf(node, tag) {
     const el = node.querySelector(tag);
@@ -39,6 +42,8 @@
     let m;
     TAG_RE.lastIndex = 0;
     while ((m = TAG_RE.exec(text)) !== null) {
+      const hashes = m[0].match(/^#+/)[0].length;
+      if (hashes !== 1) continue; // ##以上（未タグ候補）はグラフに出さない
       const label = m[1];
       // URL断片（#utm_source=... 等）を除外
       if (/[=.:@]/.test(label)) continue;
@@ -81,6 +86,31 @@
       .sort((a, b) => a.num - b.num);
   }
 
+  // RSSの本文はSpotify投稿時点の生テキストで、タグや[img:key]は含まない。
+  // スプレッドシートshownote（人力で加筆されたキュレーション版）が有れば本文・タグ抽出をそちらに差し替える。
+  // RSSに無い回はここでは足さない（エピソードの存在判定は常にRSSが正）。
+  function applyCurated(rssEpisodes, shownotesJson) {
+    const byNum = new Map((shownotesJson && shownotesJson.episodes || []).map((e) => [e.num, e]));
+    const seen = new Set();
+    const out = rssEpisodes.map((ep) => {
+      const c = byNum.get(ep.num);
+      if (!c) return ep;
+      seen.add(ep.num);
+      const descHtml = c.descHtml || ep.descHtml;
+      return {
+        ...ep,
+        descHtml,
+        descText: stripHtml(descHtml),
+        tags: extractTags(stripHtml(descHtml)),
+        link: c.url || ep.link,
+      };
+    });
+    byNum.forEach((c, num) => {
+      if (!seen.has(num)) console.warn('[data] shownotes.json にRSS未対応の回:', num);
+    });
+    return out;
+  }
+
   function buildGraph(episodes, manualLinks) {
     const ids = new Set(episodes.map((e) => e.id));
     const COLORS = { episode: '#089900', tag: '#878787' };
@@ -116,14 +146,16 @@
   }
 
   async function load() {
-    const [rssText, linksJson] = await Promise.all([
+    const [rssText, linksJson, shownotesJson, images] = await Promise.all([
       fetch(RSS_URL).then((r) => { if (!r.ok) throw new Error('RSS ' + r.status); return r.text(); }),
       fetch(LINKS_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : { links: [] }).catch(() => ({ links: [] })),
+      fetch(SHOWNOTES_URL).then((r) => r.ok ? r.json() : { episodes: [] }).catch(() => ({ episodes: [] })),
+      fetch(IMAGES_URL).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
     ]);
-    const episodes = parseRss(rssText);
+    const episodes = applyCurated(parseRss(rssText), shownotesJson);
     const manualLinks = linksJson.links || [];
     const g = buildGraph(episodes, manualLinks);
-    return { episodes, manualLinks, ...g };
+    return { episodes, manualLinks, images, ...g };
   }
 
   // ネットワークとテーブルで二重fetchしないようキャッシュ

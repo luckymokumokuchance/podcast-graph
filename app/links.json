@@ -1,14 +1,14 @@
 {
   "links": [
-    {
-      "source": 1,
-      "target": 20,
-      "reason": "コンセプトの話が第1回の問題意識に接続"
-    },
-    {
-      "source": 1,
-      "target": 7,
-      "reason": "テスト"
-    }
+    { "source": 5, "target": 7, "reason": "MBTIの話が005で出て、007で実行している。" },
+    { "source": 1, "target": 6, "reason": "『PERFECT DAYS』の話" },
+    { "source": 4, "target": 9, "reason": "004スケーターファッション・009グラフィティとストリート文化の話で共通" },
+    { "source": 8, "target": 11, "reason": "政治的スタンスの取り方について" },
+    { "source": 1, "target": 13, "reason": "ファイトクラブとパーフェクトデイズの話" },
+    { "source": 9, "target": 15, "reason": "ボマーとピーサー／グラフィティとスケボー" },
+    { "source": 12, "target": 16, "reason": "民芸の話をしている" },
+    { "source": 4, "target": 15, "reason": "スケーターについての話" },
+    { "source": 15, "target": 17, "reason": "さむわんへるつの話をしている" },
+    { "source": 19, "target": 11, "reason": "ブランド名スラスラ言う問題" }
   ]
 }
