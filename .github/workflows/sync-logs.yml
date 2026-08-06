@@ -1,0 +1,46 @@
+name: Sync LOGs
+
+# スプレッドシートのlogsシート → app/logs.json を定期的に同期する。
+# ユーザーはこれまで通りフォームからLOGを書くだけでよく、
+# 反映のためにPCでコマンドを打つ必要はない。
+on:
+  schedule:
+    # 30分おき（GitHubの仕様上、実際の実行は数分〜十数分ずれることがある）
+    - cron: '*/30 * * * *'
+  # 「今すぐ反映したい」時にActionsタブから手動実行できる
+  workflow_dispatch:
+
+# 同時に複数走らないようにする（push衝突の防止）
+concurrency:
+  group: sync-logs
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # app/logs.json をコミットするために必要
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/logo-deco
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: GASからLOGを取得
+        run: node scripts/snapshot-logs.mjs
+
+      - name: 変化があればコミットしてpush
+        run: |
+          if git diff --quiet -- app/logs.json; then
+            echo "変化なし。コミットしません。"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/logs.json
+          git commit -m "chore: sync LOGs from spreadsheet [skip ci]"
+          git push origin HEAD:feature/logo-deco
