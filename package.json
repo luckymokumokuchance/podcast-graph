@@ -4,6 +4,7 @@
   "scripts": {
     "test": "node test_episodes.mjs && node test_quickpanel.mjs",
     "snapshot": "node scripts/snapshot-shownotes.mjs",
+    "snapshot:curation": "node scripts/snapshot-curation-meta.mjs",
     "verify": "node scripts/verify-parity.mjs",
     "verify:concepts": "node scripts/verify-concepts-works.mjs"
   },

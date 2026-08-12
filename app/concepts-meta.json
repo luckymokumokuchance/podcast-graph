@@ -1,0 +1,312 @@
+{
+  "テクスチャ": {
+    "exists": true,
+    "description": "論理的な「構造」や「言語化」によって物事を圧縮する過程で削ぎ落とされてしまう、その場特有の生々しい空気感や個別の手触りのこと。\n「ーを感じ取れる人」「ー的」",
+    "proposer": "カワサキ",
+    "related": [
+      "宝物"
+    ],
+    "related_external": [],
+    "contrast": [
+      "フレームワーク"
+    ],
+    "contexts": {
+      "6": "カワサキ：ザラザラザラって手でなぞりながら。で、歩いていく。もうこれなぞるのに何の意味もない。\r\nイノウエ：意味もないね。俺親だから絶対やめろっていう。\r\nカワサキ：うん。そうですよね。でもやっぱ記憶の中にその触覚の記憶がある。\r\nイノウエ：言われて俺も分かるもん。\r\nカワサキ：その質感、テクスチャありますよね。その触覚以外も含めてある記憶。",
+      "9": "カワサキ：テクスチャの逆を「フレームワーク」とかがいいかなと思って。",
+      "11": "カワサキ：だからやっぱテクスチャってあれですね。人には根本的に渡せないもんなんですね。",
+      "12": "イノウエ：俺のテクスチャーとカワサキさんのテクスチャー、マジで全然地図が違う。僕が宝物として感じるものって体温が乗ってるんですよ。けどカワサキさんの体温の乗せ方と僕の体温の乗せ方違うんだっていう。",
+      "15": "イノウエ：だからカメラ持って外出かけるのと、スケボー持って出かけるので、まあ行く目線の先は違うけど、テクスチャーの発動がかかるね。何らかのテクスチャスイッチ入る。スケボーは路面にめっちゃ影響される。"
+    }
+  },
+  "ピエロ": {
+    "exists": true,
+    "description": "未",
+    "proposer": "イノウエ",
+    "related": [
+      "本物っぽさ"
+    ],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ゆる継承": {
+    "exists": true,
+    "description": "未",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "自由研究": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "読書メモ": {
+    "exists": true,
+    "description": "読書メモの取り方、リンクの繋げ方など、その人の癖や収集癖、読み方などが滲み出てしまう",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "デジタル民藝": {
+    "exists": true,
+    "description": "プロが作成したものでなく、自分が自分のためだけに作ったアノニマスなアプリケーションとその行為のこと。\n仕様にその人の個性が宿る。\n■例：イノウエ作読書メモアプリ",
+    "proposer": "カワサキ",
+    "related": [
+      "読書メモ",
+      "味噌づくり"
+    ],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ハンドリング": {
+    "exists": true,
+    "description": "大人は子供の頃と違い、人間関係において「ハンドル操作」が極めて巧みになっているということ",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "味噌づくり": {
+    "exists": true,
+    "description": "急いで結果を求めることができず、日々習慣的に蓄積していくような行いのこと。前提として人類の行いがどんどん短期プロジェクト化していることがあり、それにより相対的に重要度が増しているように感じる。\r\n砂場型のものづくりと隣接概念。",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [
+      "Claude Codeの開発者のBoris Chernyが、「将来AIに仕事を奪われた後何がしたいか？」という質問に「味噌づくり」と答えたことから生まれた概念。"
+    ],
+    "contrast": [],
+    "contexts": {}
+  },
+  "自分事": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "小学生理論": {
+    "exists": true,
+    "description": "本来は広い世界があるにもかかわらず、閉ざされた小さなコミュニティの中だけにいることで、そこが世界のすべてだと思い込んでしまう状態",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "フレームワーク": {
+    "exists": true,
+    "description": "個別事象の個体差ではなく、集合に共通する構造。物事を言語化することで生まれる抽象概念。「ーを取り出す」「ー的」",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [
+      "MITにおける＜意味の科学＞を一手に引き受けていたミンスキーは、かなり早期から、彼が「フレーム理論」と名付ける仮説を用意していた。（中略）私たちのアタマ（心）の中にはつねに「フレーム」といったものがはたらいていて、そのフレームによって自己記述をしているはずなのだから、その自己記述性こそが自己のモデルになって思考をしているのではないか、そう言う仮説である。これはデカルトの「我思う、ゆえに我あり」よりも、ずっと革新した見方であった。（中略）私たちは、「説明するための現象とほぼ同じ関係構造をもった心的な代替物」をアタマ（心）の中にもっているだろうということである。📚『知の編集工学』松岡正剛"
+    ],
+    "contrast": [],
+    "contexts": {
+      "9": "例えば紙粘土で人の形のちっちゃい人形を作りたいとしたら、まずポーズ作るために針金で骨格を作ると思うんですよ。その上に紙粘土貼っていってそれでデザインをしていく。骨組みのところがフレームワーク。表面に乗ってくるところがテクスチャ。前話してたのは、物事の構造だけ捉えて言語化しちゃうと抜け落ちるような質感だったり目線みたいな話だったと思うんですけど。表面がどう変わっていっても引いてみて骨組みだけを見ようっていうのが今までの僕だと思うんです。"
+    }
+  },
+  "檸檬": {
+    "exists": true,
+    "description": "個人の存在のみを伝えるために行われる小さな悪事。静的で受動的な爆弾。\r\n「ーを仕掛けてきてやった」",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "本物っぽさ": {
+    "exists": true,
+    "description": "その人の「本音の言葉」か、「取り繕っている言葉」かの違いに近い感覚",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "宝物": {
+    "exists": true,
+    "description": "自分の大切なもののうち、他人にとっては大切でないと思えるもの。人に自慢して理解してもらえないことで、自らの局所性を再確認できる。",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "進化心理学的なギャップ": {
+    "exists": true,
+    "description": "狩猟採集時代に最適化された人間の本能的欲求（狩りの達成感、性欲など）が、現代のモラルや社会構造と合致しなくなっていることで生じる苦しみやネガティブな側面",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "アンビエントビジュアル": {
+    "exists": true,
+    "description": "川の流れや、風で揺れるカーテン、粒子が動くスクリーンセーバーのように、はっきりした物語や目的がなくても、ただ眺めていられる視覚的な環境を指しているように使われています。",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ものの探し方の流派": {
+    "exists": true,
+    "description": "カワサキもイノウエもランダムに目を運び、たまたま見つけることに賭ける。",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "本の読み方の流派": {
+    "exists": true,
+    "description": "カワサキは一言一句飛ばさず全部読む。\r\nもし飛ばした場合その読書体験は死ぬ。",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ジスベリ": {
+    "exists": true,
+    "description": "字滑りのこと。\r\n読書をしているとき、文章を目で追っているのに脳が理解できていない状況のこと。目滑りともいうらしい。",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ボムりたい": {
+    "exists": true,
+    "description": "ボマー型行為／ボマーとピーサー／スピードと違法性を重視するボマー。完成度や作品性に寄っていくピーサー。",
+    "proposer": "カワサキ",
+    "related": [
+      "檸檬"
+    ],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "電話体ラジオ": {
+    "exists": true,
+    "description": "ラジオ収録を電話で行えば、オンラインで行え、より聴き手と近い感覚で会話できるのではという仮説。前述の書簡体小説を意識して命名。",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "タグ管理問題": {
+    "exists": true,
+    "description": "「タグって切り口だから。俺の切り口でやっとく意味があるだけで、AIにやってもらったりするのは何の意味もない」",
+    "proposer": "イノウエ",
+    "related": [
+      "読書メモ"
+    ],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ジョグ型編集": {
+    "exists": true,
+    "description": "編集するために走るのではなく、走り続けた結果として編集が起きる",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [
+      "砂場型（プロセス型）:ゴールがなく、作っては壊すプロセス自体を楽しむスタイル。他者への価値説明は難しいが、個人の探求に適している"
+    ],
+    "contrast": [
+      "スプリント型編集"
+    ],
+    "contexts": {}
+  },
+  "スプリント型編集": {
+    "exists": true,
+    "description": "締切や目的を設定する／短期間で形にする／完成形を目指す／評価可能なアウトプットを作る",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [
+      "折り紙型:手順とゴールが明確で、結果の良し悪しが評価に直結するスタイル。教育現場で絵が嫌いな子を生む原因としても語られた"
+    ],
+    "contrast": [],
+    "contexts": {}
+  },
+  "その人性": {
+    "exists": true,
+    "description": "AIという道具を使っても、最終的にその人の人性やこだわりが滲み出ているかどうかが重要であるという考え",
+    "proposer": "イノウエ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "無機物への命名欲求": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "自己矛盾の肯定": {
+    "exists": true,
+    "description": "一貫性に縛られず、自分の中にある矛盾を抱えたまま対話することの人間らしさ",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "コンセプト文": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "誠実さと射程の長さ": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "コミュニケーションにおける自転車操業": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "アンパンマンが世界を救ってるんじゃないジャムおじさんが世界を救ってるんだ説": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  }
+}

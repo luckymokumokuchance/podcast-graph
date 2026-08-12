@@ -153,6 +153,7 @@ async function enter(passphrase, silent) {
   await loadFile();
   fillDatalist();
   renderLinks();
+  if (window.StaleCheck) window.StaleCheck.run($('editor'));
 }
 function logout() { localStorage.removeItem(PASS_KEY); location.reload(); }
 

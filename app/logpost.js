@@ -211,6 +211,7 @@ async function enter(passphrase, silent) {
   $('add-date').value = todayStr();
   await loadFile();
   renderLogs();
+  if (window.StaleCheck) window.StaleCheck.run($('editor'));
 }
 function logout() { localStorage.removeItem(PASS_KEY); location.reload(); }
 
