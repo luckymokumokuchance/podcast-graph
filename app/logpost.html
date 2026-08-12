@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LOG投稿 — 管理</title>
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="logpost.css" />
+</head>
+<body>
+  <header class="abar">
+    <span class="abrand">📝 もくもく投稿部屋</span>
+    <div class="aright">
+      <span id="who" class="who"></span>
+      <button id="logout" class="btn ghost hidden">ログアウト</button>
+      <a class="tostar" href="log.html">← LOGを見る</a>
+    </div>
+  </header>
+
+  <!-- ログイン前 -->
+  <section id="gate" class="gate">
+    <h2>合言葉を入力</h2>
+    <p class="muted">管理者だけが知っている合言葉を入れてください。</p>
+    <div class="tokrow">
+      <input id="tok" type="password" placeholder="合言葉" autocomplete="off" />
+      <button id="enter" class="btn primary">入る</button>
+    </div>
+    <p id="gate-msg" class="err"></p>
+  </section>
+
+  <!-- ログイン後 -->
+  <main id="editor" class="editor hidden">
+    <p class="lead">思いついたことを、もくもくっと書き残そう。</p>
+
+    <section class="addcard">
+      <h3>新しく投稿する</h3>
+      <div class="addgrid">
+        <label class="w-full">タイトル
+          <input id="add-title" type="text" placeholder="今日の一言" />
+        </label>
+        <label class="w-full">本文
+          <textarea id="add-body" rows="4" placeholder="書きたいことをどうぞ"></textarea>
+        </label>
+        <label>だれが
+          <select id="add-author">
+            <option value="イノウエ">イノウエ</option>
+            <option value="カワサキ">カワサキ</option>
+          </select>
+        </label>
+        <label>いつ
+          <input id="add-date" type="date" />
+        </label>
+        <button id="add" class="btn primary big">もくもくっと投稿する ☁️</button>
+      </div>
+      <p id="add-msg" class="err"></p>
+      <p id="post-cheer" class="cheer hidden"></p>
+    </section>
+
+    <div class="toolbar">
+      <div class="counts"><span id="cnt-logs">0</span> 件のLOG</div>
+      <div class="tbtns">
+        <input id="filter" class="filter" type="search" placeholder="LOGを絞り込み（タイトル・本文）" />
+        <button id="save" class="btn primary" disabled>保存（コミット）</button>
+      </div>
+    </div>
+    <p id="save-msg" class="muted"></p>
+
+    <h3 class="lh">投稿済みLOG</h3>
+    <div id="log-list" class="log-edit-list"></div>
+  </main>
+
+  <script src="logpost.js"></script>
+</body>
+</html>
