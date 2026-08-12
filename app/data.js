@@ -111,6 +111,118 @@
     return out;
   }
 
+  // ============================================================
+  // CONCEPTS / INSPIRED（作品）— GASのcomputeConcepts_/computeWorks_の移植
+  //   ショーノート本文だけから毎回計算する。保存・スナップショット不要
+  //   （エピソードが増えた瞬間に自動で反映される）。
+  //   人が書いた付加情報（description/proposer/画像URL等）はここでは
+  //   一切扱わない。Step 2でconcepts-meta.json / works-meta.jsonとして
+  //   別途マージする。
+  // ============================================================
+
+  // GAS版と完全に同じ正規表現・挙動にするため、グラフ用extractTags()とは
+  // あえて共有しない（GASはdenylistも[]／()除外も持たない。キュレーション
+  // 済みshownoteは宣伝フッタが既に取り除かれている前提のため）
+  const CONCEPT_TAG_RE = /#+([^\s#、。！？…「」『』【】（）]+)/g;
+
+  function computeConcepts(episodes) {
+    const map = {};        // name -> { status, episodes:Set<id> }
+    const titleById = {};
+    episodes.forEach((ep) => {
+      titleById[String(ep.id)] = ep.title;
+      const matches = (ep.descText || '').match(CONCEPT_TAG_RE) || [];
+      matches.forEach((m) => {
+        const hashes = m.match(/^#+/)[0].length;
+        const name = m.replace(/^#+/, '');
+        if (!map[name]) map[name] = { status: 'candidate', episodes: new Set() };
+        if (hashes === 1) map[name].status = 'tagged';
+        map[name].episodes.add(String(ep.id));
+      });
+    });
+
+    const list = Object.entries(map).map(([name, v]) => ({
+      name,
+      status: v.status,
+      episodeIds: [...v.episodes],
+      titles: [...v.episodes].map((id) => titleById[id] || ''),
+    }));
+
+    // 共起（同じエピソードを共有する概念同士）
+    list.forEach((c) => {
+      const ids = new Set(c.episodeIds);
+      c.cooc = list
+        .filter((o) => o.name !== c.name)
+        .map((o) => ({ name: o.name, shared: o.episodeIds.filter((id) => ids.has(id)).length }))
+        .filter((o) => o.shared > 0)
+        .sort((a, b) => b.shared - a.shared || a.name.localeCompare(b.name, 'ja'));
+    });
+
+    list.sort((a, b) => b.episodeIds.length - a.episodeIds.length);
+    return { list, titleById };
+  }
+
+  // 絵文字マーカー → 種別（GASのWORK_EMOJI_TYPEと同一）
+  const WORK_EMOJI_TYPE = { '📚': 'book', '🎬': 'movie', '📺': 'anime', '🎵': 'music', '📻': 'radio' };
+  const WORK_TYPE_LABEL = { book: '本', movie: '映画', anime: 'アニメ/ドラマ', music: '音楽', radio: 'ラジオ/ポッドキャスト' };
+
+  function buildWorkRe() {
+    const emojiAlt = Object.keys(WORK_EMOJI_TYPE).join('|');
+    return new RegExp(
+      `(${emojiAlt})(?:` +
+        `\\[([^\\]]+)\\]\\((https?:[^\\s)]+)\\)(?:[／/・]\\s*)?([^\\s、。！？…「」『』【】（）\\[\\]]*)` + // 1: リンク記法
+        `|『([^』]+)』` +                                                                 // 2: 『』
+        `|「([^」]+)」` +                                                                 // 3: 「」
+        `|\\[([^\\]]+)\\]` +                                                              // 4: []
+        `|([^\\s、。！？…「」『』【】（）\\[\\]]+)` +                                       // 5: 素の1語
+      `)`,
+      'g'
+    );
+  }
+
+  function computeWorks(episodes) {
+    const re = buildWorkRe();
+    const map = {};      // "type|title" -> { title, type, episodes:Set<id>, inlineCreator, inlineLink }
+    const titleById = {};
+
+    episodes.forEach((ep) => {
+      titleById[String(ep.id)] = ep.title;
+      const summary = ep.descText || '';
+      let m;
+      re.lastIndex = 0;
+      while ((m = re.exec(summary)) !== null) {
+        const type = WORK_EMOJI_TYPE[m[1]];
+        let title, inlineUrl = '', inlineCreator = '';
+        if (m[2] !== undefined) {
+          title = m[2].trim();
+          inlineUrl = (m[3] || '').trim();
+          inlineCreator = (m[4] || '').trim();
+        } else {
+          title = (m[5] || m[6] || m[7] || m[8] || '').trim();
+        }
+        if (!title) continue;
+
+        const key = type + '|' + title;
+        if (!map[key]) map[key] = { title, type, episodes: new Set(), inlineCreator: '', inlineLink: '' };
+        map[key].episodes.add(String(ep.id));
+        if (inlineCreator && !map[key].inlineCreator) map[key].inlineCreator = inlineCreator;
+        if (inlineUrl && !map[key].inlineLink) map[key].inlineLink = inlineUrl;
+      }
+    });
+
+    const list = Object.values(map).map((w) => ({
+      title: w.title,
+      type: w.type,
+      type_label: WORK_TYPE_LABEL[w.type] || w.type,
+      episodeIds: [...w.episodes],
+      titles: [...w.episodes].map((id) => titleById[id] || ''),
+      inlineCreator: w.inlineCreator,
+      inlineLink: w.inlineLink,
+    }));
+
+    list.sort((a, b) => b.episodeIds.length - a.episodeIds.length);
+    return { list };
+  }
+
   function buildGraph(episodes, manualLinks) {
     const ids = new Set(episodes.map((e) => e.id));
     const COLORS = { episode: '#089900', tag: '#878787' };
@@ -162,5 +274,8 @@
   let _cache = null;
   function loadCached() { return _cache || (_cache = load()); }
 
-  window.PodcastData = { load: loadCached, reload: load, RSS_URL, LINKS_URL };
+  window.PodcastData = {
+    load: loadCached, reload: load, RSS_URL, LINKS_URL,
+    computeConcepts, computeWorks, // 検証スクリプト・Step3の各ページから利用
+  };
 })();

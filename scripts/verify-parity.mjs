@@ -31,7 +31,12 @@ function check(label, pass, detail) {
   if (!pass) ok = false;
 }
 
-check('エピソード21件', result.episodes.length === 21, `actual=${result.episodes.length}`);
+// RSSの生<item>数を正として、appが1件も落とさず読み込めているかを見る
+// （絶対数は決め打ちしない。エピソードは今後も増え続けるため）
+const rssRaw = await fetch(window.PodcastData.RSS_URL).then((r) => r.text());
+const rssItemCount = (rssRaw.match(/<item[\s>]/g) || []).length;
+check('RSSの<item>数とapp/dataの件数が一致', result.episodes.length === rssItemCount,
+  `app=${result.episodes.length} rss=${rssItemCount}`);
 
 // タグ一致：shownotes.json自体から期待タグを再計算し、appの出力と突き合わせる
 // "#tag"=採用、"##tag"以上（未タグ候補）は除外
