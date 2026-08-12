@@ -274,8 +274,88 @@
   let _cache = null;
   function loadCached() { return _cache || (_cache = load()); }
 
+  // ============================================================
+  // concepts.html / concept.html / untagged.html / inspired.html 用
+  //   computeConcepts()/computeWorks()（自動計算）に concepts-meta.json /
+  //   works-meta.json（人が書いた分）をマージし、GASの
+  //   buildConceptsData()/buildWorksData() と同じ形の { concepts:[...] } /
+  //   { works:[...] } を返す。ページ側は既存のroot版と同じ形で使える。
+  // ============================================================
+  const CONCEPTS_META_URL = 'concepts-meta.json';
+  const WORKS_META_URL = 'works-meta.json';
+
+  // related/contrastは辞書順で小さい方の概念にだけ片側保存されているので、
+  // 読み込み時に双方向へ展開する（GASのaddPair()と同じ結果になる）
+  function expandBidirectional(metaObj, field, validNames) {
+    const map = new Map(); // name -> Set<name>
+    const add = (a, b) => {
+      if (!validNames.has(a) || !validNames.has(b)) return; // 消えた概念名は無視
+      if (!map.has(a)) map.set(a, new Set());
+      if (!map.has(b)) map.set(b, new Set());
+      map.get(a).add(b);
+      map.get(b).add(a);
+    };
+    Object.entries(metaObj).forEach(([name, m]) => {
+      (m[field] || []).forEach((other) => add(name, other));
+    });
+    return map;
+  }
+
+  async function loadConceptsPayload() {
+    const [local, metaJson] = await Promise.all([
+      loadCached(),
+      fetch(CONCEPTS_META_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+    ]);
+    const { list } = computeConcepts(local.episodes);
+    const nameSet = new Set(list.map((c) => c.name));
+    const relatedMap = expandBidirectional(metaJson, 'related', nameSet);
+    const contrastMap = expandBidirectional(metaJson, 'contrast', nameSet);
+
+    const concepts = list.map((c) => {
+      const m = metaJson[c.name] || {};
+      const contexts = m.contexts || {};
+      return {
+        name: c.name,
+        status: c.status,
+        description: m.description || '',
+        proposer: m.proposer || '',
+        related: [...(relatedMap.get(c.name) || [])],
+        related_external: m.related_external || [],
+        contrast: [...(contrastMap.get(c.name) || [])],
+        episodes: c.episodeIds.map((id, i) => ({ id, title: c.titles[i] || '', context: contexts[id] || '' })),
+      };
+    });
+    return { concepts };
+  }
+
+  async function loadWorksPayload() {
+    const [local, metaJson] = await Promise.all([
+      loadCached(),
+      fetch(WORKS_META_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+    ]);
+    const { list } = computeWorks(local.episodes);
+
+    const works = list.map((w) => {
+      const key = w.type + '|' + w.title;
+      const m = metaJson[key] || {};
+      return {
+        title: w.title,
+        type: w.type,
+        type_label: w.type_label,
+        // 優先順位：①ショーノートのinline記法 → ②works-meta.jsonのシート由来補完値
+        creator: w.inlineCreator || m.creator || '',
+        image_url: m.image_url || '',
+        link_url: w.inlineLink || m.link_url || '',
+        description: '', // 未使用列（Step2で移植対象外にした）
+        episodes: w.episodeIds.map((id, i) => ({ id, title: w.titles[i] || '' })),
+      };
+    });
+    return { works };
+  }
+
   window.PodcastData = {
     load: loadCached, reload: load, RSS_URL, LINKS_URL,
-    computeConcepts, computeWorks, // 検証スクリプト・Step3の各ページから利用
+    computeConcepts, computeWorks, // 検証スクリプトから利用
+    loadConceptsPayload, loadWorksPayload, // concepts/concept/untagged/inspiredページから利用
   };
 })();

@@ -16,13 +16,12 @@
   var onIndex = !!document.getElementById('tab-network');
 
   // ── ページ一覧（ここを編集すればメニューが増える）────────────────
-  // CONCEPTS/INSPIREDはまだapp/へ移植していないためroot（../）のまま。
   var PAGES = [
     { href: onIndex ? '#' : 'index.html',            label: 'TOP',      action: onIndex ? 'network' : null, match: ['index.html', ''] },
     { href: 'about.html',       label: 'ABOUT',    match: ['about.html'] },
     { href: onIndex ? '#' : 'index.html?view=table', label: 'EP LIST',  action: onIndex ? 'table' : null },
-    { href: '../concepts.html', label: 'CONCEPTS', match: ['concepts.html', 'concept.html'] },
-    { href: '../inspired.html', label: 'INSPIRED', match: ['inspired.html'] },
+    { href: 'concepts.html',    label: 'CONCEPTS', match: ['concepts.html', 'concept.html'] },
+    { href: 'inspired.html',    label: 'INSPIRED', match: ['inspired.html'] },
     { href: 'log.html',         label: 'LOG',      match: ['log.html'] },
     { href: 'contact.html',     label: 'CONTACT',  match: ['contact.html'] }
   ];

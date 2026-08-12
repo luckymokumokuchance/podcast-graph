@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>INSPIRED | ラッキーもくもくチャンス</title>
+  <meta name="description" content="番組で話題にのぼった本・映画・アニメ/ドラマ・音楽・ラジオ/ポッドキャストの一覧です。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ラッキーもくもくチャンス">
+  <meta property="og:title" content="INSPIRED | ラッキーもくもくチャンス">
+  <meta property="og:description" content="番組で話題にのぼった本・映画・アニメ/ドラマ・音楽・ラジオ/ポッドキャストの一覧です。">
+  <meta property="og:url" content="https://luckymokumokuchance.github.io/podcast-graph/app/inspired.html">
+  <meta property="og:image" content="https://luckymokumokuchance.github.io/podcast-graph/image/bg_mokumoku.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://luckymokumokuchance.github.io/podcast-graph/app/inspired.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../inspired.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 説明（白カードで可読性を確保） -->
+    <div class="page-intro">
+      <h1>INSPIRED</h1>
+      <p>この番組で話題にのぼった本・映画・アニメ/ドラマ・音楽・ラジオ/ポッドキャストの一覧です。下のボタンで絞り込めます。</p>
+    </div>
+    <!-- 検索＋フィルター -->
+    <div id="search-cloud">
+      <div id="search-row">
+        <input id="search-input" type="search"
+               placeholder="作品・エピソードから検索"
+               autocomplete="off" aria-label="作品を検索">
+        <button id="search-btn" aria-label="検索">Search</button>
+      </div>
+      <div id="filter-row" role="group" aria-label="種別で絞り込み">
+        <button class="filter-chip" data-filter="all"   aria-pressed="true">すべて</button>
+        <button class="filter-chip" data-filter="book"  aria-pressed="false">📚 本</button>
+        <button class="filter-chip" data-filter="movie" aria-pressed="false">🎬 映画</button>
+        <button class="filter-chip" data-filter="anime" aria-pressed="false">📺 アニメ/ドラマ</button>
+        <button class="filter-chip" data-filter="music" aria-pressed="false">🎵 音楽</button>
+        <button class="filter-chip" data-filter="radio" aria-pressed="false">📻 ラジオ/ポッドキャスト</button>
+      </div>
+      <p id="result-count" role="status"></p>
+    </div>
+    <!-- 一覧 -->
+    <div id="loading">preparing...</div>
+    <div id="error" hidden>データの取得に失敗しました。時間をおいて再読み込みしてください。</div>
+    <ul id="work-list"></ul>
+    <p id="empty" hidden>見つかりませんでした。ことばを変えてもう一度どうぞ。</p>
+  </div>
+  <script src="data.js"></script>
+  <script src="inspired.js"></script>
+  <script src="nav.js"></script>
+  <script src="logo.js"></script>
+</body>
+</html>
