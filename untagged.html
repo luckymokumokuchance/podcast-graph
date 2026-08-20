@@ -1,42 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>未タグ化の概念 | ラッキーもくもくチャンス</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="untagged.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラッキーもくもくチャンス</title>
+<link rel="canonical" href="https://luckymokumokuchance.github.io/podcast-graph/app/untagged.html">
+<meta name="robots" content="noindex">
+<!-- JSが無効でも数秒で移動する保険 -->
+<meta http-equiv="refresh" content="3; url=app/untagged.html">
+<script>
+  // クエリ(?ep=12 など)とハッシュを保ったまま転送する。
+  // replace を使い、戻るボタンで転送ループに陥らないようにする。
+  location.replace('app/untagged.html' + location.search + location.hash);
+</script>
+<style>
+  body { font-family: "Hiragino Maru Gothic ProN","BIZ UDGothic",sans-serif;
+         margin: 0; min-height: 100vh; display: flex; align-items: center;
+         justify-content: center; background: #f5f7f3; color: #16211a; }
+  .box { text-align: center; padding: 24px; line-height: 1.9; }
+  a { color: #089900; }
+</style>
 </head>
 <body>
-  <div id="app">
-    <!-- 説明（説明的トーン） -->
-    <div class="page-intro">
-      <h1>未タグ化の概念</h1>
-      <p>エピソードで話に出たけれど、まだタグとして整理していない概念です。登場したエピソード数の多い順に並んでいます（数字は登場したエピソードの数）。</p>
-    </div>
-
-    <!-- 検索（episodesと同じ作法） -->
-    <div id="search-cloud">
-      <div id="search-row">
-        <input id="search-input" type="search"
-               placeholder="概念・エピソードから検索"
-               autocomplete="off" aria-label="概念を検索">
-        <button id="search-btn" aria-label="検索">Search</button>
-      </div>
-      <p id="result-count" role="status"></p>
-    </div>
-
-    <!-- 一覧 -->
-    <div id="loading">preparing...</div>
-    <div id="error" hidden>データの取得に失敗しました。時間をおいて再読み込みしてください。</div>
-    <ul id="concept-list"></ul>
-    <p id="empty" hidden>見つかりませんでした。ことばを変えてもう一度どうぞ。</p>
+  <div class="box">
+    <p>未タグ化の概念のページは移動しました。</p>
+    <p><a href="app/untagged.html">自動で移動しない場合はこちら</a></p>
   </div>
-
-  <script src="untagged.js"></script>
-  <script src="nav.js"></script>
-  <script src="logo.js"></script>
 </body>
 </html>

@@ -1,109 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ラッキーもくもくチャンス</title>
-  <meta name="description" content="ラッキーもくもくチャンスは、喫煙所でたまたま隣になった人の会話を覗くようなポッドキャスト。エピソードと語られた概念のつながりをグラフで見られます。">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="ラッキーもくもくチャンス">
-  <meta property="og:title" content="ラッキーもくもくチャンス">
-  <meta property="og:description" content="喫煙所でたまたま隣になった人の会話を覗くようなポッドキャスト。エピソードと語られた概念のつながりをグラフで見られます。">
-  <meta property="og:url" content="https://luckymokumokuchance.github.io/podcast-graph/">
-  <meta property="og:image" content="https://luckymokumokuchance.github.io/podcast-graph/image/bg_mokumoku.webp">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="canonical" href="https://luckymokumokuchance.github.io/podcast-graph/">
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラッキーもくもくチャンス</title>
+<link rel="canonical" href="https://luckymokumokuchance.github.io/podcast-graph/app/index.html">
+<meta name="robots" content="noindex">
+<!-- JSが無効でも数秒で移動する保険 -->
+<meta http-equiv="refresh" content="3; url=app/index.html">
+<script>
+  // クエリ(?ep=12 など)とハッシュを保ったまま転送する。
+  // replace を使い、戻るボタンで転送ループに陥らないようにする。
+  location.replace('app/index.html' + location.search + location.hash);
+</script>
+<style>
+  body { font-family: "Hiragino Maru Gothic ProN","BIZ UDGothic",sans-serif;
+         margin: 0; min-height: 100vh; display: flex; align-items: center;
+         justify-content: center; background: #f5f7f3; color: #16211a; }
+  .box { text-align: center; padding: 24px; line-height: 1.9; }
+  a { color: #089900; }
+</style>
 </head>
 <body>
-  <div id="graph-container">
-    <svg id="graph"></svg>
-    <div id="tooltip" class="tooltip hidden"></div>
-    <div id="loading">preparing...</div>
-    <div id="legend"></div>
-
-    <!-- スマホ用モーダル -->
-    <div id="modal" class="modal hidden">
-      <div id="modal-box">
-        <button id="modal-close">✕</button>
-        <p id="modal-ep"></p>
-        <h2 id="modal-title"></h2>
-        <a id="modal-link" href="#" target="_blank">Spotifyで聴く →</a>
-        <p id="modal-summary"></p>
-      </div>
-    </div>
-
-    <div id="color-panel"></div>
-
-    <div id="controls">
-      <div class="ctrl-row">
-        <span class="ctrl-label">線の太さ</span>
-        <input class="ctrl-slider" id="s-stroke"       type="range" min="0.2" max="4"   step="0.1"  value="1.2">
-        <span class="ctrl-val"    id="v-stroke">1.20</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">線の引力</span>
-        <input class="ctrl-slider" id="s-link"         type="range" min="0"   max="100" step="1"    value="13">
-        <span class="ctrl-val"    id="v-link">13</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">散らばり</span>
-        <input class="ctrl-slider" id="s-charge"       type="range" min="20"  max="200" step="5"    value="80">
-        <span class="ctrl-val"    id="v-charge">80</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">中心引力</span>
-        <input class="ctrl-slider" id="s-gravity"      type="range" min="0"   max="0.3"  step="0.01" value="0.04">
-        <span class="ctrl-val"    id="v-gravity">0.04</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">デコ中心引力</span>
-        <input class="ctrl-slider" id="s-deco-gravity" type="range" min="0"   max="1"    step="0.05" value="0">
-        <span class="ctrl-val"    id="v-deco-gravity">0.00</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">デコ間隔のブレ</span>
-        <input class="ctrl-slider" id="s-deco-spread"  type="range" min="0"   max="1"    step="0.05" value="0.55">
-        <span class="ctrl-val"    id="v-deco-spread">0.55</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">円のサイズ</span>
-        <input class="ctrl-slider" id="s-radius"       type="range" min="12"  max="56"  step="1"    value="21">
-        <span class="ctrl-val"    id="v-radius">21</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">番号サイズ</span>
-        <input class="ctrl-slider" id="s-ep-font"      type="range" min="6"   max="20"  step="1"    value="10">
-        <span class="ctrl-val"    id="v-ep-font">10</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">タイトルサイズ</span>
-        <input class="ctrl-slider" id="s-title-font"   type="range" min="6"   max="20"  step="1"    value="9">
-        <span class="ctrl-val"    id="v-title-font">9</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">文字消える倍率</span>
-        <input class="ctrl-slider" id="s-threshold"    type="range" min="0.1" max="1.5" step="0.05" value="1.2">
-        <span class="ctrl-val"    id="v-threshold">1.20</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">回転速度</span>
-        <input class="ctrl-slider" id="s-rotate"       type="range" min="0"   max="30"  step="0.5"  value="2">
-        <span class="ctrl-val"    id="v-rotate">2.00</span>
-      </div>
-      <div class="ctrl-row">
-        <span class="ctrl-label">デコサイズ</span>
-        <input class="ctrl-slider" id="s-deco-size"    type="range" min="1"   max="12"  step="0.5"  value="3">
-        <span class="ctrl-val"    id="v-deco-size">3.00</span>
-      </div>
-    </div>
+  <div class="box">
+    <p>ネットワーク図のページは移動しました。</p>
+    <p><a href="app/index.html">自動で移動しない場合はこちら</a></p>
   </div>
-
-  <div id="version">v21</div>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
-  <script src="graph.js"></script>
-  <script src="quickpanel.js"></script>
-  <script src="nav.js"></script>
 </body>
 </html>

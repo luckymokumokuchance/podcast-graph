@@ -1,77 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>概念詳細 | ラッキーもくもくチャンス</title>
-  <meta name="description" content="番組で語られた概念の詳細ページです。">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="ラッキーもくもくチャンス">
-  <meta property="og:title" content="概念詳細 | ラッキーもくもくチャンス">
-  <meta property="og:description" content="番組で語られた概念の詳細ページです。">
-  <meta property="og:url" content="https://luckymokumokuchance.github.io/podcast-graph/concept.html">
-  <meta property="og:image" content="https://luckymokumokuchance.github.io/podcast-graph/image/bg_mokumoku.webp">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="canonical" id="canonical-link" href="https://luckymokumokuchance.github.io/podcast-graph/concept.html">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="concept.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラッキーもくもくチャンス</title>
+<link rel="canonical" href="https://luckymokumokuchance.github.io/podcast-graph/app/concept.html">
+<meta name="robots" content="noindex">
+<!-- JSが無効でも数秒で移動する保険 -->
+<meta http-equiv="refresh" content="3; url=app/concept.html">
+<script>
+  // クエリ(?ep=12 など)とハッシュを保ったまま転送する。
+  // replace を使い、戻るボタンで転送ループに陥らないようにする。
+  location.replace('app/concept.html' + location.search + location.hash);
+</script>
+<style>
+  body { font-family: "Hiragino Maru Gothic ProN","BIZ UDGothic",sans-serif;
+         margin: 0; min-height: 100vh; display: flex; align-items: center;
+         justify-content: center; background: #f5f7f3; color: #16211a; }
+  .box { text-align: center; padding: 24px; line-height: 1.9; }
+  a { color: #089900; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <a class="back-link" href="concepts.html">← 概念一覧にもどる</a>
-    <p id="loading" class="state-msg">よみこみ中…</p>
-    <p id="error"   class="state-msg" hidden>データを読み込めませんでした。少し時間をおいて、もう一度お試しください。</p>
-    <p id="notfound" class="state-msg" hidden>その概念は見つかりませんでした。<br><a href="concepts.html">概念一覧へもどる</a></p>
-    <div id="content" hidden>
-      <!-- 見出しカード -->
-      <section class="head-card">
-        <span class="status-pill" id="status-pill"></span>
-        <h1 class="concept-name" id="concept-name"></h1>
-        <p class="concept-desc" id="concept-desc"></p>
-        <div class="head-meta">
-          <span class="ep-count-badge" id="ep-count"></span>
-          <span class="proposer-badge" id="proposer-badge" hidden></span>
-        </div>
-      </section>
-      <!-- どんな文脈で語られたか -->
-      <section class="block">
-        <h2 class="block-title">どんな文脈で語られたか</h2>
-        <div id="context-list"></div>
-      </section>
-      <!-- 登場エピソード -->
-      <section class="block">
-        <h2 class="block-title">登場エピソード</h2>
-        <ul class="ep-list" id="ep-list"></ul>
-      </section>
-      <!-- 近接概念 -->
-      <section class="block">
-        <h2 class="block-title">近接概念</h2>
-        <div class="chip-group" id="related-group" hidden>
-          <p class="chip-group-label">話した近接概念</p>
-          <div class="chip-row" id="related-list"></div>
-        </div>
-        <div class="chip-group" id="related-external-group" hidden>
-          <p class="chip-group-label">文献からの近接概念</p>
-          <div class="chip-row" id="related-external-list"></div>
-        </div>
-        <p class="soft-note" id="related-empty" hidden>まだありません。</p>
-      </section>
-      <!-- 対比概念 -->
-      <section class="block">
-        <h2 class="block-title">対比概念</h2>
-        <div class="chip-row" id="contrast-list"></div>
-      </section>
-      <!-- よく一緒に語られる概念 -->
-      <section class="block">
-        <h2 class="block-title">よく一緒に語られる概念</h2>
-        <div class="chip-row" id="cooc-list"></div>
-      </section>
-    </div>
+  <div class="box">
+    <p>概念詳細のページは移動しました。</p>
+    <p><a href="app/concept.html">自動で移動しない場合はこちら</a></p>
   </div>
-  <!-- 右下の共通ページ移動メニュー（他ページと同じ） -->
-  <script src="nav.js"></script>
-  <script src="concept.js"></script>
 </body>
 </html>
