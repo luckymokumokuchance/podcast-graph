@@ -25,9 +25,10 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxk2jQTHhowhGTXBAMsAcEZ
 const WORK_EMOJI_TYPE = { '📚': 'book', '🎬': 'movie', '📺': 'anime', '🎵': 'music', '📻': 'radio' };
 function buildWorkRe() {
   const emojiAlt = Object.keys(WORK_EMOJI_TYPE).join('|');
+  // URLは `(` を1段だけ入れ子で許す（app/data.js の同じ修正と揃えること）
   return new RegExp(
     `(${emojiAlt})(?:` +
-      `\\[([^\\]]+)\\]\\((https?:[^\\s)]+)\\)(?:[／/・]\\s*)?([^\\s、。！？…「」『』【】（）\\[\\]]*)` +
+      `\\[([^\\]]+)\\]\\((https?:(?:[^\\s()]|\\([^\\s()]*\\))+)\\)(?:[／/・]\\s*)?([^\\s、。！？…「」『』【】（）\\[\\]]*)` +
       `|『([^』]+)』` +
       `|「([^」]+)」` +
       `|\\[([^\\]]+)\\]` +
@@ -112,20 +113,32 @@ async function main() {
   const nextWorks = {};
   const workKeySet = new Set(works.map((w) => w.type + '|' + w.title));
 
-  let recoveredCreator = 0, recoveredLink = 0;
+  let recoveredCreator = 0, recoveredLink = 0, unmangled = 0;
   works.forEach((w) => {
     const key = w.type + '|' + w.title;
     const inline = inlineWorks.get(key);
+
+    // GAS側の正規表現はURL内の `(` に未対応のままなので、Wikipediaの `_(映画)` 形式で
+    // 「著者名が `)` から始まる」壊れた値を返してくる（ep20/22/24）。
+    // 実在の著者名が `)` で始まることは無いので、取り込み時に取り除いてから比較する。
+    // ※GAS本体を直せばこの正規化は不要になる（QUESTIONS.md参照）
+    const rawCreator = String(w.creator || '');
+    const gasCreator = rawCreator.replace(/^\)\s*[／/・]?\s*/, '');
+    if (gasCreator !== rawCreator) unmangled++;
+    // 同様に、URLが途中で切れている場合はinline側（修正済み）を正とする
+    const gasLinkBroken = /\([^)]*$/.test(String(w.link_url || ''));
+
     // creator/link_urlはショーノートのinline記法から復元できるものは保存しない
     // （app/data.jsのcomputeWorks()が毎回同じ値を出すため、二重管理・将来の
     // ズレの元になる）。inline値と一致しない＝シート固有の補完値の時だけ残す。
-    const creator = (inline && inline.inlineCreator === w.creator) ? '' : (w.creator || '');
-    const link_url = (inline && inline.inlineLink === w.link_url) ? '' : (w.link_url || '');
-    if (inline && inline.inlineCreator && inline.inlineCreator === w.creator) recoveredCreator++;
+    const creator = (inline && inline.inlineCreator === gasCreator) ? '' : gasCreator;
+    const link_url = (gasLinkBroken || (inline && inline.inlineLink === w.link_url)) ? '' : (w.link_url || '');
+    if (inline && inline.inlineCreator && inline.inlineCreator === gasCreator) recoveredCreator++;
     if (inline && inline.inlineLink && inline.inlineLink === w.link_url) recoveredLink++;
     nextWorks[key] = { exists: true, creator, link_url, image_url: w.image_url || '' };
   });
-  console.log(`  (creator: inline記法から復元できたため保存省略=${recoveredCreator}件 / link_url: 同=${recoveredLink}件)`);
+  console.log(`  (creator: inline記法から復元できたため保存省略=${recoveredCreator}件 / link_url: 同=${recoveredLink}件`
+    + (unmangled ? ` / GASのパース残骸を除去=${unmangled}件` : '') + ')');
 
   Object.entries(prevWorks).forEach(([key, data]) => {
     if (!workKeySet.has(key)) nextWorks[key] = { ...data, exists: false };
