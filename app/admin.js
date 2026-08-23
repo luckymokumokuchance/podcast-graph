@@ -11,7 +11,7 @@ const GH = 'https://api.github.com';
 
 // 合言葉で復号する書き込みトークン（暗号化済み。平文トークンはコードに存在しない）
 // ※あくまで簡易。Cloudflare Worker方式に切り替えれば本当に安全になる（PLAN.md参照）
-const TOKEN_BLOB = 'FnDFsqu+YNBtW0017eIRG01/IC0PGiZ78a8hyHBaWqu8OCXHZ7O1ItCqYTa7YNLE2ww7GkG0itXtvvCy+CO9YctD5r4wSZqCRWmJJztavcS5uj1bh4f/GkRtHUlHcSbnw9idewO5QBpmHW98bubT2f7wrnog3rvcoR1niVi5aT5YKQl4eCQY82A=';
+const TOKEN_BLOB = '7MYtLy8EbcDXfNlqj4Ma249RSaW4RDkMzaCrHVDmfospkRJNFSkTOv+4Gyt8OQZXOxsacK3MghG5r8FMgzHon3BlU9/knsTgrIQbTASZJPCgiF8FXLgtEFkWgI7WhGPbSWCcgzahB+8OZ6KLjMLE18mkSGnVavdV4sOyuEApgp+HWKpAoWqvPus=';
 
 // 合言葉→トークン（AES-GCM / PBKDF2、生成側と同一パラメータ）
 async function decryptToken(passphrase) {

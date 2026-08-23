@@ -11,7 +11,7 @@ const PASS_KEY   = 'lmc_pass';
 const GH = 'https://api.github.com';
 
 // 合言葉で復号する書き込みトークン（admin.jsと同一のもの。平文トークンはコードに存在しない）
-const TOKEN_BLOB = 'FnDFsqu+YNBtW0017eIRG01/IC0PGiZ78a8hyHBaWqu8OCXHZ7O1ItCqYTa7YNLE2ww7GkG0itXtvvCy+CO9YctD5r4wSZqCRWmJJztavcS5uj1bh4f/GkRtHUlHcSbnw9idewO5QBpmHW98bubT2f7wrnog3rvcoR1niVi5aT5YKQl4eCQY82A=';
+const TOKEN_BLOB = '7MYtLy8EbcDXfNlqj4Ma249RSaW4RDkMzaCrHVDmfospkRJNFSkTOv+4Gyt8OQZXOxsacK3MghG5r8FMgzHon3BlU9/knsTgrIQbTASZJPCgiF8FXLgtEFkWgI7WhGPbSWCcgzahB+8OZ6KLjMLE18mkSGnVavdV4sOyuEApgp+HWKpAoWqvPus=';
 
 async function decryptToken(passphrase) {
   const raw = Uint8Array.from(atob(TOKEN_BLOB), (c) => c.charCodeAt(0));

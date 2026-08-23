@@ -27,26 +27,37 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const APP_DIR = path.join(__dirname, '..', 'app');
 const TARGETS = ['admin.js', 'logpost.js', 'layout.js'];
 
-const TOKEN_FILE = path.join(__dirname, '..', '.token');
+// メモ帳は「.token」で保存しようとしても勝手に「.token.txt」にしてしまうので、
+// どちらの名前でも受け付ける
+const TOKEN_FILE_CANDIDATES = ['.token', '.token.txt', 'token.txt']
+  .map((n) => path.join(__dirname, '..', n));
 
 async function main() {
 const passphrase = process.env.PASSPHRASE || 'mokumoku';
 
-// .token ファイル優先（シェル履歴に残らないため）。無ければ環境変数。
+// ファイル優先（シェル履歴に残らないため）。無ければ環境変数。
 let token = '';
-let fromFile = false;
-if (fs.existsSync(TOKEN_FILE)) {
-  token = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
-  fromFile = true;
-  console.log('.token ファイルからトークンを読みました');
+let tokenFile = null;
+const found = TOKEN_FILE_CANDIDATES.find((p) => fs.existsSync(p));
+if (found) {
+  token = fs.readFileSync(found, 'utf8').trim();
+  tokenFile = found;
+  console.log(`${path.basename(found)} からトークンを読みました`);
 } else if (process.env.GH_TOKEN) {
   token = process.env.GH_TOKEN.trim();
 }
 
 if (!token) {
   console.error('トークンが見つかりません。');
-  console.error('リポジトリ直下に .token というファイルを作り、トークンだけを貼って保存してください。');
+  console.error('リポジトリ直下に .token（または .token.txt）を作り、トークンだけを貼って保存してください。');
   console.error('（使い方の詳細はこのファイルの先頭を見てください）');
+  return 1;
+}
+
+// 貼り付けミスの早期検出（引用符やBOM、改行混じりなど）
+token = token.replace(/^﻿/, '').replace(/^["']|["']$/g, '').trim();
+if (/\s/.test(token)) {
+  console.error('✗ トークンに空白や改行が含まれています。トークンだけを1行で貼り直してください。');
   return 1;
 }
 
@@ -115,11 +126,11 @@ for (const f of TARGETS) {
   changed++;
 }
 
-// ---- 6. 平文トークンの後始末 ----
-if (fromFile) {
-  fs.rmSync(TOKEN_FILE, { force: true });
-  console.log('  ✓ .token を削除しました（平文はもう残っていません）');
-}
+// ---- 6. 平文トークンの後始末（候補名すべてを消す） ----
+TOKEN_FILE_CANDIDATES.filter((p) => fs.existsSync(p)).forEach((p) => {
+  fs.rmSync(p, { force: true });
+  console.log(`  ✓ ${path.basename(p)} を削除しました（平文はもう残っていません）`);
+});
 
 console.log(`\n${changed}ファイルを更新しました。`);
 if (passphrase !== 'mokumoku') {
