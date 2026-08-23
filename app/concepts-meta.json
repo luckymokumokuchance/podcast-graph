@@ -68,15 +68,6 @@
     "contrast": [],
     "contexts": {}
   },
-  "ハンドリング": {
-    "exists": true,
-    "description": "大人は子供の頃と違い、人間関係において「ハンドル操作」が極めて巧みになっているということ",
-    "proposer": "カワサキ",
-    "related": [],
-    "related_external": [],
-    "contrast": [],
-    "contexts": {}
-  },
   "味噌づくり": {
     "exists": true,
     "description": "急いで結果を求めることができず、日々習慣的に蓄積していくような行いのこと。前提として人類の行いがどんどん短期プロジェクト化していることがあり、それにより相対的に重要度が増しているように感じる。\r\n砂場型のものづくりと隣接概念。",
@@ -85,6 +76,15 @@
     "related_external": [
       "Claude Codeの開発者のBoris Chernyが、「将来AIに仕事を奪われた後何がしたいか？」という質問に「味噌づくり」と答えたことから生まれた概念。"
     ],
+    "contrast": [],
+    "contexts": {}
+  },
+  "ハンドリング": {
+    "exists": true,
+    "description": "大人は子供の頃と違い、人間関係において「ハンドル操作」が極めて巧みになっているということ",
+    "proposer": "カワサキ",
+    "related": [],
+    "related_external": [],
     "contrast": [],
     "contexts": {}
   },
@@ -301,6 +301,33 @@
     "contexts": {}
   },
   "アンパンマンが世界を救ってるんじゃないジャムおじさんが世界を救ってるんだ説": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "自分ごと": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "適切な情報の出し方": {
+    "exists": true,
+    "description": "",
+    "proposer": "",
+    "related": [],
+    "related_external": [],
+    "contrast": [],
+    "contexts": {}
+  },
+  "大人の友人作り": {
     "exists": true,
     "description": "",
     "proposer": "",
