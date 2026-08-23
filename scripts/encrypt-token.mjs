@@ -4,15 +4,19 @@
 // トークンが失効したとき（管理画面で「ログインできませんでした（キーの期限切れ
 // かもしれません）」が出るとき）に使う。
 //
-// 使い方（Windows PowerShell）:
-//   $env:GH_TOKEN="github_pat_xxxxx"; node scripts/encrypt-token.mjs
-// 使い方（Git Bash / Mac）:
+// 【推奨】トークンをどこにも打ち込まずに済む方法:
+//   1. リポジトリ直下に .token というファイルを作り、トークンだけを貼って保存
+//      （メモ帳でOK。.gitignore済みなのでコミットされません）
+//   2. node scripts/encrypt-token.mjs
+//   3. 成功すると .token は自動で削除されます
+//
+// 環境変数で渡すこともできます（ただしシェル履歴やログに残る点に注意）:
 //   GH_TOKEN=github_pat_xxxxx node scripts/encrypt-token.mjs
 //
 // 合言葉を変えたいとき（既定は mokumoku）:
 //   PASSPHRASE=あたらしいあいことば を一緒に指定する
 //
-// ※トークンは画面にもファイルにも平文で残しません（暗号化した結果だけ書き込みます）
+// ※トークンは画面にもリポジトリにも平文で残しません（暗号化した結果だけ書き込みます）
 // ※実行前にGitHubで生きているか自動で確認し、無効なら書き込まずに止まります
 import { webcrypto as crypto } from 'node:crypto';
 import fs from 'fs';
@@ -23,12 +27,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const APP_DIR = path.join(__dirname, '..', 'app');
 const TARGETS = ['admin.js', 'logpost.js', 'layout.js'];
 
-const token = process.env.GH_TOKEN;
+const TOKEN_FILE = path.join(__dirname, '..', '.token');
+
+async function main() {
 const passphrase = process.env.PASSPHRASE || 'mokumoku';
 
+// .token ファイル優先（シェル履歴に残らないため）。無ければ環境変数。
+let token = '';
+let fromFile = false;
+if (fs.existsSync(TOKEN_FILE)) {
+  token = fs.readFileSync(TOKEN_FILE, 'utf8').trim();
+  fromFile = true;
+  console.log('.token ファイルからトークンを読みました');
+} else if (process.env.GH_TOKEN) {
+  token = process.env.GH_TOKEN.trim();
+}
+
 if (!token) {
-  console.error('GH_TOKEN が指定されていません。使い方はこのファイルの先頭を見てください。');
-  process.exit(1);
+  console.error('トークンが見つかりません。');
+  console.error('リポジトリ直下に .token というファイルを作り、トークンだけを貼って保存してください。');
+  console.error('（使い方の詳細はこのファイルの先頭を見てください）');
+  return 1;
 }
 
 // ---- 1. まずGitHubで生きているか確認（無効なトークンを埋め込まないため） ----
@@ -37,7 +56,7 @@ const who = await fetch('https://api.github.com/user', {
 });
 if (!who.ok) {
   console.error(`✗ このトークンはGitHubで使えません (HTTP ${who.status})。作り直してください。`);
-  process.exit(1);
+  return 1;
 }
 const user = await who.json();
 console.log(`✓ トークン有効（@${user.login}）`);
@@ -51,13 +70,13 @@ if (repo.ok) {
   if (!perm.push) {
     console.error('✗ このリポジトリへの書き込み権限がありません。');
     console.error('  トークン作成時に Contents: Read and write を選んでください。');
-    process.exit(1);
+    return 1;
   }
   console.log('✓ 書き込み権限あり');
 } else {
   console.error(`✗ リポジトリにアクセスできません (HTTP ${repo.status})。`);
   console.error('  トークン作成時に podcast-graph を対象に含めてください。');
-  process.exit(1);
+  return 1;
 }
 
 // ---- 3. 暗号化（admin.js の decryptToken と同一パラメータ） ----
@@ -79,7 +98,7 @@ const blob = Buffer.from(blobBytes).toString('base64');
 const rt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
 if (new TextDecoder().decode(rt) !== token) {
   console.error('✗ 自己検証に失敗しました。書き込みを中止します。');
-  process.exit(1);
+  return 1;
 }
 console.log('✓ 暗号化と復号の往復を確認');
 
@@ -96,8 +115,19 @@ for (const f of TARGETS) {
   changed++;
 }
 
+// ---- 6. 平文トークンの後始末 ----
+if (fromFile) {
+  fs.rmSync(TOKEN_FILE, { force: true });
+  console.log('  ✓ .token を削除しました（平文はもう残っていません）');
+}
+
 console.log(`\n${changed}ファイルを更新しました。`);
 if (passphrase !== 'mokumoku') {
   console.log(`※ 合言葉を「${passphrase}」に変更しました。相方にも共有してください。`);
 }
 console.log('このあと commit & push すれば、約1分で管理画面に入れるようになります。');
+
+  return 0;
+}
+
+process.exitCode = await main();

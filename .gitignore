@@ -5,6 +5,9 @@
 node_modules/
 package-lock.json
 
+# トークン受け渡し用の一時ファイル（scripts/encrypt-token.mjs が読んだあと自動削除する）
+.token
+
 # Claude Code のローカルキャッシュ・設定
 .claude/
 
