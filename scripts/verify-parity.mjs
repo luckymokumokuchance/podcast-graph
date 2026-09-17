@@ -31,12 +31,23 @@ function check(label, pass, detail) {
   if (!pass) ok = false;
 }
 
-// RSSの生<item>数を正として、appが1件も落とさず読み込めているかを見る
+// RSSを正として、appが1件も落とさず読み込めているかを見る
 // （絶対数は決め打ちしない。エピソードは今後も増え続けるため）
+// エピソードIDはRSSタイトル先頭の話数から作るので、話数が無い回は載らない。
+// それは「Spotify側のタイトルを直す」で解決する運用上の問題なので、
+// パイプラインの検査とは分けて報告する。
 const rssRaw = await fetch(window.PodcastData.RSS_URL).then((r) => r.text());
-const rssItemCount = (rssRaw.match(/<item[\s>]/g) || []).length;
-check('RSSの<item>数とapp/dataの件数が一致', result.episodes.length === rssItemCount,
-  `app=${result.episodes.length} rss=${rssItemCount}`);
+const rssTitles = [...rssRaw.matchAll(/<item[\s>][\s\S]*?<title>(?:<!\[CDATA\[)?([^<\]]+)/g)].map((m) => m[1].trim());
+const numbered = rssTitles.filter((t) => /^\s*\d{1,3}\s+/.test(t));
+const unnumbered = rssTitles.filter((t) => !/^\s*\d{1,3}\s+/.test(t));
+
+check('話数つきのRSS全話がapp/dataに載っている', result.episodes.length === numbered.length,
+  `app=${result.episodes.length} rss(話数つき)=${numbered.length}`);
+
+if (unnumbered.length) {
+  console.log(`WARN - タイトルに話数が無いためサイトに出ない回が ${unnumbered.length} 件あります`);
+  unnumbered.forEach((t) => console.log(`       「${t}」← Spotify側のタイトルを「0XX ${t}」に直すと出ます`));
+}
 
 // タグ一致：shownotes.json自体から期待タグを再計算し、appの出力と突き合わせる
 // "#tag"=採用、"##tag"以上（未タグ候補）は除外

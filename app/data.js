@@ -37,6 +37,41 @@
     return d.textContent || '';
   }
 
+  // 番組の定型フッタ（リスナー向けの案内文）はサイトに出さない。
+  // Spotify側には残したままでよい ─ 表示・抽出のときだけ落とす。
+  //   ●毎週火曜朝8時の基本週1回配信
+  //   ●ご感想は #ラキもくチャン #ラッキーもくもくチャンス でお願いします
+  //   ✉️lucky.mokumoku.chance@gmail.com
+  //   番組HP：...
+  // ※フッタは本文の末尾とは限らず、[参考文献]の前に挟まっていることがあるため
+  //   「ここから後ろを全部消す」ではなく、行単位で判定する
+  function isBoilerplateLine(t) {
+    const s = String(t).trim();
+    if (!s) return false;
+    return /^[●・]/.test(s)
+      || /^✉/.test(s)
+      || /lucky\.mokumoku\.chance@gmail\.com/.test(s)
+      || /^番組HP[:：]?/.test(s)
+      || /^(番組HP|公式(WEB|サイト))$/.test(s);
+  }
+
+  function stripBoilerplate(html) {
+    const d = document.createElement('div');
+    d.innerHTML = String(html);
+    // <p>等のブロック単位で、まるごと定型文なら取り除く
+    [...d.children].forEach((el) => {
+      const lines = (el.innerHTML || '').split(/<br\s*\/?>/i);
+      const kept = lines.filter((ln) => {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = ln;
+        return !isBoilerplateLine(tmp.textContent || '');
+      });
+      if (kept.length === 0) el.remove();
+      else if (kept.length !== lines.length) el.innerHTML = kept.join('<br>');
+    });
+    return d.innerHTML;
+  }
+
   function extractTags(text) {
     const out = [];
     let m;
@@ -58,7 +93,8 @@
     return items.map((item) => {
       const rawTitle = textOf(item, 'title');
       const { num, title } = splitTitle(rawTitle);
-      const descHtml = textOf(item, 'description');
+      // 定型フッタはここで落とす。以降の表示・タグ抽出・作品抽出すべてに効く
+      const descHtml = stripBoilerplate(textOf(item, 'description'));
       const enclosure = item.querySelector('enclosure');
       const pub = textOf(item, 'pubDate');
       const date = pub ? new Date(pub) : null;
@@ -165,49 +201,88 @@
   const WORK_EMOJI_TYPE = { '📚': 'book', '🎬': 'movie', '📺': 'anime', '🎵': 'music', '📻': 'radio' };
   const WORK_TYPE_LABEL = { book: '本', movie: '映画', anime: 'アニメ/ドラマ', music: '音楽', radio: 'ラジオ/ポッドキャスト' };
 
-  function buildWorkRe() {
-    const emojiAlt = Object.keys(WORK_EMOJI_TYPE).join('|');
-    // URLは `(` を1段だけ入れ子で許す。`[^\s)]+` だとWikipediaの `_(映画)` 形式で
-    // URLが途中で切れ、余りの `)` が著者名として拾われていた（ep20/22/24で実害あり）
+  // 作品は3通りの書き方を受け付ける。SpotifyはHTMLが書けるので①が推奨。
+  //   ① 📚<a href="URL">題名</a>／著者   … SpotifyにHTMLで書いた形（リンクも著者も取れる）
+  //   ② 📚題名／著者                     … 素で書いた形（著者まで取れる）
+  //   ③ 📚[題名](URL)／著者              … 旧スプレッドシートのmarkdown形式
+  //
+  // ①はHTMLタグを外すとURLが消えてしまうため、先にHTMLのまま<a>を拾い、
+  // 拾い終わった部分を取り除いてから、残りをプレーンテキストとして処理する。
+  const WORK_EMOJI_ALT = Object.keys(WORK_EMOJI_TYPE).join('|');
+
+  // ① HTMLのアンカー形式
+  function buildWorkAnchorRe() {
     return new RegExp(
-      `(${emojiAlt})(?:` +
-        `\\[([^\\]]+)\\]\\((https?:(?:[^\\s()]|\\([^\\s()]*\\))+)\\)(?:[／/・]\\s*)?([^\\s、。！？…「」『』【】（）\\[\\]]*)` + // 1: リンク記法
-        `|『([^』]+)』` +                                                                 // 2: 『』
-        `|「([^」]+)」` +                                                                 // 3: 「」
-        `|\\[([^\\]]+)\\]` +                                                              // 4: []
-        `|([^\\s、。！？…「」『』【】（）\\[\\]]+)` +                                       // 5: 素の1語
+      `(${WORK_EMOJI_ALT})\\s*<a\\s[^>]*href=["']([^"']+)["'][^>]*>([\\s\\S]*?)<\\/a>` +
+      `\\s*(?:[／/・]\\s*)?([^\\s<、。！？…「」『』【】（）\\[\\]]*)`,
+      'gi'
+    );
+  }
+
+  // ②③ プレーンテキスト形式（題名と著者を ／ / ・ で分割する）
+  // URLは `(` を1段だけ入れ子で許す。`[^\s)]+` だとWikipediaの `_(映画)` 形式で
+  // URLが途中で切れ、余りの `)` が著者名として拾われていた（ep20/22/24で実害あり）
+  // 著者の取り方は「題名がどう区切られているか」で変わる：
+  //   ・『』「」[] () で囲まれていれば題名の終わりが明確なので、区切り文字は無くてもよい
+  //     （例 `📚[超芸術トマソン](URL)赤瀬川原平` — 旧スプレッドシートに多い形）
+  //   ・素の題名は、区切り文字だけが題名の終わりを示すので ／ か / を必須にする
+  //     （例 `📚ルックバック／藤本タツキ`）
+  const WORK_CREATOR = `([^\\s、。！？…「」『』【】（）\\[\\]]+)`;
+  const WORK_SEP_OPT = `(?:\\s*[／/・]\\s*)?`;   // 囲み題名のあと：区切りは任意
+  const WORK_SEP_REQ = `\\s*[／/]\\s*`;          // 素の題名のあと：区切りは必須
+
+  function buildWorkPlainRe() {
+    return new RegExp(
+      `(${WORK_EMOJI_ALT})\\s*(?:` +
+        // ③ markdownリンク
+        `\\[([^\\]]+)\\]\\((https?:(?:[^\\s()]|\\([^\\s()]*\\))+)\\)${WORK_SEP_OPT}${WORK_CREATOR}?` +
+        `|『([^』]+)』${WORK_SEP_OPT}${WORK_CREATOR}?` +
+        `|「([^」]+)」${WORK_SEP_OPT}${WORK_CREATOR}?` +
+        `|\\[([^\\]]+)\\]${WORK_SEP_OPT}${WORK_CREATOR}?` +
+        // ② 素の題名。`・` は「ゆる学徒カフェ・オープンマイクチャンネル」のように
+        //    題名の一部であることが多いので区切りに使わない
+        `|([^\\s、。！？…「」『』【】（）\\[\\]／/]+)(?:${WORK_SEP_REQ}${WORK_CREATOR})?` +
       `)`,
       'g'
     );
   }
 
   function computeWorks(episodes) {
-    const re = buildWorkRe();
+    const anchorRe = buildWorkAnchorRe();
+    const plainRe = buildWorkPlainRe();
     const map = {};      // "type|title" -> { title, type, episodes:Set<id>, inlineCreator, inlineLink }
     const titleById = {};
 
     episodes.forEach((ep) => {
       titleById[String(ep.id)] = ep.title;
-      const summary = ep.descText || '';
-      let m;
-      re.lastIndex = 0;
-      while ((m = re.exec(summary)) !== null) {
-        const type = WORK_EMOJI_TYPE[m[1]];
-        let title, inlineUrl = '', inlineCreator = '';
-        if (m[2] !== undefined) {
-          title = m[2].trim();
-          inlineUrl = (m[3] || '').trim();
-          inlineCreator = (m[4] || '').trim();
-        } else {
-          title = (m[5] || m[6] || m[7] || m[8] || '').trim();
-        }
-        if (!title) continue;
 
+      const add = (type, title, url, creator) => {
+        if (!type || !title) return;
         const key = type + '|' + title;
         if (!map[key]) map[key] = { title, type, episodes: new Set(), inlineCreator: '', inlineLink: '' };
         map[key].episodes.add(String(ep.id));
-        if (inlineCreator && !map[key].inlineCreator) map[key].inlineCreator = inlineCreator;
-        if (inlineUrl && !map[key].inlineLink) map[key].inlineLink = inlineUrl;
+        if (creator && !map[key].inlineCreator) map[key].inlineCreator = creator;
+        if (url && !map[key].inlineLink) map[key].inlineLink = url;
+      };
+
+      // ① HTMLのまま<a>形式を拾う（ここでしかURLは取れない）
+      const html = ep.descHtml || '';
+      let m;
+      anchorRe.lastIndex = 0;
+      while ((m = anchorRe.exec(html)) !== null) {
+        add(WORK_EMOJI_TYPE[m[1]], stripHtml(m[3]).trim(), (m[2] || '').trim(), (m[4] || '').trim());
+      }
+
+      // ②③ ①で拾った部分を取り除いた残りを、プレーンテキストとして処理する
+      // グループ: 1=絵文字
+      //   markdown 2=題 3=URL 4=著者 ／ 『』5=題 6=著者 ／ 「」7=題 8=著者
+      //   []9=題 10=著者 ／ 素の題名 11=題 12=著者
+      const rest = stripHtml(html.replace(buildWorkAnchorRe(), ''));
+      plainRe.lastIndex = 0;
+      while ((m = plainRe.exec(rest)) !== null) {
+        const title = (m[2] || m[5] || m[7] || m[9] || m[11] || '').trim();
+        const creator = (m[4] || m[6] || m[8] || m[10] || m[12] || '').trim();
+        add(WORK_EMOJI_TYPE[m[1]], title, (m[3] || '').trim(), creator);
       }
     });
 

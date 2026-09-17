@@ -1,6 +1,16 @@
-// app/data.js の computeConcepts()/computeWorks()（ショーノートからの自動計算）が、
-// 本番GASの ?type=concepts / ?type=works と一致するか検証する（Opus指示のStep 1）。
-// 比較対象は「自動計算部分」のみ（description等の手入力はStep 2で別ファイル化するため対象外）。
+// app/data.js の computeConcepts()/computeWorks() と、本番GASの
+// ?type=concepts / ?type=works の差分を報告する。
+//
+// ▼役割が変わりました（2026-09-17）
+//   もともとは「GASと完全一致するか」の合否判定でした（移植時の検証用）。
+//   RSSをDBにする設計に移行したことで、app/側は意図的にGASより先に進みます：
+//     ・スプレッドシート未登録の回（026/027等）もRSSから拾う
+//     ・`📚題／著者` を題名と著者に分割する
+//     ・定型フッタを落とす
+//   そのため一致しないのが正常で、合否で落とすと警報として機能しません。
+//   いまは「見落としを見つけるための差分レポート」です（常に exit 0）。
+//   GASが引退するPhase 3で、このスクリプトごと削除します。
+//
 // 使い方: node scripts/verify-concepts-works.mjs [baseUrl]
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
@@ -12,10 +22,9 @@ const ROOT = path.join(__dirname, '..');
 const baseUrl = process.argv[2] || 'http://localhost:8123';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxk2jQTHhowhGTXBAMsAcEZWbjELoxQAoSEkVy8EIMHuwXsgO_H6xxNqJPiqsvj5Dnd/exec';
 
-let ok = true;
-function check(label, pass, detail) {
-  console.log((pass ? 'PASS' : 'FAIL') + ' - ' + label + (detail ? ' (' + detail + ')' : ''));
-  if (!pass) ok = false;
+// 差分レポートなので合否では落とさない（同じ=「同」／違う=「差」として並べるだけ）
+function check(label, same, detail) {
+  console.log((same ? '同  ' : '差  ') + label + (detail ? ' (' + detail + ')' : ''));
 }
 function setEq(a, b) {
   if (a.size !== b.size) return false;
@@ -108,5 +117,6 @@ works.forEach((w) => {
 check(`作品の登場エピソード一致 (不一致${workEpMismatch}件)`, workEpMismatch === 0);
 console.log(`  (参考) inline記法のcreatorと本番creatorが食い違う件数: ${inlineDiff}`);
 
-console.log(ok ? '\n=== ALL PASS ===' : '\n=== 差分あり（上記ログ参照） ===');
-process.exit(ok ? 0 : 1);
+console.log('\n=== 差分レポート終わり ===');
+console.log('※ 差が出るのは正常です（app/側はRSSを直接読むぶんGASより先に進んでいます）。');
+console.log('   身に覚えのない差が出たときだけ調べてください。');
