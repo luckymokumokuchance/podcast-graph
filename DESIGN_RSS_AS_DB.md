@@ -74,17 +74,23 @@ URLはスプレッドシートにしかありません。
 ### 核心：後から足す層は「追記だけ」にする
 
 `app/shownotes.json`（全文コピー）を捨て、`app/episodes-extra.json`（差分だけ）に置き換えます。
+実装時にworkLinksの値は文字列(URL)ではなく`{url, creator}`のオブジェクトに変更しました
+（古い回はURLと著者を両方失っているケースがあり、著者だけ/URLだけの補完も必要だったため）。
 
 ```json
 {
   "22": {
     "addTags": ["読書メモ", "##ジスベリ"],
     "workLinks": {
-      "book|電気羊はアンドロイドの夢を見るか?": "https://ja.wikipedia.org/wiki/..."
-    }
+      "book|電気羊はアンドロイドの夢を見るか?": { "url": "https://ja.wikipedia.org/wiki/...", "creator": "フィリップ・K・ディック" }
+    },
+    "addImages": ["ep012_1", "ep012_2"]
   }
 }
 ```
+
+`addImages`は`[img:key]`をそのまま本文へ追記します（他の2つと違い、表示に混ぜても文字が見えない＝
+`<img>`タグに置き換わるため。詳細はPhase2実施結果を参照）。
 
 本文は持ちません。**新エピソードはこのファイルに登場すらしません。**
 
@@ -170,13 +176,29 @@ HTMLが漏れている箇所はゼロでした。
 → この時点で、026/027のような**スプレッドシート未登録の回が正しく見えるようになります**。
 → 以後、**Spotifyの説明文にHTMLでリンクを書けば、それだけでINSPIREDにもURLが載ります**。
 
-### Phase 2｜追記層への移行（ここで目的達成）
+### Phase 2｜追記層への移行（実施済み・2026-09-17〜09-19）
 - スプレッドシートとRSSの差分を機械的に抽出し、`episodes-extra.json` を生成
-  （19の概念・作品リンクは自動で移ります。手作業なし）
 - `app/shownotes.json` を廃止
 - `.github/workflows/sync-shownotes.yml` と `scripts/snapshot-shownotes.mjs` を削除
+- 陳腐化警告（`app/stale-check.js`）も前提ごと不要になったため削除
+  （RSSは常に最新を直接読むので「スナップショットが古い」という状態が原理的に無くなった）
 
-→ **新エピソードはSpotifyに上げるだけになります。**
+→ **新エピソードはSpotifyに上げるだけになりました。**
+
+#### 実施時の訂正（重要な教訓）
+
+設計時点（Phase1直後）で「差分は19概念のみ、workLinksは0件」と見積もっていましたが、これは
+**誤りでした**。`app/data.js`の書き換え前に検証スクリプトを走らせてしまい、比較対象の「RSS側」が
+実は旧`applyCurated`経由で既にスプレッドシート全文と混ざったものだった（自分自身と比較していた）
+ため。`app/data.js`の書き換え後に取り直したところ、実際の差分は**20話・作品68件**でした。
+
+古い回（1〜20話あたり）は`📚`のような絵文字マーカーが無く「著者『題名』」という別形式で
+書かれており、**作品そのものがRSSから1件も抽出できない**ケースが多数ありました。単なるURL欠落
+ではなく作品の存在自体が消える問題だったため、`workLinks`の設計を「URL追加」から
+「著者・URL・（無ければ）題名のみ、を丸ごと補える」形に広げました。
+
+**教訓**：`app/data.js`を書き換える最中の検証は、書き換えが完全に終わってから撮り直すこと。
+古いコードが混じった状態の出力を「正しい現状」として信用しない。
 
 ### Phase 3｜編集画面（GASの引退）
 - `app/curation.html` … 概念・作品・追記層を●から編集
@@ -185,18 +207,35 @@ HTMLが漏れている箇所はゼロでした。
 
 ---
 
-## 移行しても失われないもの（確認済み）
+## 移行しても失われなかったもの（確認済み）
 
 | | 保持方法 |
 |---|---|
-| 19の`##`概念 | `episodes-extra.json` の `addTags` へ機械的に移行 |
-| 作品の参照リンク | `episodes-extra.json` の `workLinks` へ移行 |
+| `##`概念（20話ぶん） | `episodes-extra.json` の `addTags` へ機械的に移行 |
+| 作品の参照リンク・著者（古い回で絵文字マーカーが無いケース含む） | `episodes-extra.json` の `workLinks` へ移行 |
+| 本文中の画像（ep012/014/018） | `episodes-extra.json` の `addImages`（`[img:key]`を本文へ追記） |
 | 概念の説明・提唱者・関連・文脈 | `concepts-meta.json`（既に独立済み） |
 | 作品の表紙画像 | `works-meta.json`（既に独立済み） |
-| 本文中の画像 | `images.json` + `[img:key]`（サイト側のみ） |
+
+`works-meta.json`と`episodes-extra.json`のworkLinksは役割が重なる場面があるため
+（同じ作品にURLは前者、著者は後者、のように分かれることがある）、
+`scripts/snapshot-curation-meta.mjs`は自分自身の`episodes-extra.json`も加味した上で
+「まだ埋まっていない項目だけ」をworks-meta.jsonに書き出すようにしてあります。
+
+## 現状の全体像（Phase2完了時点）
+
+| データ | 置き場所 | 更新方法 |
+|---|---|---|
+| エピソードの存在・音声・公開日・本文・タグ・作品 | RSS（Spotifyの説明文） | Spotifyに公開するだけ・自動 |
+| RSSだけでは出てこない差分（##候補・古い回の作品情報・本文中画像） | `app/episodes-extra.json` | 手動編集（Phase3で●から編集可能にする予定） |
+| 概念の説明・提唱者・関連・文脈 / 作品の表紙画像 | `concepts-meta.json` / `works-meta.json` | 30分おき自動同期（`.github/workflows/sync-curation-meta.yml`） |
+| エピソード間リンク / LOG / テーブル表示調整 | `links.json` / `logs.json` / `table-layout.json` | ●から直接編集（完成済み） |
 
 ## 注意点
 
 - **`episodes.html`（Studio埋め込み）はGAS依存のまま**。Phase 3でGASを止める前に、この扱いを決める必要があります
 - スプレッドシートは削除せず、記録として残します（全ての原文があるため）
 - 過去回の本文をRSS側に寄せたい場合は、Spotifyの説明文を編集すれば自動で反映されます（必須ではありません）
+- ⚠️ Phase3で`app/`内に概念・作品・`episodes-extra.json`の編集画面ができたら、
+  `.github/workflows/sync-curation-meta.yml`は削除すること（直接編集とポーリングの併用は、
+  新しい編集を古いスプレッドシートの内容で上書きする。LOGで一度踏んだ失敗と同じ）

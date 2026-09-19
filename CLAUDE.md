@@ -15,14 +15,13 @@
 - **本番公開ブランチは `feature/logo-deco`**（mainは削除済み）。本番反映するには logo-deco に push する必要あり
 - **編集するのは `app/` 配下。** ルート直下のHTMLを直しても誰も見ない（転送用の殻のため）
 - **`episodes.html` だけはルートのまま**（Studioにiframe埋め込みされているため転送していない）。GAS依存が残る唯一のページ
-- **ショーノートは30分おきに自動同期**（`.github/workflows/sync-shownotes.yml`）。手動コマンドは不要
-  - ⚠️ `app/` 内にショーノート編集画面を作ったら、このワークフローは**必ず削除**する（直接編集とポーリングの併用は、新しい編集を古いスプレッドシートの内容で上書きする）
+- **本文・タグ・作品はRSS（Spotifyの説明文）が正**（2026-09-19〜）。スプレッドシートへの全文コピーは廃止した
+  - RSSだけでは出てこない差分（`##`候補・古い回の作品情報・本文中画像）は `app/episodes-extra.json` に**追記**として持つ（本文は持たない）。詳細は `DESIGN_RSS_AS_DB.md` 参照
+  - 概念/作品の説明・提唱者・関連・表紙画像は `app/concepts-meta.json` / `app/works-meta.json` に30分おき自動同期（`.github/workflows/sync-curation-meta.yml`）
+  - ⚠️ `app/` 内に概念・作品・episodes-extraの編集画面を作ったら、このワークフローは**必ず削除**する（直接編集とポーリングの併用は、新しい編集を古いスプレッドシートの内容で上書きする）
 - **`gas/Code.gs` はリポジトリと実デプロイがズレやすい。** GASを触る前に必ず最新コードを貼ってもらって同期確認する（過去に古いまま上書きしてLOG機能を消しかけた）
 - **GASは手動デプロイ**：`gas/Code.gs` を更新したらユーザーがGASエディタにコピペ → 「**デプロイを管理 → 鉛筆 → 新バージョン**」で再デプロイ。**新規デプロイにするとWebApp URLが変わるので必ず既存デプロイの新バージョン**として上げる
-- **スプシID**: `128vhJ_5mR9q9vZNqepeE-slpaycNm9SlU4BVhFecxKA`
-  - `episodes` シート: `WEB_status=published` の行のみ公開
-  - `links` シート: `status=approved` の行のみ公開
-  - `images` シート: `key`, `fileId` 列。shownote 内 `[img:key]` をDrive画像URLに展開
+- **スプシID**: `128vhJ_5mR9q9vZNqepeE-slpaycNm9SlU4BVhFecxKA`（概念・作品の手入力分と、旧本文の記録として現存。本文の新規編集先ではない）
 - **GAS WebApp URL は graph.js 冒頭の `GAS_URL` 定数**（変わったら差し替え）
 
 ## shownote 記法
@@ -30,10 +29,11 @@
 **ショーノートが全ての親**。ここに書くだけで、星図のタグ・概念ページ・INSPIREDが自動で付いてくる（個別登録は不要）。
 
 - Markdown対応（`**太字**`, `[テキスト](URL)`, `- 箇条書き` など）
-- `[img:ep012_1]` で `images` シートのキーに対応する画像を埋め込み
+- リンクはSpotify側にHTML（`<a href="...">`）で書ける。RSSがそのまま運び、marked が素通しするので文字として見えることはない
 - **`#タグ`** … 星図にグレーノードとして出る＋概念ページで「タグ済み」
 - **`##タグ`** … 星図には出さない。概念ページで「未タグ」として管理（`#`に変える＝1文字消すだけで昇格）
-- **`📚[タイトル](URL)著者`** … INSPIREDページに作品として並ぶ（`🎬`映画 / `📺`アニメ・ドラマ / `🎵`音楽 / `📻`ラジオ）
+- **`📚タイトル／著者`** または **`📚<a href="URL">タイトル</a>／著者`** … INSPIREDページに作品として並ぶ（`🎬`映画 / `📺`アニメ・ドラマ / `🎵`音楽 / `📻`ラジオ）
+- `[img:ep012_1]`（本文中の画像）は今はSpotify側に書かず、`app/episodes-extra.json` の `addImages` に追記する（`images`シートのkey/fileIdと対応）
 - 階層リストは行頭半角スペース2個でネスト
 - shownote内リンクは `target="_blank"` で別タブ開き（marked の postprocess hook で付与）
 

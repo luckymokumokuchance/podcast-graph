@@ -3,10 +3,10 @@
 //   window.PodcastData.load() → { episodes, links, nodes, graphLinks, tags }
 // ============================================================
 (function () {
-  const RSS_URL       = 'https://anchor.fm/s/110637c28/podcast/rss';
-  const LINKS_URL     = 'links.json';
-  const SHOWNOTES_URL = 'shownotes.json'; // スプレッドシートshownote（タグ・[img:key]込みの加筆版）のスナップショット。npm run snapshot で更新
-  const IMAGES_URL    = 'images.json';    // shownote内 [img:key] 用の key→Drive fileId マップ
+  const RSS_URL     = 'https://anchor.fm/s/110637c28/podcast/rss';
+  const LINKS_URL   = 'links.json';
+  const EXTRA_URL   = 'episodes-extra.json'; // RSSだけでは足りない差分（##候補・作品URL）を後から追記する層。●から編集
+  const IMAGES_URL  = 'images.json';         // shownote内 [img:key] 用の key→Drive fileId マップ
 
   // 説明文の定型フッタ由来の宣伝ハッシュタグはタグノードにしない
   const TAG_DENYLIST = new Set(['ラキもくチャン', 'ラッキーもくもくチャンス']);
@@ -122,27 +122,67 @@
       .sort((a, b) => a.num - b.num);
   }
 
-  // RSSの本文はSpotify投稿時点の生テキストで、タグや[img:key]は含まない。
-  // スプレッドシートshownote（人力で加筆されたキュレーション版）が有れば本文・タグ抽出をそちらに差し替える。
-  // RSSに無い回はここでは足さない（エピソードの存在判定は常にRSSが正）。
-  function applyCurated(rssEpisodes, shownotesJson) {
-    const byNum = new Map((shownotesJson && shownotesJson.episodes || []).map((e) => [e.num, e]));
+  // RSS(Spotifyの説明文)が本文の正。episodes-extra.json は「RSSだけでは
+  // 出てこない差分」を後から追記するだけの層で、本文そのものは持たない
+  //   addTags   … RSSに無い #タグ・##候補（例：後から振り返って足した概念）
+  //   workLinks … RSSに無い/URLや著者が欠けている作品の補完
+  //     "type|title": "URL"                     … URLだけ補う場合（文字列）
+  //     "type|title": {url, creator}             … URL・著者ごと補う場合（片方だけでも可）
+  //     ※古い回はRSSに絵文字マーカー自体が無く作品が1件も出てこないことがあるため、
+  //       単なる「URL追加」ではなく「作品そのものの補完」も兼ねる
+  // 追記分は ep._extraText という別フィールドに積むだけで、表示用の
+  // descHtml/descText には混ぜない（本文に余計な文字が見えないようにするため）。
+  // computeConcepts/computeWorks はこの _extraText も合わせて見て計算する。
+  function emojiOf(type) {
+    return Object.keys(WORK_EMOJI_TYPE).find((e) => WORK_EMOJI_TYPE[e] === type) || '';
+  }
+  function buildExtraText(extra) {
+    if (!extra) return '';
+    const tagPart = (extra.addTags || [])
+      .map((t) => (t.startsWith('##') ? t : `#${t}`))
+      .join(' ');
+    const workPart = Object.entries(extra.workLinks || {})
+      .map(([key, val]) => {
+        const [type, title] = key.split('|');
+        const emoji = emojiOf(type);
+        const url = typeof val === 'string' ? val : (val && val.url) || '';
+        const creator = typeof val === 'string' ? '' : (val && val.creator) || '';
+        // URLがあればmarkdown形式(③)、無ければ素の題名形式(②)で合成する。
+        // どちらもcomputeWorks()のプレーンテキスト経路がそのまま解釈できる
+        return url
+          ? `${emoji}[${title}](${url})${creator ? '／' + creator : ''}`
+          : `${emoji}${title}${creator ? '／' + creator : ''}`;
+      })
+      .join(' ');
+    return [tagPart, workPart].filter(Boolean).join(' ');
+  }
+
+  function applyExtras(rssEpisodes, extraJson) {
+    const byNum = new Map(Object.entries(extraJson || {}).map(([num, e]) => [Number(num), e]));
     const seen = new Set();
     const out = rssEpisodes.map((ep) => {
-      const c = byNum.get(ep.num);
-      if (!c) return ep;
+      const extra = byNum.get(ep.num);
+      if (!extra) return ep;
       seen.add(ep.num);
-      const descHtml = c.descHtml || ep.descHtml;
+      const extraText = buildExtraText(extra);
+
+      // addImagesだけは例外的に本文(descHtml/descText)へ直接追記する。
+      // [img:key]は表示時に<img>タグへ置き換わるため、addTags/workLinksと違って
+      // 「余計な文字がそのまま見える」問題が起きない（renderShownote参照）。
+      const imgSuffix = (extra.addImages || []).map((k) => `[img:${k}]`).join(' ');
+      const descHtml = imgSuffix ? `${ep.descHtml || ''} ${imgSuffix}` : ep.descHtml;
+      const descText = imgSuffix ? `${ep.descText || ''} ${imgSuffix}` : ep.descText;
+
       return {
         ...ep,
         descHtml,
-        descText: stripHtml(descHtml),
-        tags: extractTags(stripHtml(descHtml)),
-        link: c.url || ep.link,
+        descText,
+        _extraText: extraText,
+        tags: extractTags(`${descText || ''} ${extraText}`),
       };
     });
-    byNum.forEach((c, num) => {
-      if (!seen.has(num)) console.warn('[data] shownotes.json にRSS未対応の回:', num);
+    byNum.forEach((_, num) => {
+      if (!seen.has(num)) console.warn('[data] episodes-extra.json にRSS未対応の回:', num);
     });
     return out;
   }
@@ -166,7 +206,8 @@
     const titleById = {};
     episodes.forEach((ep) => {
       titleById[String(ep.id)] = ep.title;
-      const matches = (ep.descText || '').match(CONCEPT_TAG_RE) || [];
+      const text = `${ep.descText || ''} ${ep._extraText || ''}`;
+      const matches = text.match(CONCEPT_TAG_RE) || [];
       matches.forEach((m) => {
         const hashes = m.match(/^#+/)[0].length;
         const name = m.replace(/^#+/, '');
@@ -274,10 +315,12 @@
       }
 
       // ②③ ①で拾った部分を取り除いた残りを、プレーンテキストとして処理する
+      // （episodes-extra.jsonのworkLinksもここで一緒に処理される。③と同じmarkdown形式で
+      //  合成しているため）
       // グループ: 1=絵文字
       //   markdown 2=題 3=URL 4=著者 ／ 『』5=題 6=著者 ／ 「」7=題 8=著者
       //   []9=題 10=著者 ／ 素の題名 11=題 12=著者
-      const rest = stripHtml(html.replace(buildWorkAnchorRe(), ''));
+      const rest = stripHtml(html.replace(buildWorkAnchorRe(), '')) + ' ' + (ep._extraText || '');
       plainRe.lastIndex = 0;
       while ((m = plainRe.exec(rest)) !== null) {
         const title = (m[2] || m[5] || m[7] || m[9] || m[11] || '').trim();
@@ -335,13 +378,13 @@
   }
 
   async function load() {
-    const [rssText, linksJson, shownotesJson, images] = await Promise.all([
+    const [rssText, linksJson, extraJson, images] = await Promise.all([
       fetch(RSS_URL).then((r) => { if (!r.ok) throw new Error('RSS ' + r.status); return r.text(); }),
       fetch(LINKS_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : { links: [] }).catch(() => ({ links: [] })),
-      fetch(SHOWNOTES_URL).then((r) => r.ok ? r.json() : { episodes: [] }).catch(() => ({ episodes: [] })),
+      fetch(EXTRA_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
       fetch(IMAGES_URL).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
     ]);
-    const episodes = applyCurated(parseRss(rssText), shownotesJson);
+    const episodes = applyExtras(parseRss(rssText), extraJson);
     const manualLinks = linksJson.links || [];
     const g = buildGraph(episodes, manualLinks);
     return { episodes, manualLinks, images, ...g };

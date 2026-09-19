@@ -1,14 +1,15 @@
-// 本番GAS(?type=concepts / ?type=works)から「人が書いた分だけ」を抽出し、
-// app/concepts-meta.json と app/works-meta.json に書き出す。
+// 本番GAS(?type=concepts / ?type=works / 画像マップ)から「人が書いた分だけ」を
+// 抽出し、app/concepts-meta.json・app/works-meta.json・app/images.json に書き出す。
 // 自動計算できる部分(name/status/episodes/cooc、作品のtitle/type/episodes)は
 // 一切保存しない — app/data.js の computeConcepts()/computeWorks() が
-// ショーノートから毎回計算するため（Step 1で本番と完全一致を確認済み）。
+// RSSから毎回計算するため。
 //
-// 再実行時は、ショーノートから消えて計算結果に出てこなくなった概念・作品の
+// 再実行時は、RSSから消えて計算結果に出てこなくなった概念・作品の
 // 手入力データも「exists:false」として保持し続ける（スプレッドシートの
 // exists:○/×列と同じ配慮。書いた文章を黙って消さない）。
 //
 // 使い方: node scripts/snapshot-curation-meta.mjs
+import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -18,43 +19,33 @@ const ROOT = path.join(__dirname, '..');
 const APP_DIR = path.join(ROOT, 'app');
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxk2jQTHhowhGTXBAMsAcEZWbjELoxQAoSEkVy8EIMHuwXsgO_H6xxNqJPiqsvj5Dnd/exec';
 
-// app/data.js の computeWorks() と同じ抽出ロジック（DOM不要な部分だけの複製）。
-// shownotes.json の descHtml は既にプレーンテキスト（スプレッドシートのshownote列
-// そのもの）なので、ここではDOMを使わずNodeだけで完結させる。
-// ロジックを変えたらapp/data.jsのcomputeWorks()と両方直すこと。
-const WORK_EMOJI_TYPE = { '📚': 'book', '🎬': 'movie', '📺': 'anime', '🎵': 'music', '📻': 'radio' };
-function buildWorkRe() {
-  const emojiAlt = Object.keys(WORK_EMOJI_TYPE).join('|');
-  // URLは `(` を1段だけ入れ子で許す（app/data.js の同じ修正と揃えること）
-  return new RegExp(
-    `(${emojiAlt})(?:` +
-      `\\[([^\\]]+)\\]\\((https?:(?:[^\\s()]|\\([^\\s()]*\\))+)\\)(?:[／/・]\\s*)?([^\\s、。！？…「」『』【】（）\\[\\]]*)` +
-      `|『([^』]+)』` +
-      `|「([^」]+)」` +
-      `|\\[([^\\]]+)\\]` +
-      `|([^\\s、。！？…「」『』【】（）\\[\\]]+)` +
-    `)`,
-    'g'
-  );
-}
-function computeInlineWorks(shownoteEpisodes) {
-  const re = buildWorkRe();
-  const map = new Map(); // "type|title" -> { inlineCreator, inlineLink }
-  shownoteEpisodes.forEach((ep) => {
-    let m; re.lastIndex = 0;
-    while ((m = re.exec(ep.descHtml || '')) !== null) {
-      const type = WORK_EMOJI_TYPE[m[1]];
-      let title, inlineUrl = '', inlineCreator = '';
-      if (m[2] !== undefined) { title = m[2].trim(); inlineUrl = (m[3] || '').trim(); inlineCreator = (m[4] || '').trim(); }
-      else title = (m[5] || m[6] || m[7] || m[8] || '').trim();
-      if (!title) continue;
-      const key = type + '|' + title;
-      if (!map.has(key)) map.set(key, { inlineCreator: '', inlineLink: '' });
-      const entry = map.get(key);
-      if (inlineCreator && !entry.inlineCreator) entry.inlineCreator = inlineCreator;
-      if (inlineUrl && !entry.inlineLink) entry.inlineLink = inlineUrl;
-    }
+// app/data.js を実際に動かして、「RSS＋episodes-extra.json」から復元できる
+// 作品情報を得る。episodes-extra.jsonも合わせて見ないと、そこで既に補完済みの
+// 作品までworks-meta.jsonに二重保存してしまう（情報源が2つに分かれてズレる元）。
+// （重複した正規表現をこのファイルに持たない。ロジックはapp/data.js側だけで管理する）
+async function loadInlineWorks() {
+  const dom = new JSDOM('<!doctype html><body></body>', {
+    url: 'https://dummy.invalid/app/index.html', // links.json等の相対fetchのための架空ベース
+    runScripts: 'dangerously',
   });
+  const { window } = dom;
+  const extraLocal = readJsonIfExists(path.join(APP_DIR, 'episodes-extra.json'));
+  window.fetch = (u, o) => {
+    const url = new URL(u, window.location.href).href;
+    // episodes-extra.jsonだけはリポジトリのローカルファイルをそのまま返す
+    // （ダミーURLなのでネットワークでは取得できないため）
+    if (url.includes('/episodes-extra.json')) {
+      return Promise.resolve({ ok: true, json: async () => extraLocal });
+    }
+    return fetch(url, o);
+  };
+  window.eval(fs.readFileSync(path.join(APP_DIR, 'data.js'), 'utf8'));
+  // links.json/images.json はダミーURLなので失敗するが、load()内でcatchされ
+  // 空データにフォールバックする（RSS＋episodes-extra.jsonさえ読めればよい）
+  const local = await window.PodcastData.load();
+  const list = window.PodcastData.computeWorks(local.episodes).list;
+  const map = new Map(list.map((w) => [w.type + '|' + w.title, w]));
+  dom.window.close();
   return map;
 }
 
@@ -63,14 +54,17 @@ function readJsonIfExists(p) {
 }
 
 async function main() {
-  const [conceptsRes, worksRes] = await Promise.all([
+  const [conceptsRes, worksRes, graphRes, inlineWorks] = await Promise.all([
     fetch(GAS_URL + '?type=concepts').then((r) => r.json()),
     fetch(GAS_URL + '?type=works').then((r) => r.json()),
+    fetch(GAS_URL).then((r) => r.json()), // ?type無し = images マップを含むグラフ用エンドポイント
+    loadInlineWorks(),
   ]);
   const concepts = conceptsRes.concepts || [];
   const works = worksRes.works || [];
-  const shownotes = JSON.parse(fs.readFileSync(path.join(APP_DIR, 'shownotes.json'), 'utf8'));
-  const inlineWorks = computeInlineWorks(shownotes.episodes || []);
+
+  // ---------- images.json ----------
+  fs.writeFileSync(path.join(APP_DIR, 'images.json'), JSON.stringify(graphRes.images || {}, null, 2) + '\n');
 
   // ---------- concepts-meta.json ----------
   const conceptsMetaPath = path.join(APP_DIR, 'concepts-meta.json');
@@ -100,7 +94,7 @@ async function main() {
     };
   });
 
-  // ショーノートから消えたが、以前の手入力データが残っている概念は保持する
+  // RSSから消えたが、以前の手入力データが残っている概念は保持する
   Object.entries(prevConcepts).forEach(([name, data]) => {
     if (!nameSet.has(name)) nextConcepts[name] = { ...data, exists: false };
   });
@@ -128,7 +122,7 @@ async function main() {
     // 同様に、URLが途中で切れている場合はinline側（修正済み）を正とする
     const gasLinkBroken = /\([^)]*$/.test(String(w.link_url || ''));
 
-    // creator/link_urlはショーノートのinline記法から復元できるものは保存しない
+    // creator/link_urlはRSS本文から復元できるものは保存しない
     // （app/data.jsのcomputeWorks()が毎回同じ値を出すため、二重管理・将来の
     // ズレの元になる）。inline値と一致しない＝シート固有の補完値の時だけ残す。
     const creator = (inline && inline.inlineCreator === gasCreator) ? '' : gasCreator;
@@ -137,7 +131,7 @@ async function main() {
     if (inline && inline.inlineLink && inline.inlineLink === w.link_url) recoveredLink++;
     nextWorks[key] = { exists: true, creator, link_url, image_url: w.image_url || '' };
   });
-  console.log(`  (creator: inline記法から復元できたため保存省略=${recoveredCreator}件 / link_url: 同=${recoveredLink}件`
+  console.log(`  (creator: RSS本文から復元できたため保存省略=${recoveredCreator}件 / link_url: 同=${recoveredLink}件`
     + (unmangled ? ` / GASのパース残骸を除去=${unmangled}件` : '') + ')');
 
   Object.entries(prevWorks).forEach(([key, data]) => {
@@ -148,6 +142,7 @@ async function main() {
 
   console.log(`concepts-meta.json: ${Object.keys(nextConcepts).length}件 (existsなし含む)`);
   console.log(`works-meta.json: ${Object.keys(nextWorks).length}件 (existsなし含む)`);
+  console.log(`images.json: ${Object.keys(graphRes.images || {}).length}件`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

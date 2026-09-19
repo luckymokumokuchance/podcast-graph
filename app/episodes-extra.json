@@ -1,0 +1,420 @@
+{
+  "1": {
+    "addTags": [
+      "自由研究"
+    ],
+    "workLinks": {
+      "radio|ゆる言語学ラジオ": {},
+      "book|料理の四面体": {
+        "url": "https://www.chuko.co.jp/bunko/2010/02/205283.html"
+      },
+      "book|超芸術トマソン": {
+        "url": "https://www.chikumashobo.co.jp/product/9784480021892/",
+        "creator": "赤瀬川原平"
+      },
+      "book|科学者はなぜ神を信じるのか―コペルニクスからホーキングまで": {
+        "url": "https://www.kodansha.co.jp/book/products/0000311907",
+        "creator": "三田一郎"
+      },
+      "movie|アメリカの友人": {
+        "url": "https://eiga.com/movie/3806/",
+        "creator": "ヴィム・ヴェンダース"
+      },
+      "movie|PERFECT DAYS": {
+        "url": "https://www.perfectdays-movie.jp/",
+        "creator": "ヴィム・ヴェンダース"
+      },
+      "movie|ファイト・クラブ": {
+        "url": "https://eiga.com/movie/25896/",
+        "creator": "デイビッド・フィンチャー"
+      },
+      "book|生物から見た世界": {
+        "url": "https://www.iwanami.co.jp/book/b247066.html",
+        "creator": "ヤーコプ・フォン・ユクスキュル"
+      }
+    }
+  },
+  "2": {
+    "addTags": [
+      "ピエロ",
+      "ゆる継承"
+    ],
+    "workLinks": {
+      "book|未来をつくる言葉": {
+        "url": "https://www.shinchosha.co.jp/book/353111/",
+        "creator": "ドミニク・チェン"
+      },
+      "book|スマホ時代の哲学": {
+        "url": "https://d21.co.jp/book/detail/978-4-7993-3142-2",
+        "creator": "谷川嘉浩"
+      },
+      "book|暇と退屈の倫理学": {
+        "url": "https://www.shinchosha.co.jp/book/103541/",
+        "creator": "國分功一郎"
+      }
+    }
+  },
+  "3": {
+    "workLinks": {
+      "radio|ゆる言語学ラジオ": {
+        "url": "https://www.youtube.com/@yurugengo",
+        "creator": "水野太貴"
+      }
+    }
+  },
+  "4": {
+    "workLinks": {
+      "book|世界99": {
+        "url": "https://lp.shueisha.co.jp/sekai99/",
+        "creator": "村田沙耶香著"
+      }
+    }
+  },
+  "5": {
+    "workLinks": {
+      "movie|ハリー・ポッター": {
+        "url": "https://wiki3.jp/harry_potter/page/966"
+      },
+      "book|イン・ザ・メガチャーチ": {
+        "url": "https://info.nikkeibp.co.jp/books/campaign/121045/",
+        "creator": "朝井リョウ"
+      },
+      "movie|PERFECT DAYS": {
+        "url": "https://www.perfectdays-movie.jp/",
+        "creator": "ヴィム・ヴェンダース"
+      },
+      "book|スマホ時代の哲学": {
+        "url": "https://d21.co.jp/book/detail/978-4-7993-3142-2",
+        "creator": "谷川"
+      }
+    }
+  },
+  "6": {
+    "addTags": [
+      "テクスチャ",
+      "ピエロ"
+    ],
+    "workLinks": {
+      "anime|あたしんち": {
+        "url": "https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%9F%E3%81%97%E3%83%B3%E3%81%A1"
+      },
+      "book|スマホ時代の哲学": {
+        "url": "https://d21.co.jp/book/detail/978-4-7993-3142-2",
+        "creator": "谷川嘉浩"
+      },
+      "radio|スクールオブロック": {
+        "url": "https://www.tfm.co.jp/lock/",
+        "creator": "ラジオ"
+      },
+      "radio|ゆる言語学ラジオ": {
+        "url": "https://www.youtube.com/@yurugengo",
+        "creator": "水野太貴・堀元見"
+      },
+      "book|panpanya（パンパンヤ）": {
+        "url": "https://ja.wikipedia.org/wiki/Panpanya",
+        "creator": "漫画家"
+      },
+      "radio|Researchat.fm": {
+        "url": "https://researchat.fm/"
+      },
+      "book|セトウツミ": {
+        "url": "https://championcross.jp/series/3f44e5887ed33",
+        "creator": "素振りの回"
+      },
+      "book|考察する若者たち": {
+        "url": "https://www.php.co.jp/books/detail.php?isbn=978-4-569-86017-6",
+        "creator": "三宅"
+      },
+      "movie|PERFECT DAYS": {
+        "url": "https://www.perfectdays-movie.jp/",
+        "creator": "ヴィム・ベンダース"
+      },
+      "book|1984": {
+        "url": "https://amzn.asia/d/08Z4I8hx",
+        "creator": "ジョージ・オーウェル"
+      },
+      "book|怪盗道化師（ピエロ）": {
+        "url": "https://cocreco.kodansha.co.jp/aoitori/aoitoribooks/0000146044",
+        "creator": "はやみねかおる"
+      }
+    }
+  },
+  "7": {
+    "workLinks": {
+      "book|藪の中(青空文庫)": {
+        "url": "https://www.aozora.gr.jp/cards/000879/files/179_15255.html",
+        "creator": "芥川龍之介"
+      }
+    }
+  },
+  "8": {
+    "workLinks": {
+      "book|イン・ザ・メガチャーチ": {
+        "url": "https://info.nikkeibp.co.jp/books/campaign/121045/",
+        "creator": "朝井リョウ"
+      },
+      "book|スマホ時代の哲学": {
+        "url": "https://d21.co.jp/book/detail/978-4-7993-3142-2",
+        "creator": "谷川嘉浩"
+      }
+    }
+  },
+  "9": {
+    "addTags": [
+      "ゆる継承",
+      "読書メモ",
+      "自由研究",
+      "##フレームワーク",
+      "##檸檬"
+    ],
+    "workLinks": {
+      "book|アゲインスト・リテラシー―グラフィティ文化論": {
+        "url": "https://www.books.or.jp/book-details/9784864800143",
+        "creator": "大山エンリコイサム"
+      },
+      "book|イッツ・ダ・ボム": {
+        "url": "https://books.bunshun.jp/ud/book/num/9784163918938",
+        "creator": "井上先斗"
+      },
+      "book|檸檬": {
+        "url": "https://www.aozora.gr.jp/cards/000074/files/424_19826.html",
+        "creator": "梶井基次郎"
+      },
+      "radio|奇奇怪怪": {
+        "url": "https://open.spotify.com/show/0DEV2gUjx4tgwBLpJFlX7j?si=f9f765d6a2a647be",
+        "creator": "TaiTan・玉置周啓"
+      },
+      "radio|シットとシッポ": {
+        "url": "https://open.spotify.com/show/6unHRFZyYTqAhBVa2cWOqM?si=c741f27cce3f4cd5",
+        "creator": "荘子it"
+      }
+    }
+  },
+  "10": {
+    "addTags": [
+      "##ハンドリング"
+    ],
+    "workLinks": {
+      "radio|神保町で会いましょう": {
+        "url": "https://open.spotify.com/episode/3HNaWAMl5rUqriTh2aEzLv?si=skkONSOuQ56nr8_Ivbw1HQ",
+        "creator": "水野太貴"
+      },
+      "movie|AT THE BENCH": {
+        "url": "https://spoon-inc.co.jp/at-the-bench/",
+        "creator": "奥山由之"
+      },
+      "radio|超相対性理論": {
+        "url": "https://open.spotify.com/show/5xCiKGwndGU37pIuJTXpmD",
+        "creator": "渡邊康太郎・荒木博行"
+      },
+      "radio|ゆる学徒カフェ・オープンマイクチャンネル": {
+        "url": "https://youtu.be/CqOe4ZH4Us8?si=DRnNHClnCSFdEcCF"
+      }
+    }
+  },
+  "11": {
+    "addTags": [
+      "##本物っぽさ"
+    ],
+    "workLinks": {
+      "book|地図の想像力": {
+        "url": "https://www.kawade.co.jp/sp/isbn/9784309409450/",
+        "creator": "若林幹夫"
+      },
+      "book|なぜ人は締め切りを守れないのか": {
+        "url": "https://info1103.stores.jp/items/68e2673e1b359ae6dc4cc905",
+        "creator": "難波優輝"
+      }
+    }
+  },
+  "12": {
+    "addTags": [
+      "##宝物"
+    ],
+    "addImages": [
+      "ep012_1",
+      "ep012_2",
+      "ep012_3",
+      "ep012_4",
+      "ep012_5"
+    ]
+  },
+  "13": {
+    "addTags": [
+      "##進化心理学的なギャップ"
+    ],
+    "workLinks": {
+      "book|なぜ人は締め切りを守れないのか": {
+        "url": "https://info1103.stores.jp/items/68e2673e1b359ae6dc4cc905",
+        "creator": "難波優輝"
+      },
+      "movie|ファイト・クラブ": {
+        "url": "https://www.20thcenturystudios.jp/movies/fight-club",
+        "creator": "デビット・フィンチャー"
+      },
+      "movie|PERFECT DAYS": {
+        "url": "https://www.perfectdays-movie.jp/",
+        "creator": "ヴィム・ベンダース"
+      }
+    }
+  },
+  "14": {
+    "addTags": [
+      "ゆる継承",
+      "##アンビエントビジュアル"
+    ],
+    "workLinks": {
+      "movie|ファーストマン": {
+        "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A1%E3%83%BC%E3%82%B9%E3%83%88%E3%83%BB%E3%83%9E%E3%83%B3"
+      },
+      "movie|千と千尋の神隠し": {
+        "url": "https://www.ghibli.jp/works/chihiro/"
+      }
+    },
+    "addImages": [
+      "ep014_1"
+    ]
+  },
+  "15": {
+    "workLinks": {
+      "book|さむわんへるつ": {
+        "url": "https://www.shonenjump.com/j/rensai/someone.html",
+        "creator": "ヤマノエイ"
+      },
+      "movie|ロード・オブ・ドッグタウン": {
+        "url": "https://www.sonypictures.jp/he/751855"
+      },
+      "movie|Sing Sing": {
+        "url": "https://gaga.ne.jp/singsing/"
+      },
+      "movie|ストレンジャー・シングス 未知の世界": {
+        "url": "https://www.netflix.com/jp/title/80057281"
+      },
+      "music|ばかまじめ": {},
+      "music|よふかしのうた": {}
+    }
+  },
+  "16": {
+    "addTags": [
+      "読書メモ",
+      "##ものの探し方の流派",
+      "##本の読み方の流派",
+      "##ジスベリ",
+      "##ボムりたい"
+    ],
+    "workLinks": {
+      "book|置き配的": {
+        "url": "https://www.kodansha.co.jp/book/products/0000416413"
+      }
+    }
+  },
+  "17": {
+    "addTags": [
+      "##電話体ラジオ"
+    ],
+    "workLinks": {
+      "book|黒子のバスケ": {
+        "url": "https://www.shonenjump.com/j/rensai/kuroko.html",
+        "creator": "藤巻忠俊"
+      },
+      "book|会話の0.2秒を言語学する": {
+        "url": "https://www.shinchosha.co.jp/book/356431/",
+        "creator": "水野太貴"
+      },
+      "book|さむわんへるつ": {
+        "url": "https://open.spotify.com/episode/5Av5uQq4ZPULry9Lc9P41A?si=wptO_hOcSVGjwnAj7KxTBQ",
+        "creator": "ヤマノエイ"
+      },
+      "anime|時計仕掛けのマリッジ": {
+        "url": "https://www.tokeimarrige.com/"
+      },
+      "anime|異国日記": {
+        "url": "https://ikoku-anime.com/",
+        "creator": "ヤマシタトモコ"
+      },
+      "music|Bialystocks": {},
+      "music|Upon you": {
+        "url": "https://youtu.be/-6rXvPHOjVU?si=xbEvKgfIuVHIn6LH"
+      },
+      "radio|奇奇怪怪": {
+        "url": "https://open.spotify.com/show/0DEV2gUjx4tgwBLpJFlX7j?si=f9f765d6a2a647be",
+        "creator": "TaiTan・玉置周啓"
+      }
+    }
+  },
+  "18": {
+    "addTags": [
+      "デジタル民藝",
+      "読書メモ",
+      "##タグ管理問題",
+      "##ジョグ型編集",
+      "##スプリント型編集"
+    ],
+    "workLinks": {
+      "book|編集力　千夜千冊エディション": {
+        "url": "https://1000ya.isis.ne.jp/edition/editing_power",
+        "creator": "松岡正剛"
+      },
+      "book|フラジャイル": {
+        "url": "https://www.chikumashobo.co.jp/product/9784480089359/",
+        "creator": "松岡正剛"
+      },
+      "book|つくるをほぐす": {
+        "url": "https://eijipress.co.jp/products/2362",
+        "creator": "山内佑輔"
+      },
+      "book|＜ほんもの＞という倫理": {
+        "url": "https://www.chikumashobo.co.jp/product/9784480511607/",
+        "creator": "チャールズ・テイラー"
+      },
+      "book|知の編集工学": {
+        "url": "https://publications.asahi.com/product/24465.html",
+        "creator": "松岡正剛"
+      }
+    },
+    "addImages": [
+      "ep018_1"
+    ]
+  },
+  "19": {
+    "addTags": [
+      "##その人性",
+      "味噌づくり",
+      "##無機物への命名欲求",
+      "##自己矛盾の肯定"
+    ],
+    "workLinks": {
+      "book|フラジャイル": {
+        "creator": "松岡正剛"
+      },
+      "book|夢水清志郎事件ノートシリーズ": {
+        "url": "https://cocreco.kodansha.co.jp/aoitori/special/yumemizu",
+        "creator": "はやみねかおる"
+      },
+      "book|怪盗クイーンシリーズ": {
+        "url": "https://cocreco.kodansha.co.jp/aoitori/special/miragequeen",
+        "creator": "はやみねかおる"
+      },
+      "anime|サマータイムレンダ": {
+        "url": "https://summertime-anime.com/"
+      },
+      "anime|ツインピークス": {
+        "url": "https://ja.wikipedia.org/wiki/%E3%83%84%E3%82%A4%E3%83%B3%E3%83%BB%E3%83%94%E3%83%BC%E3%82%AF%E3%82%B9",
+        "creator": "デイヴィッド・リンチ"
+      },
+      "book|生成AIが変える世界を紐解くINFRA MECHANISM　-時代を生き残るための7つの戦略-": {
+        "url": "https://www.valuebooks.jp/%E7%94%9F%E6%88%90AI%E3%81%8C%E5%A4%89%E3%81%88%E3%82%8B%E4%B8%96%E7%95%8C%E3%82%92%E7%B4%90%E8%A7%A3%E3%81%8FINFRA-MECHANISM/bp/VS0094976322?srsltid=AfmBOooK826E3UQRO5VcwLkHApm69XiNOcqVGwWJcyW14kyOHi1kspp2"
+      },
+      "radio|ゆる言語学ラジオ": {
+        "url": "https://www.youtube.com/@yurugengo",
+        "creator": "水野太貴・堀元見"
+      }
+    }
+  },
+  "20": {
+    "addTags": [
+      "##コンセプト文",
+      "##誠実さと射程の長さ"
+    ]
+  }
+}
