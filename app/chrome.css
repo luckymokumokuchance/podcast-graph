@@ -65,9 +65,7 @@
 #graph.table-mode .deco-layer,
 #graph.table-mode .logo-layer,
 #graph.table-mode .node.tag,
-#graph.table-mode .node.work,
 #graph.table-mode .text-node.tag,
-#graph.table-mode .text-node.work,
 #graph.table-mode .pulse-ring {
   display: none !important;
 }

@@ -17,21 +17,13 @@ const COLORS = {
   tag:              '#878787',  // タグ円
   tagHover:         '#4d4d4d',  // タグ円ホバー時
   deco:             '#dedede',  // デコ星
-  work:             '#c98b3b',  // 作品円（INSPIREDの作品。星図にゆったり浮かせる）
-  workGlow:         '#ffb703',  // EPタップ時、紐づく作品が光る色
   linkTag:          '#878787',  // タグリンクの線
   linkManual:       '#878787',  // 手動リンクの線・点
   linkManualHover:  '#4d4d4d',  // 手動リンク点ホバー時
-  linkWork:         '#d9d9d9',  // 作品リンクの線（淡く・長め）
   labelInner:       '#ffffff',  // 円内テキスト（番号・#）
   labelTitle:       '#000000',  // エピソードタイトル
   labelTag:         '#878787',  // タグラベル
 };
-
-// 作品ノードの物理設定（引力弱め・リンク長めで「ゆったり浮いている」見た目にする）
-const WORK_LINK_DIST_MULT = 3.2;  // リンク距離の倍率（通常の何倍長く浮かせるか）
-const WORK_LINK_STRENGTH  = 0.06; // リンクの引力の弱さ（小さいほどゆったり）
-const WORK_CHARGE_MULT    = 0.4;  // 作品ノード自体の反発力の弱さ（1が通常）
 
 // ------------------------------------------------------------
 // エントリーポイント
@@ -50,8 +42,7 @@ async function main() {
       tags: e.tags || [],
     }));
     const tagNodes = d.nodes.filter(n => n.type === 'tag');
-    const workNodes = d.nodes.filter(n => n.type === 'work');
-    data = { nodes: [...episodeNodes, ...tagNodes, ...workNodes], links: d.graphLinks, images: d.images || {} };
+    data = { nodes: [...episodeNodes, ...tagNodes], links: d.graphLinks, images: d.images || {} };
   } catch (e) {
     loadingEl.textContent = 'データの取得に失敗しました（RSS）。';
     console.error(e);
@@ -131,11 +122,8 @@ function drawGraph(data, tooltip, tableLayout) {
   root.setProperty('--c-tag',           COLORS.tag);
   root.setProperty('--c-tag-hover',     COLORS.tagHover);
   root.setProperty('--c-deco',          COLORS.deco);
-  root.setProperty('--c-work',          COLORS.work);
-  root.setProperty('--c-work-glow',     COLORS.workGlow);
   root.setProperty('--c-link-tag',      COLORS.linkTag);
   root.setProperty('--c-link-manual',   COLORS.linkManual);
-  root.setProperty('--c-link-work',     COLORS.linkWork);
   root.setProperty('--c-label-inner',   COLORS.labelInner);
   root.setProperty('--c-label-title',   COLORS.labelTitle);
   root.setProperty('--c-label-tag',     COLORS.labelTag);
@@ -146,7 +134,6 @@ function drawGraph(data, tooltip, tableLayout) {
   // sizeMetric相当が無いので次数(degree)で代用。r = MIN + (MAX-MIN)*sqrt(deg/max)
   const degree = {};
   data.links.forEach(l => {
-    if (l.type === 'work') return; // 作品リンクはエピソード/タグの重要度サイズに影響させない
     const sId = typeof l.source === 'object' ? l.source.id : l.source;
     const tId = typeof l.target === 'object' ? l.target.id : l.target;
     degree[sId] = (degree[sId] || 0) + 1;
@@ -161,8 +148,6 @@ function drawGraph(data, tooltip, tableLayout) {
   const sizeK = d => Math.sqrt((degree[d.id] || 0) / maxDeg); // 0..1
   const nodeR = d => d.type === 'tag'
     ? tagR()      * (0.80 + 0.50 * sizeK(d))   // タグ: 0.8〜1.3倍
-    : d.type === 'work'
-    ? tagR() * 0.9                             // 作品: 固定サイズ
     : nodeRadius  * (0.72 + 0.56 * sizeK(d));  // エピソード: 0.72〜1.28倍
 
   // ---------- 脈打つ輪(§2-3): published_atが直近30日 ----------
@@ -218,19 +203,18 @@ function drawGraph(data, tooltip, tableLayout) {
   const getLinkDistance = d => {
     const sr = nodeR(d.source);
     const tr = nodeR(d.target);
-    // 手動リンク(点線)はタグリンク(実線)の1.4倍、作品リンクはさらに長く離す(§3)
-    const mult = d.type === 'work' ? WORK_LINK_DIST_MULT : (d.type === 'manual' ? 1.4 : 1);
-    const base = linkDist * mult;
+    // 手動リンク(点線)はタグリンク(実線)の1.4倍離す(§3)
+    const base = linkDist * (d.type === 'manual' ? 1.4 : 1);
     return base + sr + tr;
   };
-  const getLinkStrength = d => d.type === 'work' ? WORK_LINK_STRENGTH : (d.type === 'manual' ? 0.25 : 0.5);
+  const getLinkStrength = d => (d.type === 'manual' ? 0.25 : 0.5);
 
   const simulation = d3.forceSimulation(data.nodes)
     .force('link',      d3.forceLink(data.links).id(d => d.id)
                           .distance(getLinkDistance).strength(getLinkStrength))
-    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : d.type === 'work' ? -chargeStrength * WORK_CHARGE_MULT : -chargeStrength))
-    .force('x',         d3.forceX(width / 2).strength(d => (d.type === 'deco' || d.type === 'work') ? 0 : 0.08))
-    .force('y',         d3.forceY(height / 2).strength(d => (d.type === 'deco' || d.type === 'work') ? 0 : 0.08))
+    .force('charge',    d3.forceManyBody().strength(d => d.type === 'deco' ? -8 : -chargeStrength))
+    .force('x',         d3.forceX(width / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
+    .force('y',         d3.forceY(height / 2).strength(d => d.type === 'deco' ? 0 : 0.08))
     .force('collision-ep',   makeSubsetCollide(d => d.type !== 'deco', d => nodeR(d) + 20))
     .force('collision-deco', makeSubsetCollide(d => d.type === 'deco',
       d => Math.max(decoR, (decoR + 20) * (1 + (d.spreadFactor - 0.5) * decoSpread * 4))))
@@ -276,9 +260,8 @@ function drawGraph(data, tooltip, tableLayout) {
     .data(data.links)
     .join('line')
     .attr('class', 'link')
-    .style('stroke',           d => d.type === 'tag' ? COLORS.linkTag : d.type === 'work' ? COLORS.linkWork : COLORS.linkManual)
-    .style('stroke-dasharray', d => d.type === 'manual' ? '5,4' : d.type === 'work' ? '2,7' : 'none')
-    .style('opacity',          d => d.type === 'work' ? 0.55 : 1)
+    .style('stroke',           d => d.type === 'tag' ? COLORS.linkTag : COLORS.linkManual)
+    .style('stroke-dasharray', d => d.type === 'manual' ? '5,4' : 'none')
     .style('stroke-width', `${1.2 * strokeMult}px`);
 
 
@@ -315,7 +298,7 @@ function drawGraph(data, tooltip, tableLayout) {
   epNode.append('circle')
     .attr('class', 'node-circle')
     .attr('r', d => nodeR(d))
-    .style('fill', d => d.type === 'tag' ? COLORS.tag : d.type === 'work' ? COLORS.work : COLORS.episode)
+    .style('fill', d => d.type === 'tag' ? COLORS.tag : COLORS.episode)
     .style('stroke', 'none')
     .style('cursor', d => d.type === 'episode' ? 'pointer' : 'default')
     .on('mouseenter', function(event, d) {
@@ -366,7 +349,7 @@ function drawGraph(data, tooltip, tableLayout) {
   textGroup.append('text')
     .attr('class', 'node-ep')
     .attr('x', 0).attr('y', 0)
-    .text(d => d.type === 'tag' ? '#' : d.type === 'work' ? d.emoji : formatEpId(d.id));
+    .text(d => d.type === 'tag' ? '#' : formatEpId(d.id));
 
   textGroup.filter(d => d.type === 'episode')
     .append('text')
@@ -450,23 +433,9 @@ function drawGraph(data, tooltip, tableLayout) {
     return withImages.replace(/\n/g, '<br>');
   }
 
-  // リンクのsource/target(文字列 or 解決済みノード参照の両方がありうる)からidだけ取り出す
-  const idOf = x => (x && typeof x === 'object') ? x.id : x;
-
   function openModal(d) {
     d._clicked = true;
     epNode.filter(n => n.id === d.id).select('circle').style('fill', COLORS.episodeClick);
-
-    // タップしたエピソードに紐づく作品ノードを光らせる（前回のハイライトは解除）
-    epNode.filter(n => n.type === 'work').classed('work-glow', false);
-    if (d.type === 'episode') {
-      const litIds = new Set(
-        data.links.filter(l => l.type === 'work' && String(idOf(l.target)) === String(d.id))
-                  .map(l => idOf(l.source))
-      );
-      epNode.filter(n => n.type === 'work' && litIds.has(n.id)).classed('work-glow', true);
-    }
-
     document.getElementById('modal-ep').textContent    = formatEpId(d.id);
     document.getElementById('modal-title').textContent = d.title || '';
     const modalLink = document.getElementById('modal-link');
@@ -485,13 +454,9 @@ function drawGraph(data, tooltip, tableLayout) {
     modal.classList.remove('hidden');
   }
 
-  function closeModal() {
-    modal.classList.add('hidden');
-    epNode.filter(n => n.type === 'work').classed('work-glow', false);
-  }
-  modalClose.addEventListener('click', closeModal);
+  modalClose.addEventListener('click', () => modal.classList.add('hidden'));
   modal.addEventListener('click', e => {
-    if (e.target === modal) closeModal();
+    if (e.target === modal) modal.classList.add('hidden');
   });
 
   // テーブルビューから同じモーダルを開けるよう公開
@@ -907,12 +872,9 @@ function drawGraph(data, tooltip, tableLayout) {
     { key: 'tag',          label: 'タグ円' },
     { key: 'tagHover',     label: 'タグ（ホバー）' },
     { key: 'deco',         label: 'デコ星' },
-    { key: 'work',         label: '作品円' },
-    { key: 'workGlow',     label: '作品グロー（EPタップ時）' },
     { key: 'linkTag',         label: 'タグリンク' },
     { key: 'linkManual',      label: '手動リンク' },
     { key: 'linkManualHover', label: '手動リンク（ホバー）' },
-    { key: 'linkWork',        label: '作品リンク' },
     { key: 'labelInner',      label: '円内テキスト' },
     { key: 'labelTitle',   label: 'タイトル' },
     { key: 'labelTag',     label: 'タグラベル' },
@@ -921,9 +883,7 @@ function drawGraph(data, tooltip, tableLayout) {
   const CSS_VAR = {
     episode: '--c-episode', episodeHover: '--c-episode-hover', episodeClick: '--c-episode-click',
     tag: '--c-tag', tagHover: '--c-tag-hover', deco: '--c-deco',
-    work: '--c-work', workGlow: '--c-work-glow',
     linkTag: '--c-link-tag', linkManual: '--c-link-manual', linkManualHover: '--c-link-manual-hover',
-    linkWork: '--c-link-work',
     labelInner: '--c-label-inner', labelTitle: '--c-label-title', labelTag: '--c-label-tag',
   };
 
@@ -942,12 +902,9 @@ function drawGraph(data, tooltip, tableLayout) {
     if (key === 'episode')    epNode.filter(d => d.type === 'episode').select('circle').style('fill', value);
     if (key === 'tag')        epNode.filter(d => d.type === 'tag').select('circle').style('fill', value);
     if (key === 'deco')       decoCircle.style('fill', value);
-    if (key === 'work')       epNode.filter(d => d.type === 'work').select('circle').style('fill', value);
-    if (key === 'workGlow') { /* CSSカスタムプロパティ経由でアニメーションが参照するので上のsetPropertyだけで反映 */ }
     if (key === 'linkTag')  { link.filter(d => d.type === 'tag').style('stroke', value); buildLegend(); }
-    if (key === 'linkManual') { link.filter(d => d.type === 'manual').style('stroke', value); linkHandle.style('fill', value); buildLegend(); }
+    if (key === 'linkManual') { link.filter(d => d.type !== 'tag').style('stroke', value); linkHandle.style('fill', value); buildLegend(); }
     if (key === 'linkManualHover') { /* applied on hover */ }
-    if (key === 'linkWork') { link.filter(d => d.type === 'work').style('stroke', value); buildLegend(); }
   }
 
   cpEl.querySelectorAll('.color-swatch').forEach(swatch => {
@@ -1082,13 +1039,6 @@ function buildLegend() {
           stroke="${COLORS.linkManual}" stroke-width="1.5" stroke-dasharray="5,3"/>
       </svg>
       <span>手動リンク</span>
-    </div>
-    <div class="legend-item">
-      <svg width="24" height="8">
-        <line x1="0" y1="4" x2="24" y2="4"
-          stroke="${COLORS.linkWork}" stroke-width="1.5" stroke-dasharray="2,4" opacity="0.55"/>
-      </svg>
-      <span>作品リンク</span>
     </div>
   `;
 }

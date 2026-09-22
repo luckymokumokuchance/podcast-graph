@@ -60,30 +60,6 @@ body {
   transition: fill 0.2s;
 }
 
-/* 作品ノード（INSPIREDの作品。引力弱め・リンク長めで星図にゆったり浮かせている） */
-.node.work circle {
-  fill: var(--c-work);
-  stroke: none;
-  cursor: default;
-  transition: fill 0.2s, filter 0.2s;
-}
-
-.node.work .node-ep {
-  font-size: 13px;
-}
-
-/* EPをタップすると、紐づく作品がふわっと光る */
-.work-glow circle {
-  animation: work-glow-pulse 1.3s ease-in-out infinite;
-}
-@keyframes work-glow-pulse {
-  0%, 100% { filter: drop-shadow(0 0 3px var(--c-work-glow)) drop-shadow(0 0 7px var(--c-work-glow)); }
-  50%      { filter: drop-shadow(0 0 7px var(--c-work-glow)) drop-shadow(0 0 15px var(--c-work-glow)); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .work-glow circle { animation: none; filter: drop-shadow(0 0 6px var(--c-work-glow)); }
-}
-
 /* 円の中のラベル（番号 or #） */
 .node-ep {
   font-size: 10px;
