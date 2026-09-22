@@ -2,9 +2,9 @@
 body { margin: 0; font-family: -apple-system, "Hiragino Kaku Gothic ProN", sans-serif; color: #222; background: #fafafa; }
 
 .abar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; background: #fff; border-bottom: 1px solid #e8e8e8; }
+  flex-wrap: wrap; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e8e8e8; }
 .abrand { font-weight: 700; color: #089900; }
-.aright { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.aright { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .who { font-size: 12px; color: #089900; }
 .tostar { color: #888; font-size: 13px; text-decoration: none; }
 
