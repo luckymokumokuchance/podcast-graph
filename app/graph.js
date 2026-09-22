@@ -420,9 +420,12 @@ function drawGraph(data, tooltip, tableLayout) {
   function renderShownote(text) {
     if (!text) return '';
     const withImages = String(text).replace(/\[img:([^\]]+)\]/g, (match, key) => {
-      const fileId = imageMap[key.trim()];
-      if (!fileId) return match;
-      return `<img class="shownote-img" src="https://lh3.googleusercontent.com/d/${fileId}=w800" alt="${key}">`;
+      const val = imageMap[key.trim()];
+      if (!val) return match;
+      // '/'を含む場合はリポジトリ内の画像パス（imagepost.htmlでアップロードしたもの）、
+      // 含まない場合は旧来のGoogle Drive fileId（既存回のぶんはこのまま残る）
+      const src = val.includes('/') ? ASSET_BASE + val : `https://lh3.googleusercontent.com/d/${val}=w800`;
+      return `<img class="shownote-img" src="${src}" alt="${key}">`;
     });
     if (typeof marked !== 'undefined') {
       return marked.parse(withImages, { breaks: true, gfm: true });

@@ -14,7 +14,7 @@
 
 - **本番公開ブランチは `feature/logo-deco`**（mainは削除済み）。本番反映するには logo-deco に push する必要あり
 - **編集するのは `app/` 配下。** ルート直下のHTMLを直しても誰も見ない（転送用の殻のため）
-- **`episodes.html` だけはルートのまま**（Studioにiframe埋め込みされているため転送していない）。GAS依存が残る唯一のページ
+- **`episodes.html` だけはルートのまま**。自サイトのnavからは参照されておらず、Studio側の古いiframeブロックだけが覗いている一方通行の関係（詳細は`HANDOVER_2026-09-22.md`）。GAS依存が残る唯一のページ
 - **本文・タグ・作品はRSS（Spotifyの説明文）が正**（2026-09-19〜）。スプレッドシートへの全文コピーは廃止した
   - RSSだけでは出てこない差分（`##`候補・古い回の作品情報・本文中画像）は `app/episodes-extra.json` に**追記**として持つ（本文は持たない）。詳細は `DESIGN_RSS_AS_DB.md` 参照
   - 概念/作品の説明・提唱者・関連・表紙画像は `app/concepts-meta.json` / `app/works-meta.json` に30分おき自動同期（`.github/workflows/sync-curation-meta.yml`）
@@ -33,7 +33,9 @@
 - **`#タグ`** … 星図にグレーノードとして出る＋概念ページで「タグ済み」
 - **`##タグ`** … 星図には出さない。概念ページで「未タグ」として管理（`#`に変える＝1文字消すだけで昇格）
 - **`📚タイトル／著者`** または **`📚<a href="URL">タイトル</a>／著者`** … INSPIREDページに作品として並ぶ（`🎬`映画 / `📺`アニメ・ドラマ / `🎵`音楽 / `📻`ラジオ）
-- `[img:ep012_1]`（本文中の画像）は今はSpotify側に書かず、`app/episodes-extra.json` の `addImages` に追記する（`images`シートのkey/fileIdと対応）
+- `[img:ep031_1]`（本文中の画像）**は「●」→画像登録（`app/imagepost.html`）で画像をアップロードするとキーが発行される**（2026-09-22〜。Googleドライブ・スプレッドシート不要、リポジトリに直接コミット）。発行されたキーをSpotify側の説明文の好きな場所に貼れば、その位置に表示される（本文全体に対して置換されるため位置指定できる）
+  - 古い回（もうSpotify側を編集しない回）は従来通り `app/episodes-extra.json` の `addImages` に追記する方式も使える。ただしこちらは常に本文末尾に追記されるだけで位置指定はできない
+  - `app/images.json` の値は、`/`を含む場合はリポジトリ内の画像パス（新方式）、含まない場合はGoogle Drive fileId（旧回のぶん、`images`シート由来）
 - 階層リストは行頭半角スペース2個でネスト
 - shownote内リンクは `target="_blank"` で別タブ開き（marked の postprocess hook で付与）
 

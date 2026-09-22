@@ -6,7 +6,7 @@
   const RSS_URL     = 'https://anchor.fm/s/110637c28/podcast/rss';
   const LINKS_URL   = 'links.json';
   const EXTRA_URL   = 'episodes-extra.json'; // RSSだけでは足りない差分（##候補・作品URL）を後から追記する層。●から編集
-  const IMAGES_URL  = 'images.json';         // shownote内 [img:key] 用の key→Drive fileId マップ
+  const IMAGES_URL  = 'images.json';         // shownote内 [img:key] 用の key→画像パス(またはDrive fileId)マップ
 
   // 説明文の定型フッタ由来の宣伝ハッシュタグはタグノードにしない
   const TAG_DENYLIST = new Set(['ラキもくチャン', 'ラッキーもくもくチャンス']);
@@ -379,10 +379,10 @@
 
   async function load() {
     const [rssText, linksJson, extraJson, images] = await Promise.all([
-      fetch(RSS_URL).then((r) => { if (!r.ok) throw new Error('RSS ' + r.status); return r.text(); }),
+      fetch(RSS_URL + '?t=' + Date.now(), { cache: 'no-store' }).then((r) => { if (!r.ok) throw new Error('RSS ' + r.status); return r.text(); }),
       fetch(LINKS_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : { links: [] }).catch(() => ({ links: [] })),
       fetch(EXTRA_URL + '?t=' + Date.now()).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
-      fetch(IMAGES_URL).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+      fetch(IMAGES_URL + '?t=' + Date.now(), { cache: 'no-store' }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
     ]);
     const episodes = applyExtras(parseRss(rssText), extraJson);
     const manualLinks = linksJson.links || [];

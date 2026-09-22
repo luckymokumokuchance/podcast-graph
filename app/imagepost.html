@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>画像登録 — 管理</title>
+  <link rel="stylesheet" href="admin.css" />
+  <style>
+    .preview { max-width: 220px; max-height: 220px; border-radius: 8px; border: 1px solid #e8e8e8; display: block; margin-top: 8px; }
+    .keybox { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+    .keybox code { flex: 1; background: #eee; padding: 8px 10px; border-radius: 8px; font-size: 14px; }
+    .reglist { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .regrow { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e8e8e8;
+      border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+    .regrow img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+    .regrow code { background: #eee; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <header class="abar">
+    <span class="abrand">🖼️ 画像登録</span>
+    <div class="aright">
+      <span id="who" class="who"></span>
+      <button id="logout" class="btn ghost hidden">ログアウト</button>
+      <a class="tostar" href="admin.html">リンク編集 →</a>
+      <a class="tostar" href="logpost.html">LOG投稿 →</a>
+      <a class="tostar" href="index.html">← 星図</a>
+    </div>
+  </header>
+
+  <!-- ログイン前 -->
+  <section id="gate" class="gate">
+    <h2>合言葉を入力</h2>
+    <p class="muted">管理者だけが知っている合言葉を入れてください。</p>
+    <div class="tokrow">
+      <input id="tok" type="password" placeholder="合言葉" autocomplete="off" />
+      <button id="enter" class="btn primary">入る</button>
+    </div>
+    <p id="gate-msg" class="err"></p>
+  </section>
+
+  <!-- ログイン後 -->
+  <main id="editor" class="editor hidden">
+    <p class="lead">画像をアップロードするとキーが発行されます。そのキーを <code>[img:キー]</code> の形でSpotifyの説明文の好きな場所に貼ると、そこに画像が表示されます。</p>
+
+    <section class="addcard">
+      <h3>画像を登録する</h3>
+      <div class="addgrid">
+        <label>話数
+          <input id="add-ep" type="number" min="1" placeholder="例: 31" />
+        </label>
+        <label class="w-full">画像ファイル
+          <input id="add-file" type="file" accept="image/*" />
+        </label>
+        <button id="add" class="btn primary" disabled>アップロードして登録</button>
+      </div>
+      <img id="preview" class="preview hidden" />
+      <p id="add-msg" class="err"></p>
+      <div id="result" class="hidden">
+        <p class="muted">このキーをコピーして、Spotifyの説明文の好きな場所に貼ってください。</p>
+        <div class="keybox">
+          <code id="result-key"></code>
+          <button id="copy" class="btn">コピー</button>
+        </div>
+      </div>
+    </section>
+
+    <h3 class="lh">登録済みの画像（この方式のもの）</h3>
+    <div id="reg-list" class="reglist"></div>
+  </main>
+
+  <script src="imagepost.js"></script>
+</body>
+</html>
