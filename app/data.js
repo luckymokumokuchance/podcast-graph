@@ -345,7 +345,7 @@
 
   function buildGraph(episodes, manualLinks) {
     const ids = new Set(episodes.map((e) => e.id));
-    const COLORS = { episode: '#089900', tag: '#878787' };
+    const COLORS = { episode: '#089900', tag: '#878787', work: '#c98b3b' };
 
     const episodeNodes = episodes.map((e) => ({
       id: String(e.id), type: 'episode', num: e.num, title: e.title, ep: e,
@@ -364,14 +364,26 @@
       epIds.forEach((epId) => tagLinks.push({ source: `tag_${label}`, target: String(epId), type: 'tag' }));
     });
 
+    // 作品ノード＋作品リンク（INSPIREDに出てくる作品を星図にも浮かせる。
+    // graph.js側で引力を弱く・リンクを長くして「ゆったり浮いている」見た目にする）
+    const workList = computeWorks(episodes).list;
+    const workNodes = workList.map((w) => ({
+      id: `work_${w.type}|${w.title}`, type: 'work', worktype: w.type, title: w.title, emoji: emojiOf(w.type),
+    }));
+    const workLinks = [];
+    workList.forEach((w) => {
+      const nodeId = `work_${w.type}|${w.title}`;
+      w.episodeIds.forEach((epId) => workLinks.push({ source: nodeId, target: String(epId), type: 'work' }));
+    });
+
     // 手動リンク（両端が存在する回のみ）
     const manual = (manualLinks || [])
       .filter((l) => ids.has(Number(l.source)) && ids.has(Number(l.target)))
       .map((l) => ({ source: String(l.source), target: String(l.target), reason: l.reason || '', type: 'manual' }));
 
     return {
-      nodes: [...episodeNodes, ...tagNodes],
-      graphLinks: [...manual, ...tagLinks],
+      nodes: [...episodeNodes, ...tagNodes, ...workNodes],
+      graphLinks: [...manual, ...tagLinks, ...workLinks],
       tags: Object.keys(tagMap).sort(),
       COLORS,
     };
