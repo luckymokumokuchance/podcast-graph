@@ -48,7 +48,7 @@
   function isBoilerplateLine(t) {
     const s = String(t).trim();
     if (!s) return false;
-    return /^[●・]/.test(s)
+    return /^●/.test(s)
       || /^✉/.test(s)
       || /lucky\.mokumoku\.chance@gmail\.com/.test(s)
       || /^番組HP[:：]?/.test(s)
